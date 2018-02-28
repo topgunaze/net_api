@@ -11,7 +11,6 @@
 #include <pthread.h>
 #include "fk_net.h"
 #include "ev.h"
-#include "types.h"
 
 /*变量名称g_fk_net_msg_mp涉及宏，慎重修改*/
 //业务板板间消息内存池
@@ -42,7 +41,7 @@ static NET_ZC_MQ      g_fk_rx_asyn_ack_mq;
 //业务板发送消息队列
 static NET_ZC_MQ      g_fk_tx_mq;
 //业务板运行状态
-FK_STATE         g_fk_state;
+FK_NET_STATE          g_fk_state;
 //业务板CPU运行时间
 NET_CPU_OCCUPY        g_fk_cpu_time;
 
@@ -69,7 +68,7 @@ uint8_t g_fk_packet_test;
 static void
 fk_net_state_init(void)
 {
-    bzero(&g_fk_state, sizeof(FK_STATE));
+    bzero(&g_fk_state, sizeof(FK_NET_STATE));
     net_mutex_create(&g_fk_state.mutex);
     
     return ;
@@ -1015,7 +1014,7 @@ fk_net_connect(EV_P)
         return rc;
     }
     
-    if (fk_net_connect_timeout(fd, (struct sockaddr *)&net_param.remote_addr, FK_NET_CONNECT_TIMEOUT))
+    if (fk_net_connect_timeout(fd, &net_param.remote_addr, FK_NET_CONNECT_TIMEOUT))
     {
         printf( "%s %s %d errorno %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
         close(fd);
@@ -1229,8 +1228,8 @@ fk_net_rx_syn_req_task(void    *p_arg)
 {
     NET_OS_MSG  *p_os_msg;
     NET_MSG     *p_usr_msg;
-    uint32_t        rc;
-    uint32_t        idx = *(uint32_t*)p_arg;
+    uint32_t    rc;
+    uint32_t    idx = (uint32_t)p_arg;
     NET_ZC_MQ   *p_mq = &g_fk_rx_syn_req_mq[idx]; 
 
     while (1)

@@ -21,7 +21,7 @@ MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 INCLUDE_DIRS         := $(APP_INC_DIR) \
 						$(MODULE_DIR)/include \
 						$(COM_DIR)/include \
-						$(PLA_INC_DIR) \
+						$(PLATFORM_DIR)/include \
 						$(SQLITE_DIR)/include \
 						$(LIBEV_DIR)/include \
 						$(ZLIB_DIR)/include
@@ -29,9 +29,9 @@ INCLUDE_DIRS         := $(APP_INC_DIR) \
 LIBS_PATH         :=	$(SQLITE_DIR)/install/lib \
 						$(LIBEV_DIR)/install/lib \
 						$(ZLIB_DIR)/install/lib \
-						$(TF_ADP_DIR)
+						$(ADP_DIR)
 
-CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ltfadp
+CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ladp
 
 CFLAGS               += -Wall -Werror -g $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
 LIBS_FLAGS           := -Wl,--start-group $(addprefix -L,$(LIBS_PATH)) $(CC_LIBS) -Wl,--end-group
@@ -41,9 +41,9 @@ $(MODULE_OBJ_DIR)/%.o: $(MODULE_DIR)/src/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: all lib clean 
-all: $(BIN_DIR)/fk
+all: $(MODULE_OBJ_DIR)/fk
 
-$(BIN_DIR)/fk : $(MODULE_DEPS)
+$(MODULE_OBJ_DIR)/fk : $(MODULE_DEPS)
 	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -o $@ $^ $(LIBS_FLAGS) 
 	$(CROSS_COMPILE)objdump -S $@ > gpon_dump.txt
 	$(STRIP) $@
@@ -51,7 +51,7 @@ $(BIN_DIR)/fk : $(MODULE_DEPS)
 clean: 
 	$(RM) $(MODULE_OBJ_DIR)/*
 	$(RM) $(MODULE_LIB_DIR)/*
-	$(RM) $(BIN_DIR)/fk
+	$(RM) $(MODULE_OBJ_DIR)/fk
 	
 test:
 	@$(ECHO) $(MODULE_OBJS)

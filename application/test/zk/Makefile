@@ -34,9 +34,9 @@ $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/src/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: all lib clean 
-all: $(BIN_DIR)/zk
+all: $(MODULE_OBJ_DIR)/zk
 
-$(BIN_DIR)/zk : $(APP_DEP_LIBS) $(MODULE_DEPS)
+$(MODULE_OBJ_DIR)/zk : $(APP_DEP_LIBS) $(MODULE_DEPS)
 	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
 	$(CROSS_COMPILE)objdump -S $@ > zk_dump.txt
 	$(STRIP) $@

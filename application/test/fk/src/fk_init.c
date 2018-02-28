@@ -38,7 +38,7 @@ main(int argc, char ** argv)
 {
     int    rc;
     int    sec = 0;
-
+    
     rc = fk_net_task_init();
     if(rc)
     {

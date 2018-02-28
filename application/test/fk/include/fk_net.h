@@ -11,6 +11,7 @@
 #define __FK_NET__
 
 #include "adaptor_net_if.h"
+#include "adaptor_types.h"
 
 typedef enum
 {
@@ -22,17 +23,17 @@ typedef enum
     FK_NET_STATE_WORKING           = 7,//工作
     FK_NET_STATE_WORK_WAITED       = 8,//等待开工
 
-    FK_STATE_NUM_OF
-}FK_NET_STATE;
+    FK_NET_STATE_NUM_OF
+}FK_NET_STATE_TYPE;
 
 typedef struct
 {
-    NET_MUTUX     mutex;
-    NET_PARA      net_param;   /*业务板连接信息*/
-    FK_NET_STATE  state;       /*业务板网络状态*/
-    uint8_t          slot_id;     /*业务板槽位信息*/
+    NET_MUTUX          mutex;
+    NET_PARA           net_param;   /*业务板连接信息*/
+    FK_NET_STATE_TYPE  state;       /*业务板网络状态*/
+    uint8_t            slot_id;     /*业务板槽位信息*/
 
-}FK_STATE;
+}FK_NET_STATE;
 
 //业务板板间消息并发处理线程数，
 #define FK_NET_MSG_CC_PRO_NUM   9
