@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/untgz
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/untgz/Makefile
+END
+Makefile.msc
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/untgz/Makefile.msc
+END
+untgz.c
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/untgz/untgz.c
+END

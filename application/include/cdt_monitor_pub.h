@@ -70,7 +70,7 @@
 #define  MAX_CHIPS  1
 
 #define ALL_PORT_LIST(max) (~(0xFFFFFFFF << (max)))
-#define ALL_TF_PORT_LIST     ALL_PORT_LIST(MAX_PORTS)
+#define ALL_PORT_LIST     ALL_PORT_LIST(MAX_PORTS)
 #define ALL_GE_PORT_LIST      ALL_PORT_LIST(GE_MAX_PORTS)
 #define ALL_XGE_CARD_LIST    ALL_PORT_LIST(MAX_CARDS_XGE)
 #define ALL_PWR_CARD_LIST     ALL_PORT_LIST(PWR_MAX_CARDS)
@@ -83,18 +83,18 @@
 #define CARD_PWR_LIST_ADD(list, card) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | (1 << (card))))
 #define DEV_LIST_ADD(list, devId) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_DEV << 24 ) | (1 << (devId))))
 
-#define ALL_PORT_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | ALL_TF_PORT_LIST))
+#define ALL_PORT_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | ALL_PORT_LIST))
 #define ALL_PORT_GE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_GE << 24 ) | ALL_GE_PORT_LIST))
 #define ALL_CARD_XGE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_XGE << 24 ) | ALL_XGE_CARD_LIST))
 #define ALL_CARD_PWR_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | ALL_PWR_CARD_LIST))
 
-#define IS_TF_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_TF << 24)) && ((list) & (1 << (port))))
+#define IS_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_TF << 24)) && ((list) & (1 << (port))))
 #define IS_GE_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_GE << 24)) && ((list) & (1 << (port))))
 #define IS_XGE_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_XGE << 24)) && ((list) & (1 << (card))))
 #define IS_PWR_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_PWR << 24)) && ((list) & (1 << (card))))
 #define IS_DEV(list, dev) ((((list) & 0xff000000) == (LIST_TYPE_DEV << 24)) && ((list) & (1 << (dev))))
 
-#define IS_TF_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_TF << 24))
+#define IS_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_TF << 24))
 #define IS_GE_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_GE << 24))
 #define IS_XGE_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_XGE << 24))
 #define IS_PWR_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_PWR << 24))

@@ -82,7 +82,7 @@ vtysh_pam (const char *user)
   if (pam_end (pamh, ret) != PAM_SUCCESS) 
     {
       pamh = NULL;
-      /*fprintf(stderr, "vtysh_pam: failed to release authenticator\n");*/
+      /*fprinftf(stderr, "vtysh_pam: failed to release authenticator\n");*/
       exit(1);
     }
 

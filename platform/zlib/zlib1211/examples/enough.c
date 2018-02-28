@@ -450,7 +450,7 @@ local void enough(int syms)
    For the deflate literal/length code, use "enough".  For the deflate distance
    code, use "enough 30 6".
 
-   This uses the %llu prinformat to print big_t numbers, which assumes that
+   This uses the %llu printf format to print big_t numbers, which assumes that
    big_t is an unsigned long long.  If the big_t type is changed (for example
    to a multiple precision type), the method of printing will also need to be
    updated.

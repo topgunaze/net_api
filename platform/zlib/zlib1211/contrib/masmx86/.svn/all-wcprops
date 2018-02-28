@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/masmx86
+END
+bld_ml32.bat
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/masmx86/bld_ml32.bat
+END
+inffas32.asm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/masmx86/inffas32.asm
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/masmx86/readme.txt
+END
+match686.asm
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/masmx86/match686.asm
+END

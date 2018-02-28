@@ -1,12 +1,9 @@
-#  Name         : Makefile
-#  Version      : V2.01
-#  Author       : keith.gong (kizerg@163.com)
-#  Time         : 2016.12.19
-#  Description  : Makefile for SQLite
-#                 Copyright (c) 2009-2016 CDATA Co.,Ltd.
-#                 All Rights Reserved.
-#  Modification : 2016.12.19, keith.gong, created
-#
+
+#  文件名:Makefile
+#  作者:
+#  版本:1.0.0          
+#  日期:
+#  描述: 
 
 MODULE_DIR           := $(shell pwd)
 MODULE_NAME          := $(notdir $(MODULE_DIR))
@@ -16,14 +13,12 @@ PRJ_ROOT_DIR         ?= $(shell cd ../../; pwd)
 LIBEV_SRC_DIR       := ./libev37
 
 -include $(PRJ_ROOT_DIR)/make/Make.config
-#CROSS_COMPILE        := 
 CC                   := $(CROSS_COMPILE)gcc
 AR                   := $(CROSS_COMPILE)ar
 STRIP                ?= strip
 
 #  Create some dependency directory 
 MODULE_OBJ_DIR       ?= $(MODULE_DIR)/install
-MODULE_OBJ_DIR       ?= $(PRJ_ROOT_DIR)/build/objs/$(MODULE_NAME)
 MODULE_LIB_DIR       ?= $(PRJ_ROOT_DIR)/build/libs/$(MODULE_NAME)
 MODULE_INC_DIR       ?= $(MODULE_DIR)/include
 
@@ -53,17 +48,6 @@ JOBS := $(shell grep -c ^processor /proc/cpuinfo 2>/dev/null)
 ifeq ($(JOBS),)
 JOBS := 1
 endif
-
-#CONFIG_CMD       := ./configure \
-#	--build=i386-linux \
-#	--host=arm-linux \
-#	--target=arm-linux \
-#	CC=$(CROSS_COMPILE)gcc \
-#	AR=$(CROSS_COMPILE)ar \
-#	RANLIB=$(CROSS_COMPILE)ranlib \
-#	STRIP=$(CROSS_COMPILE)strip \
-#	--prefix="$(MODULE_OBJ_DIR)" \
-#	--includedir="$(MODULE_INC_DIR)"
 
 CONFIG_CMD       := ./configure \
 	--build=i386-linux \

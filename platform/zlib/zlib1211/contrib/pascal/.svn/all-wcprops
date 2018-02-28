@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/pascal
+END
+zlibpas.pas
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/pascal/zlibpas.pas
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/pascal/readme.txt
+END
+example.pas
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/pascal/example.pas
+END
+zlibd32.mak
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/gpon/!svn/ver/2447/olt/FD1616GS/trunk/buildroot/platform/zlib/zlib1211/contrib/pascal/zlibd32.mak
+END

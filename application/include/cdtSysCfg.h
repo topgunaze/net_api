@@ -87,7 +87,7 @@ enum
 #define MAIN_CARN_TYPE 		0x01070201
 
 /******************************* Card Module *************************************/
-#define TF_CARD_TYPE 		0x01070301
+#define CARD_TYPE 		0x01070301
 
 #else
 /***************/
@@ -101,7 +101,7 @@ enum
 #define MAIN_CARN_TYPE 		0x01060201
 
 /******************************* Card Module *************************************/
-#define TF_CARD_TYPE 		0x01060302
+#define CARD_TYPE 		0x01060302
 
 #endif
 typedef struct sysInfo_t

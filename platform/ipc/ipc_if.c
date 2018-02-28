@@ -62,21 +62,21 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     stderr = fopen("/dev/console","w");
     count = readlink( "/proc/self/exe", buf, 256 );
     buf[ count ] = '\0';
-    fprintf(stderr, "path:%s\n",buf);
-    fprintf(stderr, "\nSegmentation Fault!\n");
-    fprintf(stderr, "info.si_signo = %d\n", signum);
-    fprintf(stderr, "info.si_errno = %d\n", info->si_errno);
-    fprintf(stderr, "info.si_code = %d (%s)\n", info->si_code, si_codes[info->si_code]);
-    fprintf(stderr, "info.si_addr = %p\n", info->si_addr);
+    fprinftf(stderr, "path:%s\n",buf);
+    fprinftf(stderr, "\nSegmentation Fault!\n");
+    fprinftf(stderr, "info.si_signo = %d\n", signum);
+    fprinftf(stderr, "info.si_errno = %d\n", info->si_errno);
+    fprinftf(stderr, "info.si_code = %d (%s)\n", info->si_code, si_codes[info->si_code]);
+    fprinftf(stderr, "info.si_addr = %p\n", info->si_addr);
 
-    //fprintf(stderr, "EPC=0x%08llx\n",ucontext->uc_mcontext.pc);
-    fprintf(stderr, "RA=0x%08llx\n",ucontext->uc_mcontext.gregs[31]);
+    //fprinftf(stderr, "EPC=0x%08llx\n",ucontext->uc_mcontext.pc);
+    fprinftf(stderr, "RA=0x%08llx\n",ucontext->uc_mcontext.gregs[31]);
     for (i = 0; i < NGREG; i++){
           if (i%2 == 0)
-          fprintf(stderr, "\n");
-          fprintf(stderr, "%s = 0x%08llx          ", mips_reg[i], ucontext->uc_mcontext.gregs[i]);
+          fprinftf(stderr, "\n");
+          fprinftf(stderr, "%s = 0x%08llx          ", mips_reg[i], ucontext->uc_mcontext.gregs[i]);
     }
-    fprintf(stderr,"\n");
+    fprinftf(stderr,"\n");
     module_killed_event.signum = signum;
     strncpy(module_killed_event.module_name,buf,sizeof(module_killed_event.module_name));
     memcpy(&module_killed_event.info,info,sizeof(siginfo_t));

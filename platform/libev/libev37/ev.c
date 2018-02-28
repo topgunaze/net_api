@@ -480,7 +480,7 @@ ev_realloc (void *ptr, long size)
 
   if (!ptr && size)
     {
-      fprin(stderr, "libev: cannot allocate %ld bytes, aborting.", size);
+      fprintf(stderr, "libev: cannot allocate %ld bytes, aborting.", size);
       abort ();
     }
 
@@ -708,7 +708,7 @@ array_realloc (int elem, void *base, int *cur, int cnt)
     {								\
       stem ## max = array_roundsize (stem ## cnt >> 1);		\
       base = (type *)ev_realloc (base, sizeof (type) * (stem ## max));\
-      fprin(stderr, "slimmed down " # stem " to %d\n", stem ## max);/*D*/\
+      fprintf(stderr, "slimmed down " # stem " to %d\n", stem ## max);/*D*/\
     }
 #endif
 

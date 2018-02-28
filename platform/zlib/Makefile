@@ -16,7 +16,6 @@ PRJ_ROOT_DIR         ?= $(shell cd ../../; pwd)
 ZLIB_SRC_DIR       := ./zlib1211
 
 -include $(PRJ_ROOT_DIR)/make/Make.config
-#CROSS_COMPILE        := 
 CROSS_COMPILE        := 
 CC                   := $(CROSS_COMPILE)gcc
 AR                   := $(CROSS_COMPILE)ar
@@ -24,7 +23,6 @@ STRIP                ?= strip
 
 #  Create some dependency directory 
 MODULE_OBJ_DIR       ?= $(MODULE_DIR)/install
-#MODULE_OBJ_DIR       ?= $(PRJ_ROOT_DIR)/build/objs/$(MODULE_NAME)
 MODULE_LIB_DIR       ?= $(PRJ_ROOT_DIR)/build/libs/$(MODULE_NAME)
 MODULE_INC_DIR       ?= $(MODULE_DIR)/include
 

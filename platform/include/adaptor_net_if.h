@@ -143,7 +143,7 @@ typedef enum
     NET_MSG_CMD_REWORK,  /*客户端重连*/
 
     NET_MSG_CMD_WORK_NUM_OF  
-}NET_MSG_CMD_WORK;
+}NET_MSG_CMD_WORK_TYPE;
 
 typedef enum
 {
@@ -151,7 +151,7 @@ typedef enum
     NET_MSG_CMD_HB_LOAD,
 
     NET_MSG_CMD_HB_NUM_OF 
-}NET_MSG_CMD_HB;
+}NET_MSG_CMD_HB_TYPE;
 
 typedef enum
 {
@@ -167,7 +167,7 @@ typedef enum
     NET_MSG_SYN,
     
     NET_MSG_SYN_NUM_OF
-}NET_MSG_SYN;
+}NET_MSG_SYN_TYPE;
 
 //msg dir
 typedef enum
@@ -181,12 +181,12 @@ typedef enum
 //net msg
 typedef struct
 {
-    NET_MSG_TYPE     msg_type;  /*消息类型*/
-    NET_MSG_CMD      cmd_info;  /*cmd*/
+    NET_MSG_TYPE        msg_type;  /*消息类型*/
+    NET_MSG_CMD         cmd_info;  /*cmd*/
     unsigned long long  vif_info;
-    NET_MSG_SYN      syn_flag;  /*是否同步消息*/
+    NET_MSG_SYN_TYPE    syn_flag;  /*是否同步消息*/
     unsigned int        corr_tag;  /*Correlation tag */
-    NET_DRICTION     direction; /*消息方向*/
+    NET_DRICTION        direction; /*消息方向*/
     int                 state;     /*业务面返回执行的状态*/
     unsigned int        len;       /* msg有效长度*/
     unsigned int        compress;  /*数据是否压缩, 该参数用户无需关注*/
@@ -203,10 +203,10 @@ typedef unsigned int (*net_msg_handler)(NET_MSG *pmsg);
 
 //通信接口请求消息处理返回码通用宏
 //有传参
-#define TF_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,msg,rc_info,ret,err_no,end)  do{\
+#define NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,msg,rc_info,ret,err_no,end)  do{\
       if (msg->len - NET_MSG_HEAD_LEN != sizeof(type))\
       {\
-            TF_ERRNO_INFO2RC(rc_info, ret, err_no);\
+            ERRNO_INFO2RC(rc_info, ret, err_no);\
             goto end;\
       }\
       else\
@@ -216,20 +216,20 @@ typedef unsigned int (*net_msg_handler)(NET_MSG *pmsg);
     }while(0)
 
 //没有传参
-#define TF_NET_PROCESS_REQ_NO_PARAM_STRUCT(msg,rc_info,ret,err_no,end) do{\
+#define NET_PROCESS_REQ_NO_PARAM_STRUCT(msg,rc_info,ret,err_no,end) do{\
         if ((msg)->len - NET_MSG_HEAD_LEN != 0)\
         {\
-            TF_ERRNO_INFO2RC(rc_info, ret, err_no);\
+            ERRNO_INFO2RC(rc_info, ret, err_no);\
             goto end;\
         }\
     }while(0)
 
 //有回传参数
-#define TF_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,pool_name,p_buf,buf_len,rc_info,ret,err_no,end)   do{\
+#define NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,pool_name,p_buf,buf_len,rc_info,ret,err_no,end)   do{\
         p_name = (type*)net_malloc(&pool_name, sizeof(type)); \
         if (!p_name)    \
         {\
-            TF_ERRNO_INFO2RC(rc_info, ret, err_no);\
+            ERRNO_INFO2RC(rc_info, ret, err_no);\
             goto end;\
         }\
         p_buf   = p_name;\
@@ -331,7 +331,7 @@ typedef enum
     
     NET_CFG_TYPE_NUM_OF,
     
-}TF_NET_CFG_TYPE;
+}NET_CFG_TYPE;
 
 typedef struct
 {
@@ -364,8 +364,7 @@ net_trbuf_get(int fd, int *sdb_size, int *rdb_size);
 unsigned int 
 net_trbuf_set(int fd, int sdb_size, int rdb_size);
 
-unsigned int 
-net_setnonblock(int fd);
+unsigned int net_setblock(int fd, int block_flag);
 
 unsigned int 
 net_init(struct sockaddr_in *psin, int *p_fd);

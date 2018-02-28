@@ -22,15 +22,11 @@ MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 
 INCLUDE_DIRS := $(APP_INC_DIR) $(COM_DIR)/include \
 				./include \
-				$(PLA_INC_DIR) $(LIBEV_DIR)/include $(ZLIB_DIR)/include
+				$(PLATFORM_DIR)/include $(LIBEV_DIR)/include $(ZLIB_DIR)/include
 				
-APP_DEP_LIBS :=	$(TF_ADP_DIR)/libtfadp.a
-				#$(PRJ_LIB_DIR)/common/libcommon.a \
-				#$(PRJ_LIB_DIR)/poncfg/libponcfg.a \
-				#$(PRJ_LIB_DIR)/ipc/libipc_if.a 
+APP_DEP_LIBS :=	$(ADP_DIR)/libadp.a
 
 CFLAGS               += -Wall -Werror -g $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
-#LIBS_FLAGS           := -Wl,--start-group $(INCLUDE_LIBS) -Wl,--end-group
 CC_LIBS              := -lm -lrt -lpthread -L$(ZLIB_DIR)/install/lib -lz -L$(LIBEV_DIR)/install/lib -lev #-L$(PRJ_LIB_DIR)/vtysh -lvtysh
 
 #  Pattern matching rules: 

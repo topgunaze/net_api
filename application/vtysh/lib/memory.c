@@ -297,11 +297,11 @@ log_memstats_stderr (const char *prefix)
         if (m->index && mstat[m->index].alloc)
           {
             if (!i)
-              fprin(stderr,
+              fprintf(stderr,
                        "%s: memstats: Current memory utilization in module %s:\n",
                        prefix,
                        ml->name);
-            fprin(stderr,
+            fprintf(stderr,
                      "%s: memstats:  %-30s: %10ld%s\n",
                      prefix,
                      m->format,
@@ -312,12 +312,12 @@ log_memstats_stderr (const char *prefix)
     }
 
   if (j)
-    fprin(stderr,
+    fprintf(stderr,
              "%s: memstats: NOTE: If configuration exists, utilization may be "
              "expected.\n",
              prefix);
   else
-    fprin(stderr,
+    fprintf(stderr,
              "%s: memstats: No remaining tracked memory utilization.\n",
              prefix);
 }

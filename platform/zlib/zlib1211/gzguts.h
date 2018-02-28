@@ -74,7 +74,7 @@
 
 #ifndef HAVE_VSNPRINTF
 #  ifdef MSDOS
-/* vsnprinmay exist on some MS-DOS compilers (DJGPP?),
+/* vsnprintf may exist on some MS-DOS compilers (DJGPP?),
    but for now we just assume it doesn't. */
 #    define NO_vsnprintf
 #  endif
@@ -82,10 +82,10 @@
 #    define NO_vsnprintf
 #  endif
 #  ifdef WIN32
-/* In Win32, vsnprinis available as the "non-ANSI" _vsnprintf. */
+/* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
 #    if !defined(vsnprintf) && !defined(NO_vsnprintf)
 #      if !defined(_MSC_VER) || ( defined(_MSC_VER) && _MSC_VER < 1500 )
-#         define vsnprin_vsnprintf
+#         define vsnprintf _vsnprintf
 #      endif
 #    endif
 #  endif
@@ -103,11 +103,11 @@
 #  endif
 #endif
 
-/* unlike snprin(which is required in C99), _snprindoes not guarantee
+/* unlike snprintf (which is required in C99), _snprintf does not guarantee
    null termination of the result -- however this is only used in gzlib.c where
    the result is assured to fit in the space provided */
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#  define snprin_snprintf
+#  define snprintf _snprintf
 #endif
 
 #ifndef local

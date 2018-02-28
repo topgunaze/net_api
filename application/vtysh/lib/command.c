@@ -351,10 +351,10 @@ format_parser_error (struct format_parser_state *state, const char *message)
 {
     int offset = state->cp - state->string + 1;
 
-    fprin(stderr, "\nError parsing command: \"%s\"\n", state->string);
-    fprin(stderr, "                        %*c\n", offset, '^');
-    fprin(stderr, "%s at offset %d.\n", message, offset);
-    fprin(stderr, "This is a programming error. Check your DEFUNs etc.\n");
+    fprintf(stderr, "\nError parsing command: \"%s\"\n", state->string);
+    fprintf(stderr, "                        %*c\n", offset, '^');
+    fprintf(stderr, "%s at offset %d.\n", message, offset);
+    fprintf(stderr, "This is a programming error. Check your DEFUNs etc.\n");
     exit (1);
 }
 
@@ -694,7 +694,7 @@ install_element (enum node_type ntype, struct cmd_element *cmd)
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprin(stderr, "Command node %d doesn't exist, please check it, cmd:%s\n", ntype, cmd->string);
+        fprintf(stderr, "Command node %d doesn't exist, please check it, cmd:%s\n", ntype, cmd->string);
         //exit (1);
         return;
     }
@@ -721,7 +721,7 @@ install_element_with_right(enum node_type ntype, int right, struct cmd_element *
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        fprintf(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         exit (1);
     }
 
@@ -770,7 +770,7 @@ install_element_with_style(enum node_type ntype, int style, struct cmd_element *
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        fprintf(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         exit (1);
     }
 

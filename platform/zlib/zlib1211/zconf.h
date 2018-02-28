@@ -84,7 +84,7 @@
 #    ifdef _WIN32
 #      define gzopen_w              z_gzopen_w
 #    endif
-#    define gzprin             z_gzprintf
+#    define gzprintf              z_gzprintf
 #    define gzputc                z_gzputc
 #    define gzputs                z_gzputs
 #    define gzread                z_gzread
@@ -95,7 +95,7 @@
 #    define gztell                z_gztell
 #    define gztell64              z_gztell64
 #    define gzungetc              z_gzungetc
-#    define gzvprin            z_gzvprintf
+#    define gzvprintf             z_gzvprintf
 #    define gzwrite               z_gzwrite
 #  endif
 #  define inflate               z_inflate
@@ -149,10 +149,10 @@
 #  define gz_header             z_gz_header
 #  define gz_headerp            z_gz_headerp
 #  define in_func               z_in_func
-#  define in                 z_intf
+#  define intf                  z_intf
 #  define out_func              z_out_func
 #  define uInt                  z_uInt
-#  define uIn                z_uIntf
+#  define uIntf                 z_uIntf
 #  define uLong                 z_uLong
 #  define uLongf                z_uLongf
 #  define voidp                 z_voidp

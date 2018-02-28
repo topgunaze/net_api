@@ -135,7 +135,7 @@ void test_gzio(fname, uncompr, uncomprLen)
         exit(1);
     }
     if (gzprintf(file, ", %s!", "hello") != 8) {
-        fprintf(stderr, "gzprinerr: %s\n", gzerror(file, &err));
+        fprintf(stderr, "gzprintf err: %s\n", gzerror(file, &err));
         exit(1);
     }
     gzseek(file, 1L, SEEK_CUR); /* add one zero byte */

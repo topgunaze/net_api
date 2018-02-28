@@ -294,9 +294,9 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     if (cl == NULL)
     {
         #if 0
-        fprin(stderr, "%s: ", "unknown");
-        vfprin(stderr, format, args);
-        fprin(stderr, "\n");
+        fprintf(stderr, "%s: ", "unknown");
+        vfprinf(stderr, format, args);
+        fprintf(stderr, "\n");
         fflush (stderr);
         #endif
 

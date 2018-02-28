@@ -74,11 +74,11 @@ static NET_ZC_MQ g_ctrl_rx_asyn_req_mq;
 static NET_ZC_MQ g_ctrl_rx_asyn_ack_mq;
 
 //连接映射
-static TF_CTRL_NET_MAP     g_ctrl_net_map[NET_MANAGE_MAX_SLOT];
+static CTRL_NET_MAP     g_ctrl_net_map[NET_MANAGE_MAX_SLOT];
 //控制板状态
-static TF_CTRL_STATE       g_ctrl_state[NET_MANAGE_MAX_SLOT];
+static CTRL_STATE       g_ctrl_state[NET_MANAGE_MAX_SLOT];
 //控制板全局表项配置状态
-TF_CTRL_GBL_CFG_STATE      g_ctrl_gbl_cfg_state;
+CTRL_GBL_CFG_STATE      g_ctrl_gbl_cfg_state;
 //conn 公共锁
 static NET_MUTUX            g_ctrl_conn_lock;
 //控制板与业务板之间的同步消息连接
@@ -94,7 +94,7 @@ static NET_CONN             *g_ctrl_conn[NET_MANAGE_MAX_SLOT];
 void
 ctrl_net_cfg_init(void)
 { 
-    bzero(&g_ctrl_gbl_cfg_state, sizeof(TF_CTRL_GBL_CFG_STATE));
+    bzero(&g_ctrl_gbl_cfg_state, sizeof(CTRL_GBL_CFG_STATE));
     net_mutex_create(&g_ctrl_gbl_cfg_state.mutex);
     net_mutex_create(&g_ctrl_gbl_cfg_state.sync_lock);
 
@@ -189,7 +189,7 @@ ctrl_net_map_init(void)
     
     for (idx = 0; idx < NET_MANAGE_MAX_SLOT; idx++)
     {
-        bzero(&g_ctrl_net_map[idx], sizeof(TF_CTRL_NET_MAP));
+        bzero(&g_ctrl_net_map[idx], sizeof(CTRL_NET_MAP));
         net_mutex_create(&g_ctrl_net_map[idx].mutex);
         g_ctrl_net_map[idx].slot_id = NET_COM_PARAM_INVALID;
     }
@@ -336,6 +336,7 @@ ctrl_net_map_net_param_init(
 #if DEFUNC("控制板工作状态接口")
 
 //控制板板间网络状态初始化
+
 void
 ctrl_net_state_init(void)
 {
@@ -343,8 +344,7 @@ ctrl_net_state_init(void)
     
     for (slot_id = 0; slot_id < NET_MANAGE_MAX_SLOT; slot_id++)
     {
-        g_ctrl_slot[slot_id] = slot_id;
-        bzero(&g_ctrl_state[slot_id], sizeof(TF_CTRL_NET_STATE));
+        bzero(&g_ctrl_state[slot_id], sizeof(CTRL_NET_STATE));
         g_ctrl_state[slot_id].map_id = NET_COM_PARAM_INVALID; 
         net_mutex_create(&g_ctrl_state[slot_id].mutex);
     }
@@ -355,8 +355,8 @@ ctrl_net_state_init(void)
 //控制板板间网路状态设置
 static unsigned int
 ctrl_net_state_set(
-                            const uint8_t   slot_id,
-                            const uint32_t  state)
+                    const uint8_t   slot_id,
+                    const uint32_t  state)
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT)
     {
@@ -1156,7 +1156,7 @@ ctrl_net_rx_syn_req_task_init()
     pthread_attr_t  attr;
     UINT32          rc;
     UINT32          slot_id;
-    char            name[TF_NET_NAME_LEN];
+    char            name[NET_NAME_LEN];
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -1192,7 +1192,7 @@ ctrl_net_rx_syn_ack_task_init()
     pthread_attr_t  attr;
     UINT32          rc;
     UINT32          slot_id;
-    char            name[TF_NET_NAME_LEN];
+    char            name[NET_NAME_LEN];
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -1268,7 +1268,7 @@ ctrl_net_tx_task_init()
     pthread_attr_t  attr;
     UINT32          rc;
     UINT32          slot_id;
-    char            name[TF_NET_NAME_LEN];
+    char            name[NET_NAME_LEN];
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -1693,6 +1693,7 @@ ctrl_net_accept_cb(EV_P_ struct ev_io *watcher, int revents)
     }
     
     //监听读事件
+    net_setblock(client_fd, NET_FD_SET_NO_BLOCK);
     ev_io_init(w_client, ctrl_net_read_cb, client_fd, EV_READ);  
     ev_io_start(EV_A_ w_client);
 
@@ -1733,7 +1734,7 @@ ctrl_net_work_main(void)
         return;
     }
 
-    if (net_setnonblock(fd))
+    if (net_setblock(fd, NET_FD_SET_NO_BLOCK))
     {
         printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
         return;
@@ -2323,7 +2324,7 @@ ctrl_net_syn_req_drv_pull_process(NET_MSG *p_msg)
             break;
 
         default:
-            TF_ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
+            ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
             break;      
     }
 
@@ -2587,14 +2588,14 @@ ctrl_net_syn_operation( IN const  NET_MSG_TYPE msg_type,
     
     if (!state)
     {
-        TF_ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_NULL);
+        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_NULL);
         return rc;
     }
     
     if ((param && 0 == param_len) || (NULL == param && param_len))
     {
         printf("%s %s %d param error\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
+        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
         return rc;
     }
     
@@ -2612,7 +2613,7 @@ ctrl_net_syn_operation( IN const  NET_MSG_TYPE msg_type,
     if (!p_msg)
     {
         printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_MEM_ALLOCATION);
+        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_MEM_ALLOCATION);
         return rc;
     }
     
@@ -2625,7 +2626,7 @@ ctrl_net_syn_operation( IN const  NET_MSG_TYPE msg_type,
         printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
         
         net_safe_free(p_msg);
-        TF_ERRNO_INFO2RC(rc_info, rc, rc);
+        ERRNO_INFO2RC(rc_info, rc, rc);
         return rc;
     }
     

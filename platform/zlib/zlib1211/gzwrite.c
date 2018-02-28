@@ -413,7 +413,7 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va)
     next = (char *)(state->in + (strm->next_in - state->in) + strm->avail_in);
     next[state->size - 1] = 0;
 #ifdef NO_vsnprintf
-#  ifdef HAS_vsprinvoid
+#  ifdef HAS_vsprintf_void
     (void)vsprintf(next, format, va);
     for (len = 0; len < state->size; len++)
         if (next[len] == 0) break;
@@ -421,7 +421,7 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va)
     len = vsprintf(next, format, va);
 #  endif
 #else
-#  ifdef HAS_vsnprinvoid
+#  ifdef HAS_vsnprintf_void
     (void)vsnprintf(next, state->size, format, va);
     len = strlen(next);
 #  else
@@ -462,7 +462,7 @@ int ZEXPORTVA gzprintf(gzFile file, const char *format, ...)
 #else /* !STDC && !Z_HAVE_STDARG_H */
 
 /* -- see zlib.h -- */
-int ZEXPORTVA gzprin(file, format, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
+int ZEXPORTVA gzprintf (file, format, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
                        a11, a12, a13, a14, a15, a16, a17, a18, a19, a20)
     gzFile file;
     const char *format;
@@ -507,7 +507,7 @@ int ZEXPORTVA gzprin(file, format, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
     next = (char *)(strm->next_in + strm->avail_in);
     next[state->size - 1] = 0;
 #ifdef NO_snprintf
-#  ifdef HAS_sprinvoid
+#  ifdef HAS_sprintf_void
     sprintf(next, format, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12,
             a13, a14, a15, a16, a17, a18, a19, a20);
     for (len = 0; len < size; len++)
@@ -518,7 +518,7 @@ int ZEXPORTVA gzprin(file, format, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10,
                   a12, a13, a14, a15, a16, a17, a18, a19, a20);
 #  endif
 #else
-#  ifdef HAS_snprinvoid
+#  ifdef HAS_snprintf_void
     snprintf(next, state->size, format, a1, a2, a3, a4, a5, a6, a7, a8, a9,
              a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20);
     len = strlen(next);

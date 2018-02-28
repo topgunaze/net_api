@@ -88,11 +88,11 @@ uLong ZEXPORT zlibCompileFlags()
 #if defined(STDC) || defined(Z_HAVE_STDARG_H)
 #  ifdef NO_vsnprintf
     flags += 1L << 25;
-#    ifdef HAS_vsprinvoid
+#    ifdef HAS_vsprintf_void
     flags += 1L << 26;
 #    endif
 #  else
-#    ifdef HAS_vsnprinvoid
+#    ifdef HAS_vsnprintf_void
     flags += 1L << 26;
 #    endif
 #  endif
@@ -100,11 +100,11 @@ uLong ZEXPORT zlibCompileFlags()
     flags += 1L << 24;
 #  ifdef NO_snprintf
     flags += 1L << 25;
-#    ifdef HAS_sprinvoid
+#    ifdef HAS_sprintf_void
     flags += 1L << 26;
 #    endif
 #  else
-#    ifdef HAS_snprinvoid
+#    ifdef HAS_snprintf_void
     flags += 1L << 26;
 #    endif
 #  endif

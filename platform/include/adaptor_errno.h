@@ -287,14 +287,14 @@ typedef struct
     
 }rc_info;
 
-#define TF_ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc) do{\
+#define ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc) do{\
         rc_info.obj_id = obj;\
         *(unsigned int*)&rc_info.sub_obj_id = sub_obj;\
         rc_info.err_id = err_no;\
         info2rc_convert(&rc, &rc_info);\
     }while(0)
 
-#define TF_ERRNO_INFO2RC(rc_info,rc,err_no) do{\
+#define ERRNO_INFO2RC(rc_info,rc,err_no) do{\
         rc_info.err_id = err_no;info2rc_convert(&rc, &rc_info);\
     }while(0)
 

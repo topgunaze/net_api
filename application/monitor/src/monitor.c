@@ -567,7 +567,7 @@ static int app_arg_build(char *argStr, char **argv, int argc)
         if ((argv[idx] = strtok_r(argStr, " ", &nextarg)) == NULL)
             break;
 
-        /*fprintf(stderr, "argv[%d] %s %d\n", idx, argv[idx], strlen(argv[idx]));*/
+        /*fprinftf(stderr, "argv[%d] %s %d\n", idx, argv[idx], strlen(argv[idx]));*/
 
         argStr = NULL;
     }
@@ -670,7 +670,7 @@ static int app_start(appDesc_t *pAppDesc)
         }
         else if (pid > 0)
         {
-            /*fprintf(stderr, "start %s successful; PID=%d\n", appName, pid);*/
+            /*fprinftf(stderr, "start %s successful; PID=%d\n", appName, pid);*/
             pAppDesc->pid    = pid;
             pAppDesc->status = APP_STATUS_RUNNING;
             if (clock_gettime(CLOCK_MONOTONIC, &tp) < 0)
@@ -778,7 +778,7 @@ static int apps_start(unsigned int stage)
         if (app[idx].flag & stage)
         {
             ret = app_start(&app[idx]);
-            //fprintf(stderr, "%s:%d ret=%d\n", __FUNCTION__, __LINE__, ret);
+            //fprinftf(stderr, "%s:%d ret=%d\n", __FUNCTION__, __LINE__, ret);
             /* 需要考虑异常处理 */
             if (ret < 0)
             {
@@ -897,10 +897,10 @@ static void signal_usr1(int signo, siginfo_t * siginfo, void *context)
     char name[64] = {0};
 
     #if 0
-    fprintf(stderr, "%s: signo=%d\r\n", __func__, signo);
+    fprinftf(stderr, "%s: signo=%d\r\n", __func__, signo);
 
-    fprintf(stderr, "si_errno=%d si_code=%d\r\n", siginfo->si_errno, siginfo->si_code);
-    fprintf(stderr, "si_pid=%d si_uid=%d\r\n", siginfo->si_pid, siginfo->si_uid);
+    fprinftf(stderr, "si_errno=%d si_code=%d\r\n", siginfo->si_errno, siginfo->si_code);
+    fprinftf(stderr, "si_pid=%d si_uid=%d\r\n", siginfo->si_pid, siginfo->si_uid);
     #endif
     appdesc = get_app_desc_by_pid(siginfo->si_pid);
 
@@ -976,22 +976,22 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     stderr = fopen("/dev/console","w");
     count = readlink( "/proc/self/exe", buf, 256 );
     buf[ count ] = '\0';
-    fprintf(stderr, "path:%s\n",buf);
-    fprintf(stderr, "\nSegmentation Fault!\n");
-    fprintf(stderr, "info.si_signo = %d\n", signum);
-    fprintf(stderr, "info.si_errno = %d\n", info->si_errno);
-    fprintf(stderr, "info.si_code = %d (%s)\n", info->si_code, si_codes[info->si_code]);
-    fprintf(stderr, "info.si_addr = %p\n", info->si_addr);
+    fprinftf(stderr, "path:%s\n",buf);
+    fprinftf(stderr, "\nSegmentation Fault!\n");
+    fprinftf(stderr, "info.si_signo = %d\n", signum);
+    fprinftf(stderr, "info.si_errno = %d\n", info->si_errno);
+    fprinftf(stderr, "info.si_code = %d (%s)\n", info->si_code, si_codes[info->si_code]);
+    fprinftf(stderr, "info.si_addr = %p\n", info->si_addr);
 
-    fprintf(stderr, "EPC=0x%08lx\n",ucontext->uc_mcontext.arm_pc);
-    fprintf(stderr, "RA=0x%08lx\n",ucontext->uc_mcontext.arm_lr);
+    fprinftf(stderr, "EPC=0x%08lx\n",ucontext->uc_mcontext.arm_pc);
+    fprinftf(stderr, "RA=0x%08lx\n",ucontext->uc_mcontext.arm_lr);
     arm_r = &ucontext->uc_mcontext.arm_r0;
     for (i = 0; i < 17; i++){
         if (i%2 == 0)
-            fprintf(stderr, "\n");
-        fprintf(stderr, "%s = 0x%08lx          ", arm_reg[i], *(arm_r++));
+            fprinftf(stderr, "\n");
+        fprinftf(stderr, "%s = 0x%08lx          ", arm_reg[i], *(arm_r++));
     }
-    fprintf(stderr,"\n");
+    fprinftf(stderr,"\n");
 
 #endif
     exit((0-signum));

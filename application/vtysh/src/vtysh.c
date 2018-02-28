@@ -94,7 +94,7 @@ vclient_close (struct vtysh_client *vclient)
 {
   if (vclient->fd >= 0)
     {
-      /*fprintf(stderr,
+      /*fprinftf(stderr,
 	      "Warning: closing connection to %s because of an I/O error!\n",
 	      vclient->name);*/
       close (vclient->fd);
@@ -138,7 +138,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
     {
         if (pbuf >= ((buf + bufsz) -1))
         {
-            fprin(stderr, ERR_WHERE_STRING \
+            fprintf(stderr, ERR_WHERE_STRING \
                 "warning - pbuf beyond buffer end.\n");
             return CMD_WARNING;
         }
@@ -152,7 +152,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
             if (errno == EINTR)
                 continue;
 
-            /*fprintf(stderr, ERR_WHERE_STRING "(%u)", errno);*/
+            /*fprinftf(stderr, ERR_WHERE_STRING "(%u)", errno);*/
             perror("");
 
             if (errno == EAGAIN || errno == EIO)
@@ -183,7 +183,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
 
         if (eoln >= ((buf + bufsz) - 1))
         {
-            fprin(stderr, ERR_WHERE_STRING \
+            fprintf(stderr, ERR_WHERE_STRING \
                 "warning - eoln beyond buffer end.\n");
         }
         vtysh_config_parse(buf);
@@ -460,16 +460,16 @@ vtysh_config_from_file (struct vty *vty, FILE *fp)
         {
             case CMD_WARNING:
                 if (vty->type == VTY_FILE)
-                    fprin(stdout,"Warning...\r\n");
+                    fprintf(stdout,"Warning...\r\n");
                 break;
             case CMD_ERR_AMBIGUOUS:
-                fprin(stdout,"%% Ambiguous command.\r\n");
+                fprintf(stdout,"%% Ambiguous command.\r\n");
                 break;
             case CMD_ERR_NO_MATCH:
-                fprin(stdout,"%% Unknown command: %s\r\n", vty->buf);
+                fprintf(stdout,"%% Unknown command: %s\r\n", vty->buf);
                 break;
             case CMD_ERR_INCOMPLETE:
-                fprin(stdout,"%% Command incomplete.\r\n");
+                fprintf(stdout,"%% Command incomplete.\r\n");
                 break;
         }
     }
@@ -669,20 +669,20 @@ vtysh_rl_describe (void)
 
   describe = cmd_describe_command (vline, vtysh, &ret);
 
-  fprin(stdout,"\n");
+  fprintf(stdout,"\n");
 
   /* Ambiguous and no match error. */
   switch (ret)
     {
     case CMD_ERR_AMBIGUOUS:
       cmd_free_strvec (vline);
-      fprin(stdout,"%% Ambiguous command.\n");
+      fprintf(stdout,"%% Ambiguous command.\n");
       rl_on_new_line ();
       return 0;
       break;
     case CMD_ERR_NO_MATCH:
       cmd_free_strvec (vline);
-      fprin(stdout,"%% There is no matched command.\n");
+      fprintf(stdout,"%% There is no matched command.\n");
       rl_on_new_line ();
       return 0;
       break;
@@ -713,10 +713,10 @@ vtysh_rl_describe (void)
 	  continue;
 
 	if (! token->desc)
-	  fprin(stdout,"  %-s\n",
+	  fprintf(stdout,"  %-s\n",
 		   token->cmd[0] == '.' ? token->cmd + 1 : token->cmd);
 	else
-	  fprin(stdout,"  %-*s  %s\n",
+	  fprintf(stdout,"  %-*s  %s\n",
 		   width,
 		   token->cmd[0] == '.' ? token->cmd + 1 : token->cmd,
 		   token->desc);
@@ -777,12 +777,12 @@ vtysh_rl_complete()
     switch (ret)
     {
         case CMD_ERR_AMBIGUOUS:
-            fprin(stdout, "%% Ambiguous command.%s", VTY_NEWLINE);
+            fprintf(stdout, "%% Ambiguous command.%s", VTY_NEWLINE);
             rl_on_new_line();
             rl_set_prompt((char *)vty_prompt (vty));
             break;
         case CMD_ERR_NO_MATCH:
-            /* fprin(stdout, "%% There is no matched command.%s", VTY_NEWLINE); */
+            /* fprintf(stdout, "%% There is no matched command.%s", VTY_NEWLINE); */
             break;
         case CMD_COMPLETE_FULL_MATCH:
             if (matched)
@@ -802,15 +802,15 @@ vtysh_rl_complete()
             vector_only_index_free (matched);
             return 0;
         case CMD_COMPLETE_LIST_MATCH:
-            fprin(stdout, "%s", VTY_NEWLINE);
+            fprintf(stdout, "%s", VTY_NEWLINE);
             for (i = 0; matched[i] != NULL; i++)
             {
                 if (i != 0 && ((i % 6) == 0))
-                    fprin(stdout, "%s", VTY_NEWLINE);
-                fprin(stdout, "%-10s ", matched[i]);
+                    fprintf(stdout, "%s", VTY_NEWLINE);
+                fprintf(stdout, "%-10s ", matched[i]);
                 XFREE (MTYPE_TMP, matched[i]);
             }
-            fprin(stdout, "%s%s", VTY_NEWLINE, VTY_NEWLINE);
+            fprintf(stdout, "%s%s", VTY_NEWLINE, VTY_NEWLINE);
             rl_on_new_line();
             rl_set_prompt((char *)vty_prompt (vty));
             break;
@@ -1485,10 +1485,10 @@ DEFUN (vtysh_show_memory,
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprin(stdout, "Memory statistics for %s:\n",
+        fprintf(stdout, "Memory statistics for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
-        fprin(stdout,"\n");
+        fprintf(stdout,"\n");
       }
 
   return ret;
@@ -1508,10 +1508,10 @@ DEFUN (vtysh_show_logging,
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprin(stdout,"Logging configuration for %s:\n",
+        fprintf(stdout,"Logging configuration for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
-        fprin(stdout,"\n");
+        fprintf(stdout,"\n");
       }
 
   return ret;
@@ -1866,7 +1866,7 @@ DEFUN (vtysh_write_terminal,
                 vtysh_config_start();
                 ret = vtysh_client_config (&vtysh_info[idx], cmd_line);
                 if(ret != RT_OK){
-                    fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
+                    fprintf(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
                 }
                 vtysh_top_config_write ();
                 vtysh_show_running_config (vty);
@@ -1887,11 +1887,11 @@ DEFUN (vtysh_write_terminal,
       //2 stephen.liu modified , 20151009
       if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH){
             vtysh_info = (struct vtysh_client *)vty->vtysh_info;
-            /*fprin(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
+            /*fprintf(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
             for (idx = 0; idx < vty->daemon_num; idx++){
                 ret = vtysh_client_config (&vtysh_info[idx], cmd_line);
                 if(ret != RT_OK){
-                    fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
+                    fprintf(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
                 }
             }
         }
@@ -1946,7 +1946,7 @@ DEFUN (vtysh_default_interface,
     char *cmd_line = NULL;
 
     cmd_line = (char *)vty->buf;
-    fprintf(stdout,"\r\ncmd_str: %s %s %s %s %s\r\n",
+    fprinftf(stdout,"\r\ncmd_str: %s %s %s %s %s\r\n",
             GE_CMD_STR, XGE_CMD_STR, ECMD_STR, SA_CMD_STR, LACP_CMD_STR);
 
     if (vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH)
@@ -1958,7 +1958,7 @@ DEFUN (vtysh_default_interface,
             {
                 ret = vtysh_client_daemon_execute (vty, &vtysh_info[j], cmd_line);
                 if(ret != RT_OK) {
-                    fprin(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
+                    fprintf(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
                 }
             }
         }
@@ -1984,7 +1984,7 @@ write_config_integrated(void)
   strcpy (integrate_sav, integrate_default);
   strcat (integrate_sav, CONF_BACKUP_EXT);
 
-  fprin(stdout,"Building Configuration...\n");
+  fprintf(stdout,"Building Configuration...\n");
 
   /* Move current configuration file to backup config file. */
   unlink (integrate_sav);
@@ -1994,7 +1994,7 @@ write_config_integrated(void)
   fp = fopen (integrate_default, "w");
   if (fp == NULL)
     {
-      fprin(stdout,"%% Can't open configuration file %s.\n",
+      fprintf(stdout,"%% Can't open configuration file %s.\n",
 	       integrate_default);
       return CMD_SUCCESS;
     }
@@ -2008,14 +2008,14 @@ write_config_integrated(void)
 
   if (chmod (integrate_default, CONFIGFILE_MASK) != 0)
     {
-      fprin(stdout,"%% Can't chmod configuration file %s: %s (%d)\n",
+      fprintf(stdout,"%% Can't chmod configuration file %s: %s (%d)\n",
 	integrate_default, safe_strerror(errno), errno);
       return CMD_WARNING;
     }
 
-  fprintf(stdout,"Integrated configuration saved to %s\n",integrate_default);
+  fprinftf(stdout,"Integrated configuration saved to %s\n",integrate_default);
 
-  fprin(stdout,"[OK]\n");
+  fprintf(stdout,"[OK]\n");
 
   return CMD_SUCCESS;
 }
@@ -2048,7 +2048,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     struct timespec  res;
     #endif
 
-    fprin(stdout,"Building Configuration...\r\n");
+    fprintf(stdout,"Building Configuration...\r\n");
 
     if (opendir(SYSCONFDIR) == NULL)
     {
@@ -2074,7 +2074,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     fp = fopen (integrate_default, "w+");
     if (fp == NULL)
     {
-        fprin(stdout,"%% Can't open configuration file %s.\r\n", integrate_default);
+        fprintf(stdout,"%% Can't open configuration file %s.\r\n", integrate_default);
         return CMD_SUCCESS;
     }
 
@@ -2089,7 +2089,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
 
     if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SHELL_SERV || vty->type == VTY_SSH){
         vtysh_info = (vtysh_client_info *)vty->vtysh_info;
-        /*fprin(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
+        /*fprintf(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
         for (i = 0; i < vty->daemon_num; i++){
             #ifdef VTYSH_CONFIG_PROGRESS
             clock_gettime(CLOCK_MONOTONIC, &tsp[i+1]);
@@ -2098,7 +2098,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
             vty_out_to_all(msg);
             ret = vtysh_client_config ((struct vtysh_client *)&vtysh_info[i], "write terminal\n");
             if(ret != RT_OK){
-                fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[i].name);
+                fprintf(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[i].name);
             }
         }
     }
@@ -2116,10 +2116,10 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     clock_gettime(CLOCK_MONOTONIC, &tsp[i++]);
 
     clock_getres(CLOCK_MONOTONIC, &res);
-    fprintf(stderr, "CLOCK_MONOTONIC resolution: %d.%ld\n", (int)res.tv_sec, res.tv_nsec);
+    fprinftf(stderr, "CLOCK_MONOTONIC resolution: %d.%ld\n", (int)res.tv_sec, res.tv_nsec);
     for(i = 0; i < vty->daemon_num + 3; i++)
     {
-        fprintf(stderr, "idx[%d] timespec=%d.%ld\n", i, (int)tsp[i].tv_sec, tsp[i].tv_nsec);
+        fprinftf(stderr, "idx[%d] timespec=%d.%ld\n", i, (int)tsp[i].tv_sec, tsp[i].tv_nsec);
     }
 
     if (tsp != NULL)
@@ -2132,14 +2132,14 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
 
     if (chmod (integrate_default, CONFIGFILE_MASK) != 0)
     {
-        fprin(stdout,"%% Can't chmod configuration file %s: %s (%d)\r\n",
+        fprintf(stdout,"%% Can't chmod configuration file %s: %s (%d)\r\n",
                  integrate_default, safe_strerror(errno), errno);
         return CMD_WARNING;
     }
 
-    fprintf(stdout,"Integrated configuration saved to %s\r\n",integrate_default);
+    fprinftf(stdout,"Integrated configuration saved to %s\r\n",integrate_default);
 
-    fprin(stdout,"[OK]\r\n");
+    fprintf(stdout,"[OK]\r\n");
 
     return CMD_SUCCESS;
 }
@@ -2262,22 +2262,22 @@ DEFUN (vtysh_write_memory,
     u_int j;
     char *cmd_line = NULL;
 
-    /*fprintf(stdout, "start.cmdstr:%s\r\n", self->string);*/
+    /*fprinftf(stdout, "start.cmdstr:%s\r\n", self->string);*/
     cmd_line = (char *)self->string;
 
     /* If integrated Quagga.conf explicitely set. */
     if (vtysh_writeconfig_integrated)
         return write_config_integrated_vtysh(vty, cmd_line);
 
-    fprin(stdout,"Building Configuration...\r\n");
+    fprintf(stdout,"Building Configuration...\r\n");
 	//remote write
     if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH){
         vtysh_info = (vtysh_client_info *)vty->vtysh_info;
-        /*fprin(stdout,"daemon_num=%d\r\n", vty->daemon_num);*/
+        /*fprintf(stdout,"daemon_num=%d\r\n", vty->daemon_num);*/
         for (j = 0; j < vty->daemon_num; j++){
             ret = vtysh_client_daemon_execute (vty, &vtysh_info[j], cmd_line);
             if(ret != RT_OK){
-                fprin(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
+                fprintf(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
             }
         }
     }
@@ -2472,7 +2472,7 @@ execute_command (int fd, const char *command, int argc, const char *arg1,
     if (pid < 0)
     {
         /* Failure of fork(). */
-        fprin(stderr, "Can't fork: %s\n", safe_strerror (errno));
+        fprintf(stderr, "Can't fork: %s\n", safe_strerror (errno));
         exit (1);
     }
     else if (pid == 0)
@@ -2495,7 +2495,7 @@ execute_command (int fd, const char *command, int argc, const char *arg1,
         }
 
         /* When execlp suceed, this part is not executed. */
-        fprin(stderr, "Can't execute %s: %s\n", command, safe_strerror (errno));
+        fprintf(stderr, "Can't execute %s: %s\n", command, safe_strerror (errno));
         exit (1);
     }
     else
@@ -3527,7 +3527,7 @@ int vtysh_cmd(struct vty * vty, char *cmd)
     printf("%s %d, node=%d, \n", __func__, __LINE__, vty->node);
     cnode = vector_slot (cmdvec, vty->node);
     if (cnode == NULL) {
-        //fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        //fprintf(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         //exit (1);
         printf("%s %d, node=%d, cnode null\r\n", __func__, __LINE__, vty->node);
         return CMD_ERR_NOTHING_TODO;

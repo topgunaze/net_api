@@ -872,7 +872,7 @@ vty_command (struct vty *vty, char *buf)
         }
 
         ret = cmd_execute_command (vline, vty, NULL, 0);
-        /*fprintf(stderr, "ret=%d\r\n", ret);  //stephen.liu*/
+        /*fprinftf(stderr, "ret=%d\r\n", ret);  //stephen.liu*/
 
         /* Get the name of the protocol if any */
         if (zlog_default)
@@ -2574,7 +2574,7 @@ vty_read (struct thread *thread)
 
         buffer_reset (vty->obuf);
         vty->status = VTY_CLOSE;
-        fprintf(stderr, "%d\r\n", __LINE__);
+        fprinftf(stderr, "%d\r\n", __LINE__);
     }
 
     for (i = 0; i < nbytes; i++) {
@@ -2825,7 +2825,7 @@ vty_flush (struct thread *thread)
 
     vty->t_write = NULL;
 
-    /*fprintf(stderr, "thread=0x%p iswrite=%d\r\n", thread, FD_ISSET(vty->fd, &thread->master->writefd));*/
+    /*fprinftf(stderr, "thread=0x%p iswrite=%d\r\n", thread, FD_ISSET(vty->fd, &thread->master->writefd));*/
 
     /* Tempolary disable read thread. */
     if ((vty->lines == 0) && vty->t_read) {
@@ -2991,7 +2991,7 @@ alarm_to_vty (char *str)
 
     for (i = 0; i < vector_active (vtyvec); i++)
         if (((vty = vector_slot (vtyvec, i)) != NULL)) {
-            //fprintf(stderr, "vty:%d\n", vty->fd);
+            //fprinftf(stderr, "vty:%d\n", vty->fd);
             if (vty->type == VTY_SHELL_SERV)
             {
                 vtysh_info = (vtysh_client_info *) vty->vtysh_info;
@@ -3016,7 +3016,7 @@ static void
 vclient_close (vtysh_client_info * vclient)
 {
     if (vclient->fd >= 0) {
-        fprin(stderr, "Warning: closing connection to %s because of an I/O error!\n", vclient->name);
+        fprintf(stderr, "Warning: closing connection to %s because of an I/O error!\n", vclient->name);
         close (vclient->fd);
         vclient->fd = -1;
     }
@@ -3062,14 +3062,14 @@ vtysh_connect (vtysh_client_info * vclient)
     /* Stat socket to see if we have permission to access it. */
     ret = stat (vclient->path, &s_stat);
     if (ret < 0 && errno != ENOENT) {
-        fprin(stderr, "vtysh_connect(%s): stat = %s\n", vclient->path, safe_strerror (errno));
+        fprintf(stderr, "vtysh_connect(%s): stat = %s\n", vclient->path, safe_strerror (errno));
         return -1;
         //exit(1);
     }
 
     if (ret >= 0) {
         if (!S_ISSOCK (s_stat.st_mode)) {
-            fprin(stderr, "vtysh_connect(%s): Not a socket\n", vclient->path);
+            fprintf(stderr, "vtysh_connect(%s): Not a socket\n", vclient->path);
             return -1;
         }
 
@@ -3078,7 +3078,7 @@ vtysh_connect (vtysh_client_info * vclient)
     sock = socket (AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
 //#ifdef DEBUG
-        fprin(stderr, "vtysh_connect(%s): socket = %s\n", vclient->path, safe_strerror (errno));
+        fprintf(stderr, "vtysh_connect(%s): socket = %s\n", vclient->path, safe_strerror (errno));
 //#endif /* DEBUG */
         return -1;
     }
@@ -3095,7 +3095,7 @@ vtysh_connect (vtysh_client_info * vclient)
     ret = connect (sock, (struct sockaddr *) &addr, len);
     if (ret < 0) {
 //#ifdef DEBUG
-        fprin(stderr, "vtysh_connect(%s): connect = %s\n", vclient->path, safe_strerror (errno));
+        fprintf(stderr, "vtysh_connect(%s): connect = %s\n", vclient->path, safe_strerror (errno));
 //#endif /* DEBUG */
         close (sock);
         return -1;
@@ -3106,7 +3106,7 @@ vtysh_connect (vtysh_client_info * vclient)
 
 #if 0
     if (set_nonblocking (sock) < 0) {
-        fprin(stderr, "vtysh_accept: could not set vty socket %d to non-blocking,"
+        fprintf(stderr, "vtysh_accept: could not set vty socket %d to non-blocking,"
                  " %s, closing", sock, safe_strerror (errno));
         close (sock);
         return -1;
@@ -3151,7 +3151,7 @@ vtysh_connect_all_daemon (void *client, int daemon_num)
         }
     }
     if (!matches)
-        fprin(stderr, "Error: no daemons match name %s!\n", c[i].name);
+        fprintf(stderr, "Error: no daemons match name %s!\n", c[i].name);
     return rc;
 }
 
@@ -3179,7 +3179,7 @@ vtysh_client_daemon_execute (struct vty *vty, vtysh_client_info * vclient, const
     //printf("%s dst[%s]line:%s\r\n", __func__, vclient->name, line);
     ret = send (vclient->fd, line, strlen (line) + 1, 0);
     if (ret <= 0) {
-        fprin(stderr, "%s %d\r\n", __func__, __LINE__);
+        fprintf(stderr, "%s %d\r\n", __func__, __LINE__);
         vclient_close (vclient);
         return CMD_SUCCESS;
     }
@@ -3216,7 +3216,7 @@ vtysh_client_daemon_execute (struct vty *vty, vtysh_client_info * vclient, const
             nbytes = read (vclient->fd, buf, sizeof (buf) - 1);
 
             if (nbytes <= 0 && errno != EINTR) {
-                fprin(stderr, "%s %d\r\n", __func__, __LINE__);
+                fprintf(stderr, "%s %d\r\n", __func__, __LINE__);
                 vclient_close (vclient);
                 return CMD_SUCCESS;
             }
@@ -3597,7 +3597,7 @@ vty_serv_sock_addrinfo (const char *hostname, unsigned short port)
     ret = getaddrinfo (hostname, port_str, &req, &ainfo);
 
     if (ret != 0) {
-        fprin(stderr, "getaddrinfo failed: %s\n", gai_strerror (ret));
+        fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror (ret));
         exit (1);
     }
 
@@ -3845,7 +3845,7 @@ static int msg_print(char *msg, int state)
                 retry = 3;
                 while(writev(vty->fd, iov, 2) < 0 && ERRNO_IO_RETRY (errno) && retry > 0)
                 {
-                    fprintf(stderr, "%s call writev error: %s\r\n", __func__, safe_strerror(errno));
+                    fprinftf(stderr, "%s call writev error: %s\r\n", __func__, safe_strerror(errno));
                     usleep(10);
                     retry--;
                 }
@@ -4122,7 +4122,7 @@ static int alarm_log_print(void)
         truncate = TRUE;
     }
 
-    /*fprintf(stderr, "log_start=%08x  log_end=%08x\n", log_start, log_end);*/
+    /*fprinftf(stderr, "log_start=%08x  log_end=%08x\n", log_start, log_end);*/
     if ((log_start & (~LOG_BUF_MASK)) != (log_end & (~LOG_BUF_MASK)))
     {
         c = LOG_BUF(__LOG_BUF_LEN - 1);
@@ -4240,7 +4240,7 @@ thread_process_alarm_recv (void)
     bufvec = vector_init(0);
     if (bufvec == NULL)
     {
-        fprintf(stderr, "Message buffer allocation failure\n");
+        fprinftf(stderr, "Message buffer allocation failure\n");
         return;
     }
 
@@ -4297,7 +4297,7 @@ thread_process_alarm_recv (void)
                     /* receive data */
                     nbytes = read (i, buf + offset, MAX_SIZE - offset);
                     buf[MAX_SIZE] = '\0';/* Make sure that there is no overflow */
-                    //fprintf(stderr, "start read data.====nbytes=%d offset=%d\n", nbytes, offset);
+                    //fprinftf(stderr, "start read data.====nbytes=%d offset=%d\n", nbytes, offset);
 
                     /* end of the file */
                     if (nbytes == 0) {
@@ -4371,10 +4371,10 @@ thread_process_alarm_recv (void)
                                 msgstart = buf + offset;
                                 break;
                             case 0xFF:
-                                /*fprintf(stderr, "offset=%d nbytes=%d\r\n", offset, nbytes);*/
+                                /*fprinftf(stderr, "offset=%d nbytes=%d\r\n", offset, nbytes);*/
                                 if ((offset + 2) <= nbytes && (unsigned char)buf[offset+1] == 0x55 && (unsigned char)buf[offset+2] == 0xFF)
                                 {
-                                    /*fprintf(stderr, "%s:%d\r\n", __FUNCTION__, __LINE__);*/
+                                    /*fprinftf(stderr, "%s:%d\r\n", __FUNCTION__, __LINE__);*/
                                     g_daemon_send_fd = i;
                                     g_daemon_send_flag = TRUE;
                                     offset += 3;
@@ -4587,7 +4587,7 @@ vtysh_accept (struct thread *thread)
     {
         vty->daemon_num = 1;
         alarm_info_refs++;
-        /*fprintf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
+        /*fprinftf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
     }
     //stephen.liu add, for unix socket access. used for simulation vty
     if ((g_vtysh_flag) && (!alarm_info)){
@@ -4596,7 +4596,7 @@ vtysh_accept (struct thread *thread)
         init_vty_all_daemon (vty);
     }
 
-    //fprintf(stderr, "[%d]%d sock=%d\r\n", getpid(), __LINE__, sock);//stephen.liu 20160815
+    //fprinftf(stderr, "[%d]%d sock=%d\r\n", getpid(), __LINE__, sock);//stephen.liu 20160815
     vty_event (VTYSH_READ, sock, vty);
 
     return 0;
@@ -4669,7 +4669,7 @@ vtysh_read (struct thread *thread)
         int len = sizeof(buf) - sizeof(VTYSH_CMD_USER_ENV_GET);
 
         len = sizeof(vty->user.env) > len ? len : sizeof(vty->user.env);
-        /*fprintf(stderr, "pid[%d] command enter\r\n", getpid());*/
+        /*fprinftf(stderr, "pid[%d] command enter\r\n", getpid());*/
         memcpy(&buf[sizeof(VTYSH_CMD_USER_ENV_GET)], &vty->user.env, len);
         if (vty->t_write) {
             thread_cancel (vty->t_write);
@@ -4677,7 +4677,7 @@ vtysh_read (struct thread *thread)
         }
         buffer_put (vty->obuf, buf, len + sizeof(VTYSH_CMD_USER_ENV_GET));
         vtysh_flush(vty);
-        /*fprintf(stderr, "pid[%d] command complete\r\n", getpid());*/
+        /*fprinftf(stderr, "pid[%d] command complete\r\n", getpid());*/
     }
     else
     {
@@ -4896,7 +4896,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
     ret = send (vclient->fd, cmd,sizeof(cmd), 0);
     if (ret <= 0)
     {
-        fprin(stderr, "%s %d\r\n", __func__, __LINE__);
+        fprintf(stderr, "%s %d\r\n", __func__, __LINE__);
         vclient_close (vclient);
         return CMD_ERR_INCOMPLETE;
     }
@@ -4944,7 +4944,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
 
             if (nbytes < 0 && !ERRNO_IO_RETRY(errno))
             {
-                fprin(stderr, "%s %d\r\n", __func__, __LINE__);
+                fprintf(stderr, "%s %d\r\n", __func__, __LINE__);
                 vclient_close (vclient);
                 XFREE(MTYPE_TMP, cmdRsp);
                 return CMD_ERR_INCOMPLETE;
@@ -4966,7 +4966,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
 
                 if (nbytes < sizeof(cmd) || memcmp(cmdRsp, cmd, sizeof(cmd)) != 0)
                 {
-                    /*fprintf(stderr, "pid[%d] error restfse\r\n", getpid());*/
+                    /*fprinftf(stderr, "pid[%d] error restfse\r\n", getpid());*/
                     wait_num++;
                     continue;
                 }
@@ -5139,7 +5139,7 @@ vty_close (struct vty *vty)
             if (vtysh_info == alarm_info)
             {
                 alarm_info_refs--;
-                /*fprintf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
+                /*fprinftf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
                 if (alarm_info_refs == 0)
                 {
                     close (alarm_info->fd);
@@ -5189,7 +5189,7 @@ vty_timeout (struct thread *thread)
     /* Clear buffer */
     buffer_reset (vty->obuf);
     vty_out (vty, "%sconnection is timed out.%s", VTY_NEWLINE, VTY_NEWLINE);
-    fprintf(stderr, "connection is timed out.\r\n");
+    fprinftf(stderr, "connection is timed out.\r\n");
 
     /* Close connection. */
     vty->status = VTY_CLOSE;
@@ -5327,13 +5327,13 @@ vty_read_config (char *config_file, char *config_default_dir)
         confp = fopen (fullpath, "r");
 
         if (confp == NULL) {
-            //fprin(stderr, "%s: failed to open configuration file %s: %s\n",
+            //fprintf(stderr, "%s: failed to open configuration file %s: %s\n",
             //         __func__, fullpath, safe_strerror (errno));
 
             confp = vty_use_backup_config (fullpath);
-            if (confp);         //fprin(stderr, "WARNING: using backup configuration file!\n");
+            if (confp);         //fprintf(stderr, "WARNING: using backup configuration file!\n");
             else {
-                //fprin(stderr, "can't open configuration file [%s]\n",
+                //fprintf(stderr, "can't open configuration file [%s]\n",
                 //     config_file);
                 //exit(1);
             }
@@ -5367,12 +5367,12 @@ vty_read_config (char *config_file, char *config_default_dir)
 
         confp = fopen (config_default_dir, "r");
         if (confp == NULL) {
-            fprin(stderr, "%s: failed to open configuration file %s: %s\n",
+            fprintf(stderr, "%s: failed to open configuration file %s: %s\n",
                      __func__, config_default_dir, safe_strerror (errno));
             return;
             confp = vty_use_backup_config (config_default_dir);
             if(!confp){
-                fprin(stderr, "WARNING: using backup configuration file!\n");
+                fprintf(stderr, "WARNING: using backup configuration file!\n");
                 return;
             }
         }
@@ -5588,7 +5588,7 @@ void vty_command_read_data_thread(void)
             timeout.tv_sec = 0;
             timeout.tv_usec = 100000;/* 100ms */
 
-            /*fprintf(stderr, "PID[%d] %s:%d\r\n", getpid(), __FUNCTION__, __LINE__);*/
+            /*fprinftf(stderr, "PID[%d] %s:%d\r\n", getpid(), __FUNCTION__, __LINE__);*/
 
             ret = select(g_active.fd + 1, &readset, NULL, NULL, &timeout);
             if (ret <= 0)
@@ -5622,7 +5622,7 @@ void vty_command_read_data_thread(void)
             g_active.size = rBytes;
             #endif
             g_active.buffer[g_active.size%DEFALUT_BUFFER_SIZE] = '\0';
-            /*fprintf(stderr, "pid[%d] recive get  input data.fd=%d,buf[0]=%s,rbytes=%d\r\n"
+            /*fprinftf(stderr, "pid[%d] recive get  input data.fd=%d,buf[0]=%s,rbytes=%d\r\n"
                 , getpid(), g_active.fd, g_active.buffer, rBytes);*/
             //must check if vtysh process
             #if 1

@@ -143,7 +143,7 @@ time_print(FILE *fp, struct timestamp_control *ctl)
       ctl->len = quagga_timestamp(ctl->precision, ctl->buf, sizeof(ctl->buf));
       ctl->already_rendered = 1;
     }
-  fprintf(fp, "%s ", ctl->buf);
+  fprinftf(fp, "%s ", ctl->buf);
 }
   
 
@@ -163,9 +163,9 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
     {
       tsctl.precision = 0;
       time_print(stderr, &tsctl);
-      fprin(stderr, "%s: ", "unknown");
-      vfprin(stderr, format, args);
-      fprin(stderr, "\n");
+      fprintf(stderr, "%s: ", "unknown");
+      vfprinf(stderr, format, args);
+      fprintf(stderr, "\n");
       fflush (stderr);
 
       /* In this case we return at here. */
@@ -188,12 +188,12 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       va_list ac;
       time_print (zl->fp, &tsctl);
       if (zl->record_priority)
-	fprin(zl->fp, "%s: ", zlog_priority[priority]);
-      fprin(zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
+	fprintf(zl->fp, "%s: ", zlog_priority[priority]);
+      fprintf(zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
-      vfprin(zl->fp, format, ac);
+      vfprinf(zl->fp, format, ac);
       va_end(ac);
-      fprin(zl->fp, "\n");
+      fprintf(zl->fp, "\n");
       fflush (zl->fp);
     }
 
@@ -203,12 +203,12 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       va_list ac;
       time_print (stdout, &tsctl);
       if (zl->record_priority)
-	fprin(stdout, "%s: ", zlog_priority[priority]);
-      fprin(stdout, "%s: ", zlog_proto_names[zl->protocol]);
+	fprintf(stdout, "%s: ", zlog_priority[priority]);
+      fprintf(stdout, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
-      vfprin(stdout, format, ac);
+      vfprinf(stdout, format, ac);
       va_end(ac);
-      fprin(stdout, "\n");
+      fprintf(stdout, "\n");
       fflush (stdout);
     }
 

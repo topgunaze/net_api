@@ -8,25 +8,6 @@
  * <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
 
-#if 0
-#include "common.h"
-#include "sys_debug.h"
-#include "log.h"
-
-#include "ipc_if.h"
-
-#include "thread.h"
-#include "zebra.h"
-#include "command.h"
-#include "global.h"
-#include "memory.h"
-#include "vtysh.h"
-
-#include "monitor_pub.h"
-#include "types.h"
-#include "gtfCommon.h"
-#endif
-
 //#include "gtfDevInit.h"
 #include "zk_net.h"
 

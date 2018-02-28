@@ -11,10 +11,7 @@
 #include <pthread.h>
 #include "fk_net.h"
 #include "ev.h"
-//#include "fk_db.h"
 #include "types.h"
-
-UINT32  g_fk_cc_pro_idx[FK_NET_MSG_CC_PRO_NUM] = {0,1,2,3,4,5,6,7,8};
 
 /*变量名称g_fk_net_msg_mp涉及宏，慎重修改*/
 //业务板板间消息内存池
@@ -530,18 +527,18 @@ fk_net_msg_syn_send(NET_MSG *pmsg)
 
 uint32_t 
 fk_net_syn_operation( 
-                                IN const NET_MSG_TYPE  msg_type,
-                                IN const  uint64_t         vif_info, 
-                                IN const  NET_MSG_CMD  cmd_info, 
-                                IN const  void             *pvar, 
-                                IN const  uint32_t         pvar_len,
-                                OUT void                   *param,
-                                IN  const uint32_t         param_len,
-                                OUT uint32_t               *state)
+                    IN const NET_MSG_TYPE  msg_type,
+                    IN const  uint64_t         vif_info, 
+                    IN const  NET_MSG_CMD  cmd_info, 
+                    IN const  void             *pvar, 
+                    IN const  uint32_t         pvar_len,
+                    OUT void                   *param,
+                    IN  const uint32_t         param_len,
+                    OUT uint32_t               *state)
 {
-    uint32_t        syn_ack_len;
+    uint32_t    syn_ack_len;
     NET_MSG     *p_msg;
-    uint32_t        rc;
+    uint32_t    rc;
     rc_info     rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = (vif_info & 0xff)};
 
     //判断与控制面的通信是否已经建立
@@ -552,14 +549,14 @@ fk_net_syn_operation(
   
     if (!state)
     {
-        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_NULL);
+        ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_NULL);
         return rc;
     }
     
     if ((param && 0 == param_len) || (NULL == param && param_len))
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_OUT_OF_RANGE);
+        ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_OUT_OF_RANGE);
         return rc;
     }
     
@@ -577,7 +574,7 @@ fk_net_syn_operation(
     if (!p_msg)
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MEM_ALLOCATION);
+        ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MEM_ALLOCATION);
         return rc;
     }
     
@@ -590,7 +587,7 @@ fk_net_syn_operation(
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
         net_safe_free(p_msg);
-        TF_ERRNO_INFO2RC(rc_info, rc, rc);
+        ERRNO_INFO2RC(rc_info, rc, rc);
         return rc;
     }
     
@@ -685,14 +682,14 @@ fk_net_msg_asyn_req_process(NET_MSG *p_msg)
 //消息发送接口
 static unsigned int 
 fk_net_msg_send( 
-                            NET_MSG         *pmsg,
-                            const void          *pvar, 
-                            const unsigned int  len,
-                            const int           state,
-                            const int           direction)
+                NET_MSG         *pmsg,
+                const void          *pvar, 
+                const unsigned int  len,
+                const int           state,
+                const int           direction)
 {
     NET_MSG      *ptmsg;
-    unsigned int     rc;
+    unsigned int rc;
 
     if (len)
     {
@@ -920,15 +917,97 @@ fail:
     return;
 }
 
+static int 
+fk_net_connect_timeout(
+                int                fd, 
+                struct sockaddr_in *addr, 
+                unsigned int       wait_seconds)
+{
+    int       ret;
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+
+    if (wait_seconds > 0)
+        net_setblock(fd, NET_FD_SET_NO_BLOCK);
+
+again:
+    ret = connect(fd, (struct sockaddr*)addr, addrlen);
+    if (ret < 0)
+    {
+        switch(errno)
+        {
+            case EINTR:
+                {
+                    goto again;
+                }
+                
+            case EINPROGRESS:
+                {
+                    fd_set         connect_fdset;
+                    struct timeval timeout;
+                    
+                    FD_ZERO(&connect_fdset);
+                    FD_SET(fd, &connect_fdset);
+                    timeout.tv_sec  = wait_seconds;
+                    timeout.tv_usec = 0;
+                    
+                    do
+                    {
+                        ret = select(fd + 1, NULL, &connect_fdset, NULL, &timeout);
+                    } while (ret < 0 && errno == EINTR);
+
+                    if (ret == 0)
+                    {
+                        ret = -1;
+                        errno = ETIMEDOUT;
+                    }
+                    else 
+                    if (ret < 0)
+                        return -1;
+                    else 
+                    if (ret == 1)
+                    {
+                        int       err;
+                        socklen_t socklen = sizeof(err);
+
+                        if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &socklen) == -1)
+                        {
+                            return -1;
+                        }
+                        
+                        if (err == 0)
+                        {
+                            ret = 0;
+                        }
+                        else
+                        {
+                            errno = err;
+                            ret = -1;
+                        }
+                    } 
+                }
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    if (wait_seconds > 0)
+    {
+        net_setblock(fd, NET_FD_SET_BLOCK);
+    }
+    
+    return ret;
+}
+
 //与控制板建立连接
 static unsigned int
 fk_net_connect(EV_P)
 {
-    int             fd;
-    NET_PARA     net_param;
-    int             addrlen = sizeof(struct sockaddr);
-    ev_io           *client_read;
-    unsigned int    rc;
+    int           fd;
+    NET_PARA      net_param;
+    ev_io         *client_read;
+    unsigned int  rc;
     
     if ((rc = fk_net_init(&fd, &net_param)))
     {
@@ -936,7 +1015,7 @@ fk_net_connect(EV_P)
         return rc;
     }
     
-    if (connect(fd, (struct sockaddr *)&net_param.remote_addr, addrlen))
+    if (fk_net_connect_timeout(fd, (struct sockaddr *)&net_param.remote_addr, FK_NET_CONNECT_TIMEOUT))
     {
         printf( "%s %s %d errorno %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
         close(fd);
@@ -953,9 +1032,10 @@ fk_net_connect(EV_P)
     }
 
     fk_net_state_set(FK_NET_CONNECTION_COMPLETED);
-    printf("drv connetion complete\r\n");
+    printf("fk connetion complete\r\n");
 
     //read事件
+    net_setblock(fd, NET_FD_SET_NO_BLOCK);
     ev_io_init(client_read, fk_net_read_cb, fd, EV_READ);  
     ev_io_start(EV_A, client_read);
 
@@ -1285,7 +1365,7 @@ fk_net_rx_syn_req_task_init(void)
     pthread_t           tid;
     pthread_attr_t      attr;
     uint32_t            idx;
-    char                name[TF_NET_NAME_LEN];
+    char                name[NET_NAME_LEN];
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -1302,7 +1382,7 @@ fk_net_rx_syn_req_task_init(void)
             return FK_ZK_RC_MSG_QUEUE_CREATE;
         }
 
-        if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_req_task, (void*)&g_fk_cc_pro_idx[idx]) < 0)
+        if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_req_task, (void*)idx) < 0)
         {
             printf( "drv create rx syn req task error %d idx %d!!! \r\n", errno, idx);
             return FK_ZK_RC_TASK_CREATE;
@@ -1737,7 +1817,7 @@ fk_net_syn_req_olt_set_process(NET_MSG *p_msg)
 #endif
 
         default:
-            TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
+            ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
             break;
     }
 
@@ -1806,7 +1886,7 @@ fk_net_syn_req_olt_get_process(NET_MSG *p_msg)
 #endif
 
         default:
-            TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
+            ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
             break;
     }
 

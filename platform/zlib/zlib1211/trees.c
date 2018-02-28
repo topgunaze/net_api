@@ -116,7 +116,7 @@ local int base_dist[D_CODES];
 
 struct static_tree_desc_s {
     const ct_data *static_tree;  /* static tree or NULL */
-    const in*extra_bits;      /* extra bits for each code or NULL */
+    const intf *extra_bits;      /* extra bits for each code or NULL */
     int     extra_base;          /* base index for extra_bits */
     int     elems;               /* max number of elements in the tree */
     int     max_length;          /* max bit length for the codes */
@@ -490,7 +490,7 @@ local void gen_bitlen(s, desc)
     ct_data *tree        = desc->dyn_tree;
     int max_code         = desc->max_code;
     const ct_data *stree = desc->stat_desc->static_tree;
-    const in*extra    = desc->stat_desc->extra_bits;
+    const intf *extra    = desc->stat_desc->extra_bits;
     int base             = desc->stat_desc->extra_base;
     int max_length       = desc->stat_desc->max_length;
     int h;              /* heap index */

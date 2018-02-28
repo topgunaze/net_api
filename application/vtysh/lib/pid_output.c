@@ -41,7 +41,7 @@ pid_output (const char *path)
   fp = fopen (path, "w");
   if (fp != NULL) 
     {
-      fprin(fp, "%d\n", (int) pid);
+      fprintf(fp, "%d\n", (int) pid);
       fclose (fp);
       umask(oldumask);
       return pid;

@@ -39,15 +39,17 @@ typedef struct
 #define FK_NET_MSG_SER_PRO_ID   8
 #define FK_NET_MSG_CC_PRO_MASK  0x07
 
+#define FK_NET_CONNECT_TIMEOUT  3
+
 //请求消息处理错误返回码
 //没有传参
-#define FK_NET_PROCESS_REQ_NO_PARAM_VERIFY()               TF_NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define FK_NET_PROCESS_REQ_NO_PARAM_VERIFY()               NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
 //有传参
-#define FK_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       TF_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define FK_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
 //有回传参数
-#define FK_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       TF_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_fk_net_msg_mp,p_buf,len,rc_info,rc,FK_ZK_RC_MEM_ALLOCATION,ack)
+#define FK_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_fk_net_msg_mp,p_buf,len,rc_info,rc,FK_ZK_RC_MEM_ALLOCATION,ack)
 
-#define FK_NET_ERR_INFO2RC(obj,sub_obj,err_no)             TF_ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc)
+#define FK_NET_ERR_INFO2RC(obj,sub_obj,err_no)             ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc)
 
 
 unsigned int fk_net_ev_init(void);

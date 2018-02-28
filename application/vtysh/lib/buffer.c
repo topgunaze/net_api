@@ -416,7 +416,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
          bufs += data->sp;
       }
 
-      /*fprintf(stderr, " expect flush size:%d bufs:%d\r\n", flush_size, bufs);*/
+      /*fprinftf(stderr, " expect flush size:%d bufs:%d\r\n", flush_size, bufs);*/
 
       if (bufs < flush_size)
       {
@@ -439,7 +439,7 @@ buffer_flush_window (struct buffer *b, int fd, int width, int height,
    }
 
    #if 0
-   fprintf(stderr, "{%d}[%s] flush_size=%d\r\n", getpid(), __func__, flush_size);
+   fprinftf(stderr, "{%d}[%s] flush_size=%d\r\n", getpid(), __func__, flush_size);
    #endif
 
   /* Free printed buffer data. */

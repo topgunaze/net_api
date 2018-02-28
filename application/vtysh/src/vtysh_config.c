@@ -286,7 +286,7 @@ vtysh_config_parse_line (const char *line)
     if (c == '\0')
         return;
 
-    /*fprin(stderr, "[%s]\n", line); */
+    /*fprintf(stderr, "[%s]\n", line); */
     
     switch (c)
     {
@@ -391,7 +391,7 @@ int vtysh_config_header(struct vty *vty, FILE *fp)
     do
     {
         snprintf(cmd, sizeof(cmd), "#Saving user: %.*s", sizeof(vty->sign_user.name), vty->sign_user.name);
-        fprintf(fp, "%s\r\n", cmd);
+        fprinftf(fp, "%s\r\n", cmd);
         time(&curTime);
         ptm = localtime(&curTime);
         if (ptm == NULL)
@@ -405,11 +405,11 @@ int vtysh_config_header(struct vty *vty, FILE *fp)
             break;
         }
         cmdLen = snprintf(cmd, sizeof(cmd), "#Saving time: %s", tStr);
-        fprintf(fp, "%s\r\n", cmd);
+        fprinftf(fp, "%s\r\n", cmd);
 
         /* vtysh version */
         cmdLen = snprintf(cmd, sizeof(cmd), "#Version: %s", VTY_VERSION);
-        fprintf(fp, "%s\r\n", cmd);
+        fprinftf(fp, "%s\r\n", cmd);
 
         #if 0
         /* device type */
@@ -467,13 +467,13 @@ vtysh_config_dump (FILE *fp)
             if (line_level->level == level)
             {
                 line_match = 1;
-                fprin(fp, "%s\r\n", line_level->line);
+                fprintf(fp, "%s\r\n", line_level->line);
                 fflush (fp);
             }
         }
         if (line_match)
         {
-            fprin(fp, "!\r\n");
+            fprintf(fp, "!\r\n");
             fflush (fp);
         }
 
@@ -490,14 +490,14 @@ vtysh_config_dump (FILE *fp)
                     #if 0
                     if(!strncmp(config->name, "acl ", strlen("acl ")) && (config->level == level)){
                         line_match = 1;
-                        fprin(fp, "%s\r\n", config->name);
+                        fprintf(fp, "%s\r\n", config->name);
                         fflush (fp);
                     }
                     #endif
                     if(config->level == level)
                     {
                         line_match = 1;
-                        fprin(fp, "%s\r\n", config->name);
+                        fprintf(fp, "%s\r\n", config->name);
                         fflush (fp);
                     }
                     for (ALL_LIST_ELEMENTS (config->line, mnode, mnnode, line_level))
@@ -507,10 +507,10 @@ vtysh_config_dump (FILE *fp)
                             if (line_match == 0)
                             {
                                 line_match = 1;
-                                fprin(fp, "%s\r\n", config->name);
+                                fprintf(fp, "%s\r\n", config->name);
                                 fflush (fp);
                             }
-                            fprin (fp, "%s\r\n", line_level->line);
+                            fprintf (fp, "%s\r\n", line_level->line);
                             fflush (fp);
                         }
                     }
@@ -518,11 +518,11 @@ vtysh_config_dump (FILE *fp)
                     if (line_match)
                     {
                         config_match = 1;
-                        fprin(fp, " exit\r\n");
+                        fprintf(fp, " exit\r\n");
                         fflush (fp);
                         if (! NO_DELIMITER (i))
                         {
-                            fprin(fp, "!\r\n");
+                            fprintf(fp, "!\r\n");
                             fflush (fp);
                         }
                     }
@@ -533,7 +533,7 @@ vtysh_config_dump (FILE *fp)
                     haveCfg = 1;
                     if (NO_DELIMITER (i))
                     {
-                        fprin(fp, "!\r\n");
+                        fprintf(fp, "!\r\n");
                         fflush (fp);
                     }
                 }
@@ -542,7 +542,7 @@ vtysh_config_dump (FILE *fp)
 
     if (haveCfg)
     {
-        fprin(fp, "end\r\n");
+        fprintf(fp, "end\r\n");
         fflush (fp);
     }
 
@@ -722,13 +722,13 @@ vtysh_read_file (FILE *confp)
         switch (ret)
         {
             case CMD_ERR_AMBIGUOUS:
-                fprin(stderr, "Ambiguous command.\n");
+                fprintf(stderr, "Ambiguous command.\n");
                 break;
             case CMD_ERR_NO_MATCH:
-                fprin(stderr, "There is no such command.\n");
+                fprintf(stderr, "There is no such command.\n");
                 break;
         }
-        fprin(stderr, "Error occured during reading below line.\n%s\n", vty->buf);
+        fprintf(stderr, "Error occured during reading below line.\n%s\n", vty->buf);
     }
 }
 
@@ -755,7 +755,7 @@ int vtysh_config_file_check(char *config_file)
         ret = cfg_header_check(fp, &cfgHdr);
         if (ret < 0)
         {
-            fprintf(stderr, "%s: %s file header is invalid!\r\n", __func__, config_file);
+            fprinftf(stderr, "%s: %s file header is invalid!\r\n", __func__, config_file);
             ret = 0;
             break;
         }
@@ -763,7 +763,7 @@ int vtysh_config_file_check(char *config_file)
         /* 老版本配置不带end */
         if ('\0' == cfgHdr.ver[0])
         {
-            fprintf(stderr, "%s: %s is old version\r\n", __func__, config_file);
+            fprinftf(stderr, "%s: %s is old version\r\n", __func__, config_file);
             ret = 1;
             break;
         }
@@ -777,7 +777,7 @@ int vtysh_config_file_check(char *config_file)
 
         if (fread(lineBuf, readLen, 1, fp) && ferror(fp))
         {
-            fprintf(stderr, "Read file failed!\n");
+            fprinftf(stderr, "Read file failed!\n");
             break;
         }
 

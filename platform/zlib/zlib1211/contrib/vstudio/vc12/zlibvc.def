@@ -31,7 +31,7 @@ EXPORTS
         inflateSync                              @25
         uncompress                               @26
         zlibVersion                              @27
-        gzprin                                @28
+        gzprintf                                 @28
         gzputc                                   @29
         gzgetc                                   @30
         gzseek                                   @31
@@ -140,7 +140,7 @@ EXPORTS
 
 ; zlib1 v1.2.8 added:
         inflateGetDictionary                    @166
-        gzvprin                              @167
+        gzvprintf                               @167
 
 ; zlib1 v1.2.9 added:
         inflateCodesUsed                        @168

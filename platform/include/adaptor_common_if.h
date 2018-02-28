@@ -65,7 +65,7 @@
 #define NET_USE_COMPRESS
 #define NET_COMPRESS_MIN_LEN    (1024*10)
 
-#define TF_NET_NAME_LEN 48
+#define NET_NAME_LEN 48
 
 #define NET_BUFFER_LEN       4096
 #define NET_MSG_MAX_COUNT    5120//10240  //16k, 8(slot)*16(tf)*128(onu);auto msg  1000/s * 8
@@ -84,7 +84,7 @@ typedef enum
     FK_STATE_ACTIVE_WORKING  = 2,        /**< Active Working. */
     FK_STATE_ACTIVE_STANDBY  = 3,        /**< Active Standby. */
     FK_STATE_NUM_OF    /**< Number of enum entries, not an entry itself. */
-} TF_STATE;
+} FK_STATE;
 
 #if DEFUNC("¶ÓÁÐºê")
 
@@ -357,8 +357,8 @@ typedef struct
 
 #if DEFUNC("ÄÚ´æ³Ø")
 
-#define TF_NET_BLK_POOL_VALID   1
-#define TF_NET_BLK_POOL_DELETED 2
+#define NET_BLK_POOL_VALID   1
+#define NET_BLK_POOL_DELETED 2
 
 typedef struct
 {
@@ -391,7 +391,7 @@ typedef struct NET_BLK_POOL
     NET_BLK_POOL_PARM           parm;  
     NET_BLK_POOL_STAT           stat;   
     void                            *start;               
-    char                            name[TF_NET_NAME_LEN];
+    char                            name[NET_NAME_LEN];
     unsigned int                    status;
     STAILQ_ENTRY(NET_BLK_POOL)  list; 
 }NET_BLK_POOL;
@@ -462,7 +462,7 @@ typedef struct NET_ZC_MQ
     NET_ZC_MQ_ST          q;                          /**< Queue control block */
     NET_SEM               m;                          /**< Mutex to suspend waiting task on */
     int                      is_waiting;                 /**< TRUE if task is waiting on queue */
-    char                     name[TF_NET_NAME_LEN]; /**< Queue name */
+    char                     name[NET_NAME_LEN]; /**< Queue name */
     unsigned int             state;                      /**< magic number */
 }NET_ZC_MQ;
 

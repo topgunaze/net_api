@@ -12,7 +12,7 @@
 #define __NET_H__
 
 #include "adaptor_net_if.h"
-#include "types.h"
+#include "adaptor_types.h"
 
 #define CTRL_STATE_FD_TIMEOUT    4
 #define CTRL_STATE_HB_LOSE_CNT   5
@@ -24,8 +24,8 @@ typedef enum
     CTRL_DEVICE_STATE_INIT        = 0,
     CTRL_NET_WORK_SYNCHRONOUS     = 1,//业务面开工
 
-    FK_STATE_NUM_OF
-}TF_CTRL_NET_STATE;
+    CTRL_NET_STATE_NUM_OF
+}CTRL_NET_STATE;
 
 //网络映射
 typedef struct
@@ -35,35 +35,35 @@ typedef struct
     UINT8        slot_id;
     UINT8        is_used;
     UINT32       timeout_stamp;
-}TF_CTRL_NET_MAP;
+}CTRL_NET_MAP;
 
 typedef struct
 {
     UINT8   valid[NET_CFG_ITEM_NUM/8];   //表项同步有效
     
-}TF_CTRL_CFG_STATE;
+}CTRL_CFG_STATE;
 
 typedef struct
 {
     NET_MUTUX          mutex;                           //同步状态锁
     NET_MUTUX          sync_lock;                       //同步锁       
-    TF_CTRL_CFG_STATE  gbl_cfg[NET_CFG_TYPE_NUM_OF];//表项有效
+    CTRL_CFG_STATE  gbl_cfg[NET_CFG_TYPE_NUM_OF];//表项有效
 
-}TF_CTRL_GBL_CFG_STATE;
+}CTRL_GBL_CFG_STATE;
 
-#define CFG_SYNC_DATA_TOTAL_LEN    (sizeof(TF_CTRL_CFG_STATE)* NET_CFG_TYPE_NUM_OF)
-#define CFG_SYNC_DATA_LEN          sizeof(TF_CTRL_CFG_STATE)
+#define CFG_SYNC_DATA_TOTAL_LEN    (sizeof(CTRL_CFG_STATE)* NET_CFG_TYPE_NUM_OF)
+#define CFG_SYNC_DATA_LEN          sizeof(CTRL_CFG_STATE)
 
 //TF卡槽位信息
 typedef struct
 {
     NET_MUTUX           mutex;
-    TF_CTRL_NET_STATE   state;
+    CTRL_NET_STATE   state;
     UINT8                  map_id;
     UINT8                  online_num[SYS_MAX_EXIST_PORT_NUM];
     UINT8                  hb_timeout_cnt;                     //心跳超时计数器
-    TF_CTRL_CFG_STATE   cfg_sync[NET_CFG_TYPE_NUM_OF];  //全局配置表项状态
-}TF_CTRL_STATE;
+    CTRL_CFG_STATE   cfg_sync[NET_CFG_TYPE_NUM_OF];  //全局配置表项状态
+}CTRL_STATE;
 
 //#pragma pack()
 

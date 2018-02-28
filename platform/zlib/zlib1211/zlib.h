@@ -1203,9 +1203,9 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags OF((void));
      21: FASTEST -- deflate algorithm with only one, lowest compression level
      22,23: 0 (reserved)
 
-    The sprinvariant used by gzprin(zero is best):
+    The sprintf variant used by gzprintf (zero is best):
      24: 0 = vs*, 1 = s* -- 1 means limited to 20 arguments after the format
-     25: 0 = *nprintf, 1 = *prin-- 1 means gzprintf() not secure!
+     25: 0 = *nprintf, 1 = *printf -- 1 means gzprintf() not secure!
      26: 0 = returns value, 1 = void -- 1 means inferred string length returned
 
     Remainder:
@@ -1465,10 +1465,10 @@ ZEXTERN z_size_t ZEXPORT gzfwrite OF((voidpc buf, z_size_t size,
    is returned, and the error state is set to Z_STREAM_ERROR.
 */
 
-ZEXTERN int ZEXPORTVA gzprinZ_ARG((gzFile file, const char *format, ...));
+ZEXTERN int ZEXPORTVA gzprintf Z_ARG((gzFile file, const char *format, ...));
 /*
      Converts, formats, and writes the arguments to the compressed file under
-   control of the format string, as in fprintf.  gzprinreturns the number of
+   control of the format string, as in fprintf.  gzprintf returns the number of
    uncompressed bytes actually written, or a negative zlib error code in case
    of error.  The number of uncompressed bytes written is limited to 8191, or
    one less than the buffer size given to gzbuffer().  The caller should assure
@@ -1899,7 +1899,7 @@ ZEXTERN gzFile         ZEXPORT gzopen_w OF((const wchar_t *path,
 #endif
 #if defined(STDC) || defined(Z_HAVE_STDARG_H)
 #  ifndef Z_SOLO
-ZEXTERN int            ZEXPORTVA gzvprinZ_ARG((gzFile file,
+ZEXTERN int            ZEXPORTVA gzvprintf Z_ARG((gzFile file,
                                                   const char *format,
                                                   va_list va));
 #  endif
