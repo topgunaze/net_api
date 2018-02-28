@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_queue.c
+ * 文件名称:  queue.c
  * 作           者:  keith.gong
  * 日           期:  2014.12.27
  * 文件描述:  系统消息队列管理
@@ -13,8 +13,8 @@
 #include <sys/msg.h>
 #include <errno.h>
 
-#include "tf_types.h"
-#include "tf_queue.h"
+#include "types.h"
+#include "queue.h"
 
 #include <stdio.h>
 #define QUEUE_PRINTF(fmt, arg...)  printf(fmt,##arg)
@@ -24,7 +24,7 @@ static UINT8 queue_used_flag[SYS_QUEUE_MAX_NUM];
 
 
 /**************************************************************
- * 函数名称: tf_queue_create
+ * 函数名称: queue_create
  * 作           者: keith.gong
  * 日           期: 2014年12月27日
  *
@@ -40,7 +40,7 @@ static UINT8 queue_used_flag[SYS_QUEUE_MAX_NUM];
  * 其           它:  
 **************************************************************/
 RTN_STATUS 
-tf_queue_create (
+queue_create (
                 INT32 *p_queue_id, 
                 SYS_QUEUE_SUB_KEY_E sub_key, 
                 UINT32 queue_size)
@@ -106,7 +106,7 @@ tf_queue_create (
 
 
 /**************************************************************
- * 函数名称: tf_queue_get
+ * 函数名称: queue_get
  * 作           者: keith.gong
  * 日           期: 2014年12月27日
  *
@@ -126,7 +126,7 @@ tf_queue_create (
  * 其           它:  
 **************************************************************/
 RTN_STATUS
-tf_queue_get (
+queue_get (
                 INT32  queue_id, 
                 long   type, 
                 void   *p_data, 
@@ -218,7 +218,7 @@ tf_queue_get (
 
 
 /**************************************************************
- * 函数名称: tf_queue_put
+ * 函数名称: queue_put
  * 作           者: keith.gong
  * 日           期: 2014年12月27日
  *
@@ -237,7 +237,7 @@ tf_queue_get (
                             timeout 参数暂不支持毫秒等待
 **************************************************************/
 RTN_STATUS
-tf_queue_put (
+queue_put (
                 INT32  queue_id, 
                 void   *p_data, 
                 UINT32 size, 

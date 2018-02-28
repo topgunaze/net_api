@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_string_opera.c
+ * 文件名称:  string_opera.c
  * 作           者:  keith.gong
  * 日           期:  2015.05.12
  * 文件描述:  字符串处理
@@ -13,11 +13,11 @@
 #include <sys/msg.h>
 #include <errno.h>
 
-#include "tf_types.h"
+#include "types.h"
 
 
 /**************************************************************
- * 函数名称: tf_str_2_id_array
+ * 函数名称: str_2_id_array
  * 作           者: keith.gong
  * 日           期: 2015年03月30日
  *
@@ -38,7 +38,7 @@
                             注意，该函数会修改str
 **************************************************************/
 int 
-tf_str_2_id_array(
+str_2_id_array(
                 char  *str, 
                 unsigned int *pIdArray, 
                 const unsigned int idNum,

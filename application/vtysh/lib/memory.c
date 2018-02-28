@@ -297,11 +297,11 @@ log_memstats_stderr (const char *prefix)
         if (m->index && mstat[m->index].alloc)
           {
             if (!i)
-              fprintf (stderr,
+              fprin(stderr,
                        "%s: memstats: Current memory utilization in module %s:\n",
                        prefix,
                        ml->name);
-            fprintf (stderr,
+            fprin(stderr,
                      "%s: memstats:  %-30s: %10ld%s\n",
                      prefix,
                      m->format,
@@ -312,12 +312,12 @@ log_memstats_stderr (const char *prefix)
     }
 
   if (j)
-    fprintf (stderr,
+    fprin(stderr,
              "%s: memstats: NOTE: If configuration exists, utilization may be "
              "expected.\n",
              prefix);
   else
-    fprintf (stderr,
+    fprin(stderr,
              "%s: memstats: No remaining tracked memory utilization.\n",
              prefix);
 }
@@ -613,28 +613,28 @@ mtype_memstr (char *buf, size_t len, unsigned long bytes)
        */
       if (bytes & (1UL << (sizeof (unsigned long) >= 8 ? 39 : 0)))
         t++;
-      snprintf (buf, len, "%4d TiB", t);
+      snprin(buf, len, "%4d TiB", t);
     }
   else if (g > 10)
     {
       if (bytes & (1 << 29))
         g++;
-      snprintf (buf, len, "%d GiB", g);
+      snprin(buf, len, "%d GiB", g);
     }
   else if (m > 10)
     {
       if (bytes & (1 << 19))
         m++;
-      snprintf (buf, len, "%d MiB", m);
+      snprin(buf, len, "%d MiB", m);
     }
   else if (k > 10)
     {
       if (bytes & (1 << 9))
         k++;
-      snprintf (buf, len, "%d KiB", k);
+      snprin(buf, len, "%d KiB", k);
     }
   else
-    snprintf (buf, len, "%ld bytes", bytes);
+    snprin(buf, len, "%ld bytes", bytes);
   
   return buf;
 }

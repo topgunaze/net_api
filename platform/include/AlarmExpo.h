@@ -34,8 +34,8 @@ extern unsigned long  gAlarmDebug;
 #define STP_MODULE              0x3<<16
 #define DEVMAN_MODULE           0x4<<16
 #define ONURA_MODULE            0x5<<16
-#define ETF_MODULE             0x6<<16
-#define GTF_MODULE             0x7<<16
+#define EMODULE             0x6<<16
+#define GMODULE             0x7<<16
 #define PORTMAN_MODULE          0x8<<16
 
 
@@ -58,7 +58,7 @@ typedef enum
     MODULE_TYPE     = 2002,  /*板卡类型*/
     CLOCK_TYPE      = 2003,  /*CLOCK类型*/
     ETHERNET_TYPE   = 2005, /*ETHERNET类型*/ 
-    TF_TYPE        = 2006,  /*TF类型*/  
+    TYPE        = 2006,  /*TF类型*/  
     ONU_TYPE        = 2007,  /*ONU类型*/
     ONU_ETHERTYPE_TYPE = 2009,/*ONU以太口类型*/
     ONU_TFIF_TYPE  = 2010, /*ONUtfif类型*/
@@ -123,20 +123,20 @@ typedef enum
     SYS_ALARM_DEVMAN_OLT_FAN_PLUG_IN                    =        DEVICE_ALARM   |   DEVMAN_MODULE   |   0x1004  ,
     SYS_ALARM_VIF_LINKUP                                =        DEVICE_ALARM   |   DEVMAN_MODULE   |   0x1007  ,
     /*GTF模块上报告警*/
-    SYS_ALARM_GTF_PLAOM_LOSI_ALARM                     =        DEVICE_ALARM   |   GTF_MODULE |   0x0001  ,
-    SYS_ALARM_GTF_PLAOM_LOFI_ALARM                     =        DEVICE_ALARM   |   GTF_MODULE |   0x0002  ,
-    SYS_ALARM_GTF_PLAOM_SF_ALARM                       =        DEVICE_ALARM   |   GTF_MODULE |   0x0003  ,
-    SYS_ALARM_GTF_PLAOM_SD_ALARM                       =        DEVICE_ALARM   |   GTF_MODULE |   0x0004  ,
-    SYS_ALARM_GTF_PLAOM_LCDGI_ALARM                    =        DEVICE_ALARM   |   GTF_MODULE |   0x0005  ,
-    SYS_ALARM_GTF_PLAOM_DFI_ALARM                      =        DEVICE_ALARM   |   GTF_MODULE |   0x0006  ,
+    SYS_ALARM_GPLAOM_LOSI_ALARM                     =        DEVICE_ALARM   |   GMODULE |   0x0001  ,
+    SYS_ALARM_GPLAOM_LOFI_ALARM                     =        DEVICE_ALARM   |   GMODULE |   0x0002  ,
+    SYS_ALARM_GPLAOM_SF_ALARM                       =        DEVICE_ALARM   |   GMODULE |   0x0003  ,
+    SYS_ALARM_GPLAOM_SD_ALARM                       =        DEVICE_ALARM   |   GMODULE |   0x0004  ,
+    SYS_ALARM_GPLAOM_LCDGI_ALARM                    =        DEVICE_ALARM   |   GMODULE |   0x0005  ,
+    SYS_ALARM_GPLAOM_DFI_ALARM                      =        DEVICE_ALARM   |   GMODULE |   0x0006  ,
 
     /*GTF模块清除告警*/                    
-    SYS_ALARM_GTF_PLAOM_LOSI_ALARM_CLEAR               =        DEVICE_ALARM   |   GTF_MODULE |   0x1001  ,
-    SYS_ALARM_GTF_PLAOM_LOFI_ALARM_CLEAR               =        DEVICE_ALARM   |   GTF_MODULE |   0x1002  ,
-    SYS_ALARM_GTF_PLAOM_SF_ALARM_CLEAR                 =        DEVICE_ALARM   |   GTF_MODULE |   0x1003  ,
-    SYS_ALARM_GTF_PLAOM_SD_ALARM_CLEAR                 =        DEVICE_ALARM   |   GTF_MODULE |   0x1004  ,
-    SYS_ALARM_GTF_PLAOM_LCDGI_ALARM_CLEAR              =        DEVICE_ALARM   |   GTF_MODULE |   0x1005  ,
-    SYS_ALARM_GTF_PLAOM_DFI_ALARM_CLEAR                =        DEVICE_ALARM   |   GTF_MODULE |   0x1006  ,
+    SYS_ALARM_GPLAOM_LOSI_ALARM_CLEAR               =        DEVICE_ALARM   |   GMODULE |   0x1001  ,
+    SYS_ALARM_GPLAOM_LOFI_ALARM_CLEAR               =        DEVICE_ALARM   |   GMODULE |   0x1002  ,
+    SYS_ALARM_GPLAOM_SF_ALARM_CLEAR                 =        DEVICE_ALARM   |   GMODULE |   0x1003  ,
+    SYS_ALARM_GPLAOM_SD_ALARM_CLEAR                 =        DEVICE_ALARM   |   GMODULE |   0x1004  ,
+    SYS_ALARM_GPLAOM_LCDGI_ALARM_CLEAR              =        DEVICE_ALARM   |   GMODULE |   0x1005  ,
+    SYS_ALARM_GPLAOM_DFI_ALARM_CLEAR                =        DEVICE_ALARM   |   GMODULE |   0x1006  ,
 
 
     #if 1
@@ -151,7 +151,7 @@ typedef enum
     SYS_ALARM_OAM_CTC_ONU_TEMP_HIGH_ALARM               =        DEVICE_ALARM   |   OAM_MODULE  |   0x0009  ,
     SYS_ALARM_OAM_CTC_ONU_TEMP_LOW_ALARM                =        DEVICE_ALARM   |   OAM_MODULE  |   0x000a  ,
     SYS_ALARM_OAM_CTC_IAD_CONNECTION_FAILURE            =        DEVICE_ALARM   |   OAM_MODULE  |   0x000b  ,
-    SYS_ALARM_OAM_CTC_TF_IFSWITCH                      =        DEVICE_ALARM   |   OAM_MODULE  |   0x000c  ,
+    SYS_ALARM_OAM_CTC_IFSWITCH                      =        DEVICE_ALARM   |   OAM_MODULE  |   0x000c  ,
     SYS_ALARM_OAM_CTC_SLEEP_STATUS_UPDATE               =        DEVICE_ALARM   |   OAM_MODULE  |   0x000d  ,
     /*0x000D~000FF  reserved */
     
@@ -273,7 +273,7 @@ typedef enum
     SYS_ALARM_OAM_CTC_ONU_TEMP_HIGH_ALARM_CLEAR             =        DEVICE_ALARM   |   OAM_MODULE  |   0x1009  ,
     SYS_ALARM_OAM_CTC_ONU_TEMP_LOW_ALARM_CLEAR              =        DEVICE_ALARM   |   OAM_MODULE  |   0x100a  ,
     SYS_ALARM_OAM_CTC_IAD_CONNECTION_FAILURE_CLEAR          =        DEVICE_ALARM   |   OAM_MODULE  |   0x100b  ,
-    SYS_ALARM_OAM_CTC_TF_IFSWITCH_CLEAR                    =        DEVICE_ALARM   |   OAM_MODULE  |   0x100c  ,
+    SYS_ALARM_OAM_CTC_IFSWITCH_CLEAR                    =        DEVICE_ALARM   |   OAM_MODULE  |   0x100c  ,
     SYS_ALARM_OAM_CTC_SLEEP_STATUS_UPDATE_CLEAR             =        DEVICE_ALARM   |   OAM_MODULE  |   0x100d  ,
 
     
@@ -397,36 +397,36 @@ typedef enum
 
     /*-----------------------------------------COMMUNICATION告警-----------------------*/
     /*ETF模块上报*/
-    SYS_ALARM_ETF_PORT_LINK_DOWN                       =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0001  ,      
-    SYS_ALARM_ETF_LOS                                  =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0002  ,
-    SYS_ALARM_ETF_PLUGOUT_OPTICAL_TRANSCEIVE           =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0003  ,
-    SYS_ALARM_ETF_STATICS_TX_POWER                     =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0004  ,
-    SYS_ALARM_ETF_STATICS_VCC                          =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0005  ,
-    SYS_ALARM_ETF_STATICS_BIAS                         =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0006  ,
-    SYS_ALARM_ETF_STATICS_TEMP                         =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0007  ,
-    SYS_ALARM_ETF_STATICS_RX_POWER                     =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0008  ,
-    SYS_ALARM_ETF_LINK_RX_POWER                        =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x0009  ,
-    SYS_ALARM_ETF_LASER_IDLE_POWER                     =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x000a  ,
-    SYS_ALARM_ETF_STATICS_LLID_ERROR                   =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x000b  ,
-    SYS_ALARM_ETF_PORT_ERROR_CODE                      =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x000c  ,
-    SYS_ALARM_ETF_STANDARD_DYING_GASP                  =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x000d  ,
-    SYS_ALARM_VIF_TF_LOS_RAISE                         =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x000e  ,
+    SYS_ALARM_EPORT_LINK_DOWN                       =        COMMUNICATION_ALARM    |   EMODULE |   0x0001  ,      
+    SYS_ALARM_ELOS                                  =        COMMUNICATION_ALARM    |   EMODULE |   0x0002  ,
+    SYS_ALARM_EPLUGOUT_OPTICAL_TRANSCEIVE           =        COMMUNICATION_ALARM    |   EMODULE |   0x0003  ,
+    SYS_ALARM_ESTATICS_TX_POWER                     =        COMMUNICATION_ALARM    |   EMODULE |   0x0004  ,
+    SYS_ALARM_ESTATICS_VCC                          =        COMMUNICATION_ALARM    |   EMODULE |   0x0005  ,
+    SYS_ALARM_ESTATICS_BIAS                         =        COMMUNICATION_ALARM    |   EMODULE |   0x0006  ,
+    SYS_ALARM_ESTATICS_TEMP                         =        COMMUNICATION_ALARM    |   EMODULE |   0x0007  ,
+    SYS_ALARM_ESTATICS_RX_POWER                     =        COMMUNICATION_ALARM    |   EMODULE |   0x0008  ,
+    SYS_ALARM_ELINK_RX_POWER                        =        COMMUNICATION_ALARM    |   EMODULE |   0x0009  ,
+    SYS_ALARM_ELASER_IDLE_POWER                     =        COMMUNICATION_ALARM    |   EMODULE |   0x000a  ,
+    SYS_ALARM_ESTATICS_LLID_ERROR                   =        COMMUNICATION_ALARM    |   EMODULE |   0x000b  ,
+    SYS_ALARM_EPORT_ERROR_CODE                      =        COMMUNICATION_ALARM    |   EMODULE |   0x000c  ,
+    SYS_ALARM_ESTANDARD_DYING_GASP                  =        COMMUNICATION_ALARM    |   EMODULE |   0x000d  ,
+    SYS_ALARM_VIF_LOS_RAISE                         =        COMMUNICATION_ALARM    |   EMODULE |   0x000e  ,
 
     /*ETF模块清除*/
-    SYS_ALARM_ETF_PORT_LINK_UP                         =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1001  ,
-    SYS_ALARM_ETF_ETF_LOS_CLEAR                       =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1002  ,
-    SYS_ALARM_ETF_PLUGIN_OPTICAL_TRANSCEIVE            =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1003  ,
-    SYS_ALARM_ETF_STATICS_TX_POWER_CLEAR               =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1004  ,
-    SYS_ALARM_ETF_STATICS_VCC_CLEAR                    =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1005  ,
-    SYS_ALARM_ETF_STATICS_BIAS_CLEAR                   =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1006  ,
-    SYS_ALARM_ETF_STATICS_TEMP_CLEAR                   =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1007  ,
-    SYS_ALARM_ETF_STATICS_RX_POWER_CLEAR               =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1008  ,
-    SYS_ALARM_ETF_LINK_RX_POWER_CLEAR                  =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x1009  ,
-    SYS_ALARM_ETF_LASER_IDLE_POWER_CLEAR               =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x100a  ,
-    SYS_ALARM_ETF_STATICS_LLID_ERROR_CLEAR             =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x100b  ,
-    SYS_ALARM_ETF_PORT_ERROR_CODE_CLEAR                =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x100c  ,
-    SYS_ALARM_ETF_STANDARD_DYING_GASP_CLEAR            =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x100d  ,
-    SYS_ALARM_VIF_TF_LOS_CLEAR                         =        COMMUNICATION_ALARM    |   ETF_MODULE |   0x100e  ,
+    SYS_ALARM_EPORT_LINK_UP                         =        COMMUNICATION_ALARM    |   EMODULE |   0x1001  ,
+    SYS_ALARM_EELOS_CLEAR                       =        COMMUNICATION_ALARM    |   EMODULE |   0x1002  ,
+    SYS_ALARM_EPLUGIN_OPTICAL_TRANSCEIVE            =        COMMUNICATION_ALARM    |   EMODULE |   0x1003  ,
+    SYS_ALARM_ESTATICS_TX_POWER_CLEAR               =        COMMUNICATION_ALARM    |   EMODULE |   0x1004  ,
+    SYS_ALARM_ESTATICS_VCC_CLEAR                    =        COMMUNICATION_ALARM    |   EMODULE |   0x1005  ,
+    SYS_ALARM_ESTATICS_BIAS_CLEAR                   =        COMMUNICATION_ALARM    |   EMODULE |   0x1006  ,
+    SYS_ALARM_ESTATICS_TEMP_CLEAR                   =        COMMUNICATION_ALARM    |   EMODULE |   0x1007  ,
+    SYS_ALARM_ESTATICS_RX_POWER_CLEAR               =        COMMUNICATION_ALARM    |   EMODULE |   0x1008  ,
+    SYS_ALARM_ELINK_RX_POWER_CLEAR                  =        COMMUNICATION_ALARM    |   EMODULE |   0x1009  ,
+    SYS_ALARM_ELASER_IDLE_POWER_CLEAR               =        COMMUNICATION_ALARM    |   EMODULE |   0x100a  ,
+    SYS_ALARM_ESTATICS_LLID_ERROR_CLEAR             =        COMMUNICATION_ALARM    |   EMODULE |   0x100b  ,
+    SYS_ALARM_EPORT_ERROR_CODE_CLEAR                =        COMMUNICATION_ALARM    |   EMODULE |   0x100c  ,
+    SYS_ALARM_ESTANDARD_DYING_GASP_CLEAR            =        COMMUNICATION_ALARM    |   EMODULE |   0x100d  ,
+    SYS_ALARM_VIF_LOS_CLEAR                         =        COMMUNICATION_ALARM    |   EMODULE |   0x100e  ,
 
     /*---------------------------------------------环境告警---------------------*/
     /*设备模块上报*/                        
@@ -500,36 +500,36 @@ typedef enum
     SYS_ALARM_DEVMAN_OLT_SWPATCH_UPGRADE_FAILED         =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x001b  ,
     SYS_ALARM_DEVMAN_BOARD_REBOOT                       =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x001c  ,
     SYS_ALARM_DEVMAN_BOARD_READY                        =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x001d  ,
-    SYS_ALARM_DEVMAN_ETF_BUSY                          =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x001e  ,
+    SYS_ALARM_DEVMAN_EBUSY                          =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x001e  ,
     SYS_ALARM_DEVMAN_BOARD_MISMATCH                     =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x002f  ,
     SYS_ALARM_DEVMAN_PORTRESTART                        =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x0020  ,
     SYS_ALARM_DEVMAN_PROTECT_GROUP_SWITCH               =        SYSTEM_EVENT   |   DEVMAN_MODULE   |   0x0021  ,
     /*ETF模*/                  
-    SYS_ALARM_ETF_LINK_FAULT                           =        SYSTEM_EVENT   |   ETF_MODULE |   0x0001  ,
-    SYS_ALARM_ETF_TR_FAULT                             =        SYSTEM_EVENT   |   ETF_MODULE |   0x0002  ,
-    SYS_ALARM_ETF_TR_DEGRADE                           =        SYSTEM_EVENT   |   ETF_MODULE |   0x0003  ,
-    SYS_ALARM_ETF_QUEUE_OVERFLOW                       =        SYSTEM_EVENT   |   ETF_MODULE |   0x0004  ,
-    SYS_ALARM_ETF_MACTABLE_OVERFLOW                    =        SYSTEM_EVENT   |   ETF_MODULE |   0x0005  ,
-    SYS_ALARM_ETF_DUPLICATE_MAC_REG                    =        SYSTEM_EVENT   |   ETF_MODULE |   0x0006  ,
-    SYS_ALARM_ETF_REPORT_TIMEOUT                       =        SYSTEM_EVENT   |   ETF_MODULE |   0x0007  ,
-    SYS_ALARM_ETF_GATE_TIMEOUT                         =        SYSTEM_EVENT   |   ETF_MODULE |   0x0008  ,
-    SYS_ALARM_ETF_OAM_KEEPALIVE_TIMEOUT                =        SYSTEM_EVENT   |   ETF_MODULE |   0x0009  ,
-    SYS_ALARM_ETF_KEY_EXCHANGE_FAIL                    =        SYSTEM_EVENT   |   ETF_MODULE |   0x000a  ,
-    SYS_ALARM_ETF_AUTO_NEGOTIATION_FAIL                =        SYSTEM_EVENT   |   ETF_MODULE |   0x000b  ,
-    SYS_ALARM_ETF_EXT_LINK_FAULT_ALARM                 =        SYSTEM_EVENT   |   ETF_MODULE |   0x000c  ,
-    SYS_ALARM_ETF_LOOPBACK                             =        SYSTEM_EVENT   |   ETF_MODULE |   0x000d  ,
-    SYS_ALARM_ETF_PORTDISABLED                         =        SYSTEM_EVENT   |   ETF_MODULE |   0x000e  ,
-    SYS_ALARM_ETF_SHUTDOWN                             =        SYSTEM_EVENT   |   ETF_MODULE |   0x000f  ,
-    SYS_ALARM_ETF_EXT_DYING_GASP_ALARM                 =        SYSTEM_EVENT   |   ETF_MODULE |   0x0010  ,
-    SYS_ALARM_ETF_STD_CRITICAL_EVENT                   =        SYSTEM_EVENT   |   ETF_MODULE |   0x0011  ,
-    SYS_ALARM_ETF_EXT_CRITICAL_EVENT                   =        SYSTEM_EVENT   |   ETF_MODULE |   0x0012  ,
-    SYS_ALARM_ETF_TEMPERATURE                          =        SYSTEM_EVENT   |   ETF_MODULE |   0x0013  ,
-    SYS_ALARM_ETF_EXT_ALARM                            =        SYSTEM_EVENT   |   ETF_MODULE |   0x0014  ,
-    SYS_ALARM_ETF_AUTH_INFO_UNAVAIABLE                 =        SYSTEM_EVENT   |   ETF_MODULE |   0x0015  ,
-    SYS_ALARM_ETF_STATIS_ALARM                         =        SYSTEM_EVENT   |   ETF_MODULE |   0x0016  ,
-    SYS_ALARM_ETF_NUM_OF_LINK_EXCEED                   =        SYSTEM_EVENT   |   ETF_MODULE |   0x0017  ,
-    SYS_ALARM_ETF_JUMBO_FRAME_RX                       =        SYSTEM_EVENT   |   ETF_MODULE |   0x0018  ,
-    SYS_ALARM_ETF_MIX_NETWORK                          =        SYSTEM_EVENT   |   ETF_MODULE |   0x0019  ,
+    SYS_ALARM_ELINK_FAULT                           =        SYSTEM_EVENT   |   EMODULE |   0x0001  ,
+    SYS_ALARM_ETR_FAULT                             =        SYSTEM_EVENT   |   EMODULE |   0x0002  ,
+    SYS_ALARM_ETR_DEGRADE                           =        SYSTEM_EVENT   |   EMODULE |   0x0003  ,
+    SYS_ALARM_EQUEUE_OVERFLOW                       =        SYSTEM_EVENT   |   EMODULE |   0x0004  ,
+    SYS_ALARM_EMACTABLE_OVERFLOW                    =        SYSTEM_EVENT   |   EMODULE |   0x0005  ,
+    SYS_ALARM_EDUPLICATE_MAC_REG                    =        SYSTEM_EVENT   |   EMODULE |   0x0006  ,
+    SYS_ALARM_EREPORT_TIMEOUT                       =        SYSTEM_EVENT   |   EMODULE |   0x0007  ,
+    SYS_ALARM_EGATE_TIMEOUT                         =        SYSTEM_EVENT   |   EMODULE |   0x0008  ,
+    SYS_ALARM_EOAM_KEEPALIVE_TIMEOUT                =        SYSTEM_EVENT   |   EMODULE |   0x0009  ,
+    SYS_ALARM_EKEY_EXCHANGE_FAIL                    =        SYSTEM_EVENT   |   EMODULE |   0x000a  ,
+    SYS_ALARM_EAUTO_NEGOTIATION_FAIL                =        SYSTEM_EVENT   |   EMODULE |   0x000b  ,
+    SYS_ALARM_EEXT_LINK_FAULT_ALARM                 =        SYSTEM_EVENT   |   EMODULE |   0x000c  ,
+    SYS_ALARM_ELOOPBACK                             =        SYSTEM_EVENT   |   EMODULE |   0x000d  ,
+    SYS_ALARM_EPORTDISABLED                         =        SYSTEM_EVENT   |   EMODULE |   0x000e  ,
+    SYS_ALARM_ESHUTDOWN                             =        SYSTEM_EVENT   |   EMODULE |   0x000f  ,
+    SYS_ALARM_EEXT_DYING_GASP_ALARM                 =        SYSTEM_EVENT   |   EMODULE |   0x0010  ,
+    SYS_ALARM_ESTD_CRITICAL_EVENT                   =        SYSTEM_EVENT   |   EMODULE |   0x0011  ,
+    SYS_ALARM_EEXT_CRITICAL_EVENT                   =        SYSTEM_EVENT   |   EMODULE |   0x0012  ,
+    SYS_ALARM_ETEMPERATURE                          =        SYSTEM_EVENT   |   EMODULE |   0x0013  ,
+    SYS_ALARM_EEXT_ALARM                            =        SYSTEM_EVENT   |   EMODULE |   0x0014  ,
+    SYS_ALARM_EAUTH_INFO_UNAVAIABLE                 =        SYSTEM_EVENT   |   EMODULE |   0x0015  ,
+    SYS_ALARM_ESTATIS_ALARM                         =        SYSTEM_EVENT   |   EMODULE |   0x0016  ,
+    SYS_ALARM_ENUM_OF_LINK_EXCEED                   =        SYSTEM_EVENT   |   EMODULE |   0x0017  ,
+    SYS_ALARM_EJUMBO_FRAME_RX                       =        SYSTEM_EVENT   |   EMODULE |   0x0018  ,
+    SYS_ALARM_EMIX_NETWORK                          =        SYSTEM_EVENT   |   EMODULE |   0x0019  ,
 
 
     /*STP模块*/                     
@@ -547,8 +547,8 @@ typedef enum
     SYS_ALARM_RA_ONU_LINKDOWN                           =        SYSTEM_EVENT   |   ONURA_MODULE    |   0x0009  ,
     SYS_ALARM_RA_ONU_SAME_MACADDR                       =        SYSTEM_EVENT   |   ONURA_MODULE    |   0x000a  ,
     /*GTF模块*/
-    SYS_ALARM_GTF_PLAOM_RANGE_FAIL_ALARM               =        SYSTEM_EVENT   |   GTF_MODULE |   0x0001  ,
-    SYS_ALARM_GTF_PLAOM_PWD_AUTH_FAIL_ALARM            =        SYSTEM_EVENT   |   GTF_MODULE |   0x0002  ,
+    SYS_ALARM_GPLAOM_RANGE_FAIL_ALARM               =        SYSTEM_EVENT   |   GMODULE |   0x0001  ,
+    SYS_ALARM_GPLAOM_PWD_AUTH_FAIL_ALARM            =        SYSTEM_EVENT   |   GMODULE |   0x0002  ,
 
 }SYSTEM_ALARM;
 

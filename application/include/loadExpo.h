@@ -13,8 +13,8 @@
 #define __LOAD_EXPO_H__
 
 
-#include "tf_types.h"
-#include "tf_flash_images.h"
+#include "types.h"
+#include "flash_images.h"
 
 #define LOAD_MAX_FILE_NAME_LEN		    64
 #define LOAD_MAX_PATH_LEN			    128
@@ -128,7 +128,7 @@ typedef struct
         UINT8   upgradeStatus;                              /* 升级状态:idle(1), inProgress(2), success(3), failure(4) */
         UINT8   upgradeProgress;                            /* 升级进度 百分比 0-100 */
         UINT8   filedReason;                                /* 失败原因 */
-    }file[TF_FILE_BOX_MAX_FILES];						    
+    }file[FILE_BOX_MAX_FILES];						    
 }PACKED IPC_LOAD_MPU_STATUS_T;
 
 

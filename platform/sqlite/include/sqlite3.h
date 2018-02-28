@@ -2091,7 +2091,7 @@ SQLITE_API sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 ** 
 **   <li> ^(Within a trigger program each INSERT, UPDATE and DELETE 
 **        statement sets the value returned by sqlite3_changes() 
-**        utf completion as normal. Of course, this value will not include 
+**        ucompletion as normal. Of course, this value will not include 
 **        any changes performed by sub-triggers, as the sqlite3_changes() 
 **        value will be saved and restored after each sub-trigger has run.)^
 ** </ul>
@@ -2226,7 +2226,7 @@ SQLITE_API int sqlite3_complete16(const void *sql);
 ** [sqlite3_busy_timeout()] and [PRAGMA busy_timeout].
 **
 ** ^If the busy callback is NULL, then [SQLITE_BUSY]
-** is returned immediately utf encountering the lock.  ^If the busy callback
+** is returned immediately uencountering the lock.  ^If the busy callback
 ** is not NULL, then the callback might be invoked with two arguments.
 **
 ** ^The first argument to the busy handler is a copy of the void* pointer which
@@ -6462,7 +6462,7 @@ SQLITE_API int sqlite3_vfs_unregister(sqlite3_vfs*);
 ** to enter a mutex.  ^If another thread is already within the mutex,
 ** sqlite3_mutex_enter() will block and sqlite3_mutex_try() will return
 ** SQLITE_BUSY.  ^The sqlite3_mutex_try() interface returns [SQLITE_OK]
-** utf successful entry.  ^(Mutexes created using
+** usuccessful entry.  ^(Mutexes created using
 ** SQLITE_MUTEX_RECURSIVE can be entered multiple times by the same thread.
 ** In such cases, the
 ** mutex must be exited an equal number of times before another thread
@@ -7844,7 +7844,7 @@ SQLITE_API int sqlite3_wal_checkpoint(sqlite3 *db, const char *zDb);
 ** NULL,then *pnCkpt is set to the total number of checkpointed frames in the
 ** log file (including any that were already checkpointed before the function
 ** was called) or to -1 if the checkpoint could not run due to an error or
-** because the database is not in WAL mode. ^Note that utf successful
+** because the database is not in WAL mode. ^Note that usuccessful
 ** completion of an SQLITE_CHECKPOINT_TRUNCATE, the log file will have been
 ** truncated to zero bytes and so both *pnLog and *pnCkpt will be set to zero.
 **

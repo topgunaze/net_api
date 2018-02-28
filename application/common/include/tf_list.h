@@ -1,52 +1,52 @@
 /******************************************************************************
- * FILE   : tf_list.h
+ * FILE   : list.h
  * Description : 
  * Author : Gerhard Lao
  * Date   : 2015/12/30
  * Copyright (c) 2015-2025 by C-Data Tech. Co., Ltd. All Rights Reserved.
  ******************************************************************************/
-#ifndef _TF_LIST_H_
-#define _TF_LIST_H_
+#ifndef _LIST_H_
+#define _LIST_H_
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif 
 
-#include <tf_types.h>
+#include <types.h>
 
-typedef struct tf_node_t
+typedef struct node_t
 {
-    struct tf_node_t * previous;
-    struct tf_node_t * next;
-}tf_node;
+    struct node_t * previous;
+    struct node_t * next;
+}node;
 
-typedef struct tf_list_t
+typedef struct list_t
 {
-    tf_node node;
+    node node;
     UINT32 count;
     INT32 (*compare)(void * , UINT32);
-}tf_list;
+}list;
 
-#define tf_tail node.previous
-#define tf_head node.next
+#define tail node.previous
+#define head node.next
 
-extern void tf_lst_init(tf_list * pLst , INT32 (*compare)(void * , UINT32));
-extern void tf_lst_insert(tf_list * pLst, tf_node * pPrevious, tf_node * pNode);
-extern void tf_lst_add(tf_list * pLst, tf_node * pNode);
-tf_node *tf_lst_remove(tf_list * pLst , UINT32 key);
-extern void tf_lst_delete(tf_list * pLst, tf_node * pNode);
-extern tf_node * tf_lst_first(tf_list * pLst);
-extern tf_node * tf_lst_last(tf_list * pLst);
-extern tf_node * tf_lst_get(tf_list * pLst);
-extern tf_node * tf_lst_nth(tf_list * pLst, int nodeNum);
-tf_node *tf_lst_find(tf_list *pLst , UINT32 key);
-extern tf_node * tf_lst_prev(tf_node * pNode);
-extern tf_node * tf_lst_next(tf_node * pNode);
-extern UINT32 tf_lst_count(tf_list * pLst);
-extern tf_list *tf_lst_concat(tf_list *pDst , tf_list *pSrc);
+extern void lst_init(list * pLst , INT32 (*compare)(void * , UINT32));
+extern void lst_insert(list * pLst, node * pPrevious, node * pNode);
+extern void lst_add(list * pLst, node * pNode);
+node *lst_remove(list * pLst , UINT32 key);
+extern void lst_delete(list * pLst, node * pNode);
+extern node * lst_first(list * pLst);
+extern node * lst_last(list * pLst);
+extern node * lst_get(list * pLst);
+extern node * lst_nth(list * pLst, int nodeNum);
+node *lst_find(list *pLst , UINT32 key);
+extern node * lst_prev(node * pNode);
+extern node * lst_next(node * pNode);
+extern UINT32 lst_count(list * pLst);
+extern list *lst_concat(list *pDst , list *pSrc);
 
-#define tf_lst_scan(pList , pNode , type) for(pNode=(type)tf_lst_first(pList);pNode;pNode=(type)tf_lst_next((tf_node *)pNode))
+#define lst_scan(pList , pNode , type) for(pNode=(type)lst_first(pList);pNode;pNode=(type)lst_next((node *)pNode))
 
 
 
@@ -55,6 +55,6 @@ extern tf_list *tf_lst_concat(tf_list *pDst , tf_list *pSrc);
 #endif 
 
 
-#endif /*_TF_LIST_H_*/
+#endif /*_LIST_H_*/
 
 

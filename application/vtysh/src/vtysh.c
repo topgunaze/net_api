@@ -43,11 +43,11 @@
 #include "../../switch/include/swAcl.h"
 #include "tfNvramParam.h"
 
-#include "tf_log.h"
-#include "tf_monitor_pub.h"
+#include "log.h"
+#include "monitor_pub.h"
 /*Add by jq.deng at 2016.09.03(start)*/
-#include "tf_alarm.h"
-#include "tf_port_vif.h"
+#include "alarm.h"
+#include "port_vif.h"
 #include "ipc_if.h"
 #include "ipc_public.h"
 /*Add by jq.deng at 2016.09.03(end)*/
@@ -138,7 +138,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
     {
         if (pbuf >= ((buf + bufsz) -1))
         {
-            fprintf (stderr, ERR_WHERE_STRING \
+            fprin(stderr, ERR_WHERE_STRING \
                 "warning - pbuf beyond buffer end.\n");
             return CMD_WARNING;
         }
@@ -183,7 +183,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
 
         if (eoln >= ((buf + bufsz) - 1))
         {
-            fprintf (stderr, ERR_WHERE_STRING \
+            fprin(stderr, ERR_WHERE_STRING \
                 "warning - eoln beyond buffer end.\n");
         }
         vtysh_config_parse(buf);
@@ -325,7 +325,7 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "interface gtf", strlen("interface gtf")) == 0)
             {
-                vty_node = INTERFACE_GTF_NODE;
+                vty_node = INTERFACE_GNODE;
             }
             else if (strncmp(line, "interface ge", strlen("interface ge")) == 0)
             {
@@ -460,16 +460,16 @@ vtysh_config_from_file (struct vty *vty, FILE *fp)
         {
             case CMD_WARNING:
                 if (vty->type == VTY_FILE)
-                    fprintf (stdout,"Warning...\r\n");
+                    fprin(stdout,"Warning...\r\n");
                 break;
             case CMD_ERR_AMBIGUOUS:
-                fprintf (stdout,"%% Ambiguous command.\r\n");
+                fprin(stdout,"%% Ambiguous command.\r\n");
                 break;
             case CMD_ERR_NO_MATCH:
-                fprintf (stdout,"%% Unknown command: %s\r\n", vty->buf);
+                fprin(stdout,"%% Unknown command: %s\r\n", vty->buf);
                 break;
             case CMD_ERR_INCOMPLETE:
-                fprintf (stdout,"%% Command incomplete.\r\n");
+                fprin(stdout,"%% Command incomplete.\r\n");
                 break;
         }
     }
@@ -532,7 +532,7 @@ int vtysh_top_config_write()
         vtysh_config_parse_line(line);
     }
 
-    tf_snmp_config_write();
+    snmp_config_write();
 
     return 0;
 }
@@ -669,20 +669,20 @@ vtysh_rl_describe (void)
 
   describe = cmd_describe_command (vline, vtysh, &ret);
 
-  fprintf (stdout,"\n");
+  fprin(stdout,"\n");
 
   /* Ambiguous and no match error. */
   switch (ret)
     {
     case CMD_ERR_AMBIGUOUS:
       cmd_free_strvec (vline);
-      fprintf (stdout,"%% Ambiguous command.\n");
+      fprin(stdout,"%% Ambiguous command.\n");
       rl_on_new_line ();
       return 0;
       break;
     case CMD_ERR_NO_MATCH:
       cmd_free_strvec (vline);
-      fprintf (stdout,"%% There is no matched command.\n");
+      fprin(stdout,"%% There is no matched command.\n");
       rl_on_new_line ();
       return 0;
       break;
@@ -713,10 +713,10 @@ vtysh_rl_describe (void)
 	  continue;
 
 	if (! token->desc)
-	  fprintf (stdout,"  %-s\n",
+	  fprin(stdout,"  %-s\n",
 		   token->cmd[0] == '.' ? token->cmd + 1 : token->cmd);
 	else
-	  fprintf (stdout,"  %-*s  %s\n",
+	  fprin(stdout,"  %-*s  %s\n",
 		   width,
 		   token->cmd[0] == '.' ? token->cmd + 1 : token->cmd,
 		   token->desc);
@@ -777,12 +777,12 @@ vtysh_rl_complete()
     switch (ret)
     {
         case CMD_ERR_AMBIGUOUS:
-            fprintf (stdout, "%% Ambiguous command.%s", VTY_NEWLINE);
+            fprin(stdout, "%% Ambiguous command.%s", VTY_NEWLINE);
             rl_on_new_line();
             rl_set_prompt((char *)vty_prompt (vty));
             break;
         case CMD_ERR_NO_MATCH:
-            /* fprintf (stdout, "%% There is no matched command.%s", VTY_NEWLINE); */
+            /* fprin(stdout, "%% There is no matched command.%s", VTY_NEWLINE); */
             break;
         case CMD_COMPLETE_FULL_MATCH:
             if (matched)
@@ -802,15 +802,15 @@ vtysh_rl_complete()
             vector_only_index_free (matched);
             return 0;
         case CMD_COMPLETE_LIST_MATCH:
-            fprintf (stdout, "%s", VTY_NEWLINE);
+            fprin(stdout, "%s", VTY_NEWLINE);
             for (i = 0; matched[i] != NULL; i++)
             {
                 if (i != 0 && ((i % 6) == 0))
-                    fprintf (stdout, "%s", VTY_NEWLINE);
-                fprintf (stdout, "%-10s ", matched[i]);
+                    fprin(stdout, "%s", VTY_NEWLINE);
+                fprin(stdout, "%-10s ", matched[i]);
                 XFREE (MTYPE_TMP, matched[i]);
             }
-            fprintf (stdout, "%s%s", VTY_NEWLINE, VTY_NEWLINE);
+            fprin(stdout, "%s%s", VTY_NEWLINE, VTY_NEWLINE);
             rl_on_new_line();
             rl_set_prompt((char *)vty_prompt (vty));
             break;
@@ -979,8 +979,8 @@ static struct cmd_node acl_user_node = {
     "%s(acl-user-%d)# "
 };
 
-static struct cmd_node acl_tf_node = {
-    ACL_TF_NODE,
+static struct cmd_node acl_node = {
+    ACL_NODE,
     "%s(acl-tf-%d)# "
 };
 
@@ -1048,13 +1048,13 @@ static struct cmd_node vtyNodeClassificationProfileInterAction =
 
 static struct cmd_node vtyNodeGtfOntDelInterAction =
 {
-    GTF_ONT_DELETE_ALL_INTERACTION_NODE,
+    GONT_DELETE_ALL_INTERACTION_NODE,
     "\r\nThis command will delete all the ONTs in port. Are you sure to execute this command? (y/n):"
 };
 
-static struct cmd_node vtyNodeIfGtf =
+static struct cmd_node vtyNodeIfG=
 {
-    INTERFACE_GTF_NODE,
+    INTERFACE_GNODE,
     "%s(config-interface-gtf-%d)# "
 };
 
@@ -1296,7 +1296,7 @@ vtysh_exit (struct vty *vty)
         case INTERFACE_GE_NODE:
         case INTERFACE_XGE_NODE:
         case INTERFACE_SA_NODE:
-        case INTERFACE_GTF_NODE:
+        case INTERFACE_GNODE:
         case INTERFACE_MGMT_NODE:
         case INTERFACE_VLANIF_NODE:
 		case INTERFACE_MVLAN_NODE:/* add by ben.zheng  2015.11.12*/
@@ -1314,7 +1314,7 @@ vtysh_exit (struct vty *vty)
         case ACL6_ADV_NODE:
 	    case ACL_LINK_NODE:
 	    case ACL_USER_NODE:
-        case ACL_TF_NODE:
+        case ACL_NODE:
             //stephen.liu, add, 20150928
             //vtysh_execute("end");
             //vtysh_execute("configure");
@@ -1350,7 +1350,7 @@ DEFUNSH(VTYSH_TEST, test_config_input_yn,
     rv = vty_command_get_data(vty->fd, buf);
     if(rv == RT_OK){
         vtysh_info = (vtysh_client_info *) vty->vtysh_info;
-        printf ("daemon_num=%d\n", vty->daemon_num);
+        prin("daemon_num=%d\n", vty->daemon_num);
         for (j = 0; j < vty->daemon_num; j++) {
             //ret = vtysh_client_config (&vtysh_info[j], cmd_line);
             if(vtysh_info[j].flag == VTYSH_TEST){
@@ -1390,7 +1390,7 @@ DEFUNSH (VTYSH_ALL,vtysh_config_end_all,
         case INTERFACE_GE_NODE:
         case INTERFACE_XGE_NODE:
         case INTERFACE_SA_NODE:
-        case INTERFACE_GTF_NODE:
+        case INTERFACE_GNODE:
 		case INTERFACE_MGMT_NODE:
         case INTERFACE_VLANIF_NODE:
 		case INTERFACE_MVLAN_NODE:/* add by ben.zheng  2015.11.12*/
@@ -1405,7 +1405,7 @@ DEFUNSH (VTYSH_ALL,vtysh_config_end_all,
 	    case ACL_ADV_NODE:
 	    case ACL_LINK_NODE:
 	    case ACL_USER_NODE:
-        case ACL_TF_NODE:
+        case ACL_NODE:
         case ACL6_BASIC_NODE:
         case ACL6_ADV_NODE:
         case MANU_NODE:
@@ -1485,10 +1485,10 @@ DEFUN (vtysh_show_memory,
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprintf (stdout, "Memory statistics for %s:\n",
+        fprin(stdout, "Memory statistics for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
-        fprintf (stdout,"\n");
+        fprin(stdout,"\n");
       }
 
   return ret;
@@ -1508,10 +1508,10 @@ DEFUN (vtysh_show_logging,
   for (i = 0; i < array_size(vtysh_client); i++)
     if ( vtysh_client[i].fd >= 0 )
       {
-        fprintf (stdout,"Logging configuration for %s:\n",
+        fprin(stdout,"Logging configuration for %s:\n",
                  vtysh_client[i].name);
         ret = vtysh_client_execute (&vtysh_client[i], line, stdout);
-        fprintf (stdout,"\n");
+        fprin(stdout,"\n");
       }
 
   return ret;
@@ -1866,7 +1866,7 @@ DEFUN (vtysh_write_terminal,
                 vtysh_config_start();
                 ret = vtysh_client_config (&vtysh_info[idx], cmd_line);
                 if(ret != RT_OK){
-                    fprintf (stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
+                    fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
                 }
                 vtysh_top_config_write ();
                 vtysh_show_running_config (vty);
@@ -1887,11 +1887,11 @@ DEFUN (vtysh_write_terminal,
       //2 stephen.liu modified , 20151009
       if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH){
             vtysh_info = (struct vtysh_client *)vty->vtysh_info;
-            /*fprintf (stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
+            /*fprin(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
             for (idx = 0; idx < vty->daemon_num; idx++){
                 ret = vtysh_client_config (&vtysh_info[idx], cmd_line);
                 if(ret != RT_OK){
-                    fprintf (stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
+                    fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[idx].name);
                 }
             }
         }
@@ -1936,7 +1936,7 @@ DEFUN (no_vtysh_integrated_config,
 #if 0
 DEFUN (vtysh_default_interface,
        vtysh_default_interface_cmd,
-       "default interface (ge "GE_CMD_STR"|xge "XGE_CMD_STR"|etf "ETF_CMD_STR"|lagstatic "SA_CMD_STR"|laglacp "LACP_CMD_STR")",
+       "default interface (ge "GE_CMD_STR"|xge "XGE_CMD_STR"|e"ECMD_STR"|lagstatic "SA_CMD_STR"|laglacp "LACP_CMD_STR")",
        "restore a interface's config to default\n"
        "based on interface\n")
 {
@@ -1947,7 +1947,7 @@ DEFUN (vtysh_default_interface,
 
     cmd_line = (char *)vty->buf;
     fprintf(stdout,"\r\ncmd_str: %s %s %s %s %s\r\n",
-            GE_CMD_STR, XGE_CMD_STR, ETF_CMD_STR, SA_CMD_STR, LACP_CMD_STR);
+            GE_CMD_STR, XGE_CMD_STR, ECMD_STR, SA_CMD_STR, LACP_CMD_STR);
 
     if (vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH)
     {
@@ -1958,7 +1958,7 @@ DEFUN (vtysh_default_interface,
             {
                 ret = vtysh_client_daemon_execute (vty, &vtysh_info[j], cmd_line);
                 if(ret != RT_OK) {
-                    fprintf (stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
+                    fprin(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
                 }
             }
         }
@@ -1984,7 +1984,7 @@ write_config_integrated(void)
   strcpy (integrate_sav, integrate_default);
   strcat (integrate_sav, CONF_BACKUP_EXT);
 
-  fprintf (stdout,"Building Configuration...\n");
+  fprin(stdout,"Building Configuration...\n");
 
   /* Move current configuration file to backup config file. */
   unlink (integrate_sav);
@@ -1994,7 +1994,7 @@ write_config_integrated(void)
   fp = fopen (integrate_default, "w");
   if (fp == NULL)
     {
-      fprintf (stdout,"%% Can't open configuration file %s.\n",
+      fprin(stdout,"%% Can't open configuration file %s.\n",
 	       integrate_default);
       return CMD_SUCCESS;
     }
@@ -2008,14 +2008,14 @@ write_config_integrated(void)
 
   if (chmod (integrate_default, CONFIGFILE_MASK) != 0)
     {
-      fprintf (stdout,"%% Can't chmod configuration file %s: %s (%d)\n",
+      fprin(stdout,"%% Can't chmod configuration file %s: %s (%d)\n",
 	integrate_default, safe_strerror(errno), errno);
       return CMD_WARNING;
     }
 
   fprintf(stdout,"Integrated configuration saved to %s\n",integrate_default);
 
-  fprintf (stdout,"[OK]\n");
+  fprin(stdout,"[OK]\n");
 
   return CMD_SUCCESS;
 }
@@ -2048,7 +2048,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     struct timespec  res;
     #endif
 
-    fprintf (stdout,"Building Configuration...\r\n");
+    fprin(stdout,"Building Configuration...\r\n");
 
     if (opendir(SYSCONFDIR) == NULL)
     {
@@ -2074,7 +2074,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     fp = fopen (integrate_default, "w+");
     if (fp == NULL)
     {
-        fprintf (stdout,"%% Can't open configuration file %s.\r\n", integrate_default);
+        fprin(stdout,"%% Can't open configuration file %s.\r\n", integrate_default);
         return CMD_SUCCESS;
     }
 
@@ -2089,7 +2089,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
 
     if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SHELL_SERV || vty->type == VTY_SSH){
         vtysh_info = (vtysh_client_info *)vty->vtysh_info;
-        /*fprintf (stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
+        /*fprin(stdout, "daemon_num=%d\r\n", vty->daemon_num);*/
         for (i = 0; i < vty->daemon_num; i++){
             #ifdef VTYSH_CONFIG_PROGRESS
             clock_gettime(CLOCK_MONOTONIC, &tsp[i+1]);
@@ -2098,7 +2098,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
             vty_out_to_all(msg);
             ret = vtysh_client_config ((struct vtysh_client *)&vtysh_info[i], "write terminal\n");
             if(ret != RT_OK){
-                fprintf (stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[i].name);
+                fprin(stdout, "vtysh execute [%s] failed.\r\n", vtysh_info[i].name);
             }
         }
     }
@@ -2132,14 +2132,14 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
 
     if (chmod (integrate_default, CONFIGFILE_MASK) != 0)
     {
-        fprintf (stdout,"%% Can't chmod configuration file %s: %s (%d)\r\n",
+        fprin(stdout,"%% Can't chmod configuration file %s: %s (%d)\r\n",
                  integrate_default, safe_strerror(errno), errno);
         return CMD_WARNING;
     }
 
     fprintf(stdout,"Integrated configuration saved to %s\r\n",integrate_default);
 
-    fprintf (stdout,"[OK]\r\n");
+    fprin(stdout,"[OK]\r\n");
 
     return CMD_SUCCESS;
 }
@@ -2174,7 +2174,7 @@ int vtysh_write_config_file(struct vty *vty)
 
 
     config_file_tmp = XMALLOC (MTYPE_TMP, strlen (config_file) + 8);
-    sprintf (config_file_tmp, "%s.XXXXXX", config_file);
+    sprin(config_file_tmp, "%s.XXXXXX", config_file);
 
     /* Open file to configuration write. */
     fd = mkstemp (config_file_tmp);
@@ -2269,15 +2269,15 @@ DEFUN (vtysh_write_memory,
     if (vtysh_writeconfig_integrated)
         return write_config_integrated_vtysh(vty, cmd_line);
 
-    fprintf (stdout,"Building Configuration...\r\n");
+    fprin(stdout,"Building Configuration...\r\n");
 	//remote write
     if(vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH){
         vtysh_info = (vtysh_client_info *)vty->vtysh_info;
-        /*fprintf (stdout,"daemon_num=%d\r\n", vty->daemon_num);*/
+        /*fprin(stdout,"daemon_num=%d\r\n", vty->daemon_num);*/
         for (j = 0; j < vty->daemon_num; j++){
             ret = vtysh_client_daemon_execute (vty, &vtysh_info[j], cmd_line);
             if(ret != RT_OK){
-                fprintf (stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
+                fprin(stdout,"vtysh execute [%s] failed.\r\n", vtysh_info[j].name);
             }
         }
     }
@@ -2472,7 +2472,7 @@ execute_command (int fd, const char *command, int argc, const char *arg1,
     if (pid < 0)
     {
         /* Failure of fork(). */
-        fprintf (stderr, "Can't fork: %s\n", safe_strerror (errno));
+        fprin(stderr, "Can't fork: %s\n", safe_strerror (errno));
         exit (1);
     }
     else if (pid == 0)
@@ -2495,7 +2495,7 @@ execute_command (int fd, const char *command, int argc, const char *arg1,
         }
 
         /* When execlp suceed, this part is not executed. */
-        fprintf (stderr, "Can't execute %s: %s\n", command, safe_strerror (errno));
+        fprin(stderr, "Can't execute %s: %s\n", command, safe_strerror (errno));
         exit (1);
     }
     else
@@ -2998,17 +2998,17 @@ DEFUNSH (VTYSH_QOSACL,
 }
 
 DEFUNSH (VTYSH_GTF,
-         interface_etf_acl,
-         interface_etf_acl_cmd,
-         "acl "CMD_ETF_ACL_ID"",
+         interface_eacl,
+         interface_eacl_cmd,
+         "acl "CMD_EACL_ID"",
          "ACL configuration\n"
-         DESC_ETF_ACL_INDEX)
+         DESC_EACL_INDEX)
 {
     int aclId = 0;
 
     VTY_GET_ULONG (aclId, aclId, argv[0]);
 
-    vty->node = ACL_TF_NODE;
+    vty->node = ACL_NODE;
     vty->user.env.aclId = aclId;
 
     return CMD_SUCCESS;
@@ -3026,8 +3026,8 @@ DEFUNSH (VTYSH_QOSACL,
 
 
 DEFUNSH (VTYSH_GTF,
-	 vtysh_etf_exit_acl,
-	 vtysh_etf_exit_acl_cmd,
+	 vtysh_eexit_acl,
+	 vtysh_eexit_acl_cmd,
 	 "exit",
 	 "Exit current mode and down to previous mode\n")
 {
@@ -3067,15 +3067,15 @@ DEFUNSH (VTYSH_GTF,
     "dba-profile {profile-id <0-128>|profile-name PROFILE-NAME}",
     "<Group> DBA profile configuration command group\n"
     "By profile ID\n"
-    DESC_GTF_DBA_PROFILE_ID
+    DESC_GDBA_PROFILE_ID
     "By profile name\n"
-    DESC_GTF_DBA_PROFILE_NAME)
+    DESC_GDBA_PROFILE_NAME)
 {
     vtysh_user_env_get_from_serv(vty, self);
 
     vty->node = DBA_PROFILE_NODE;
 
-    vtysh_gtf_profile_node_enter_check(vty);
+    vtysh_gprofile_node_enter_check(vty);
     
     return CMD_SUCCESS;
 }
@@ -3124,18 +3124,18 @@ DEFUNSH (VTYSH_GTF,
 DEFUNSH (VTYSH_GTF,
     vty_enter_line_profile_node,
     vty_enter_line_profile_node_cmd,
-    "ont-lineprofile gtf {profile-id <1-512>|profile-name PROFILE-NAME}",
+    "ont-lineprofile g{profile-id <1-512>|profile-name PROFILE-NAME}",
     "<Group> line profile configuration command group\n"
     "By profile ID\n"
-    DESC_GTF_LINE_PROFILE_ID
+    DESC_GLINE_PROFILE_ID
     "By profile name\n"
-    DESC_GTF_LINE_PROFILE_NAME)
+    DESC_GLINE_PROFILE_NAME)
 {
     vtysh_user_env_get_from_serv(vty, self);
 
     vty->node = LINE_PROFILE_NODE;
 
-    vtysh_gtf_profile_node_enter_check(vty);
+    vtysh_gprofile_node_enter_check(vty);
       
     return CMD_SUCCESS;
 }
@@ -3184,18 +3184,18 @@ DEFUNSH (VTYSH_GTF,
 DEFUNSH (VTYSH_GTF,
     vty_enter_srv_profile_node,
     vty_enter_srv_profile_node_cmd,
-    "ont-srvprofile gtf {profile-id <1-512>|profile-name PROFILE-NAME}",
+    "ont-srvprofile g{profile-id <1-512>|profile-name PROFILE-NAME}",
     "<Group> service profile configuration command group\n"
     "By profile ID\n"
-    DESC_GTF_SRV_PROFILE_ID
+    DESC_GSRV_PROFILE_ID
     "By profile name\n"
-    DESC_GTF_SRV_PROFILE_NAME)
+    DESC_GSRV_PROFILE_NAME)
 {
     vtysh_user_env_get_from_serv(vty, self);
 
     vty->node = SRV_PROFILE_NODE;
 
-    vtysh_gtf_profile_node_enter_check(vty);
+    vtysh_gprofile_node_enter_check(vty);
     
     return CMD_SUCCESS;
 }
@@ -3247,15 +3247,15 @@ DEFUNSH (VTYSH_GTF,
     "ont-slaprofile {profile-id <1-256>|profile-name PROFILE-NAME}",
     "<Group> sla profile configuration command group\n"
     "By profile ID\n"
-    DESC_GTF_SLA_PROFILE_ID
+    DESC_GSLA_PROFILE_ID
     "By profile name\n"
-    DESC_GTF_SLA_PROFILE_NAME)
+    DESC_GSLA_PROFILE_NAME)
 {
     vtysh_user_env_get_from_serv(vty, self);
 
     vty->node = SLA_PROFILE_NODE;
 
-    vtysh_gtf_profile_node_enter_check(vty);
+    vtysh_gprofile_node_enter_check(vty);
     
     return CMD_SUCCESS;
 }
@@ -3307,15 +3307,15 @@ DEFUNSH (VTYSH_GTF,
     "classification {profile-id <1-512>|profile-name PROFILE-NAME}",
     "<Group> classification profile configuration command group\n"
     "By profile ID\n"
-    DESC_GTF_CLASSIFICATION_PROFILE_ID
+    DESC_GCLASSIFICATION_PROFILE_ID
     "By profile name\n"
-    DESC_GTF_CLASSIFICATION_PROFILE_NAME)
+    DESC_GCLASSIFICATION_PROFILE_NAME)
 {
     vtysh_user_env_get_from_serv(vty, self);
 
     vty->node = CLASSIFICATION_PROFILE_NODE;
 
-    vtysh_gtf_profile_node_enter_check(vty);
+    vtysh_gprofile_node_enter_check(vty);
     
     return CMD_SUCCESS;
 }
@@ -3362,38 +3362,38 @@ DEFUNSH (VTYSH_GTF,
 }
 
 DEFUNSH (VTYSH_GTF,
-     vty_interface_gtf_ont_delete_all_yes,
-     vty_interface_gtf_ont_delete_all_yes_cmd,
+     vty_interface_gont_delete_all_yes,
+     vty_interface_gont_delete_all_yes_cmd,
      "y",
      "\n")
 {
-    vty->node = INTERFACE_GTF_NODE;
+    vty->node = INTERFACE_GNODE;
         
     return CMD_SUCCESS;
 }
 
 DEFUNSH (VTYSH_GTF,
-     vty_interface_gtf_ont_delete_all_no,
-     vty_interface_gtf_ont_delete_all_no_cmd,
+     vty_interface_gont_delete_all_no,
+     vty_interface_gont_delete_all_no_cmd,
      "n",
      "\n")
 {
-    vty->node = INTERFACE_GTF_NODE;
+    vty->node = INTERFACE_GNODE;
     
     return CMD_SUCCESS;
 }
 
 DEFUNSH (VTYSH_GTF,
-    vty_interface_gtf_ont_delete_all,
-    vty_interface_gtf_ont_delete_all_cmd,
-    "ont delete "TF_CMD_STR" all",
+    vty_interface_gont_delete_all,
+    vty_interface_gont_delete_all_cmd,
+    "ont delete "CMD_STR" all",
     "<Group> ont command group\n"
     "Delete ONT(s)\n"
-    DESC_TF_PORT_ID
-    DESC_GTF_ONT_ALL)
+    DESC_PORT_ID
+    DESC_GONT_ALL)
 {
-    vty->node = GTF_ONT_DELETE_ALL_INTERACTION_NODE;
-    VTY_TF_ID2ENV(vty->user.env.tfId, atoi(argv[0]) - 1);
+    vty->node = GONT_DELETE_ALL_INTERACTION_NODE;
+    VTY_ID2ENV(vty->user.env.tfId, atoi(argv[0]) - 1);
         
     return CMD_SUCCESS_INTERACTION;
 }
@@ -3463,21 +3463,21 @@ DEFUNSH (VTYSH_LAYER2|VTYSH_HAL|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
 }
 
 DEFUNSH (VTYSH_GTF|VTYSH_LAYER2,
-    vty_enter_interface_gtf_node,
-    vty_enter_interface_gtf_node_cmd,
-    "interface gtf <0-0>",
+    vty_enter_interface_gnode,
+    vty_enter_interface_gnode_cmd,
+    "interface g<0-0>",
     "<Group> interface command group\n"
     "Change into GTF command mode\n"
      "Slot ID. <U><0-0>\n")
 {
     VTY_SLOT_ID2ENV(vty->user.env.slot_id, atoi(argv[0]));
-    vty->node = INTERFACE_GTF_NODE;
+    vty->node = INTERFACE_GNODE;
     return CMD_SUCCESS;
 }
 
 DEFUNSH (VTYSH_LAYER2,
-	 vtysh_exit_interface_gtf_node,
-	 vtysh_exit_interface_gtf_node_cmd,
+	 vtysh_exit_interface_gnode,
+	 vtysh_exit_interface_gnode_cmd,
 	 "exit",
 	 "Exit current mode and down to previous mode\n")
 {
@@ -3527,7 +3527,7 @@ int vtysh_cmd(struct vty * vty, char *cmd)
     printf("%s %d, node=%d, \n", __func__, __LINE__, vty->node);
     cnode = vector_slot (cmdvec, vty->node);
     if (cnode == NULL) {
-        //fprintf (stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        //fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         //exit (1);
         printf("%s %d, node=%d, cnode null\r\n", __func__, __LINE__, vty->node);
         return CMD_ERR_NOTHING_TODO;
@@ -3691,7 +3691,7 @@ DEFUN (vtysh_show_log,
     char user[VTY_USER_MAX_LEN + 1] = {0};
     char *lfcr = NULL;
 
-    fp = fopen(TF_OPER_LOG_FILE, "r");
+    fp = fopen(OPER_LOG_FILE, "r");
 
     if (fp == NULL)
         return CMD_SUCCESS;
@@ -3716,7 +3716,7 @@ DEFUN (vtysh_show_log,
 
     fclose(fp);
 #else
-    vtysh_tac(vty, TF_OPER_LOG_FILE, TRUE);
+    vtysh_tac(vty, OPER_LOG_FILE, TRUE);
 #endif
 
     return CMD_SUCCESS;
@@ -3734,7 +3734,7 @@ DEFUN (vtysh_show_alarm_history,
     char buf[512] = {0};
     char *lfcr = NULL;
     
-    fp = fopen(TF_ALARM_LOG_FILE, "r");
+    fp = fopen(ALARM_LOG_FILE, "r");
 
     if (fp == NULL)
         return CMD_SUCCESS;
@@ -3750,7 +3750,7 @@ DEFUN (vtysh_show_alarm_history,
 
     fclose(fp);
 #else
-    vtysh_tac(vty, TF_ALARM_LOG_FILE, FALSE);
+    vtysh_tac(vty, ALARM_LOG_FILE, FALSE);
 #endif
     
     return CMD_SUCCESS;
@@ -3772,17 +3772,17 @@ DEFUN (
 
 #if 0
 int
-tf_boardReset_alarm(void)
+boardReset_alarm(void)
 {
-    TF_ALARM_INFO_STRU pAlarmInfo;
+    ALARM_INFO_STRU pAlarmInfo;
     char deviceId=1, slotId=1,ret;
-    memset(&pAlarmInfo, 0, sizeof(TF_ALARM_INFO_STRU));
+    memset(&pAlarmInfo, 0, sizeof(ALARM_INFO_STRU));
 
     pAlarmInfo.code = BOARD_RESET_ALARM;
     pAlarmInfo.severity = BOARD_RESET_SEVERITYTYPE;
     pAlarmInfo.instance[0] = deviceId;
     pAlarmInfo.instance[1] = slotId;
-    ret = ipc_if_exe_cmd(MODULE_SYSCTRL, IPC_SYS_ALARM_TRIGGER, (char *)&pAlarmInfo, sizeof(TF_ALARM_INFO_STRU),NULL);
+    ret = ipc_if_exe_cmd(MODULE_SYSCTRL, IPC_SYS_ALARM_TRIGGER, (char *)&pAlarmInfo, sizeof(ALARM_INFO_STRU),NULL);
     if(ret!=RTN_OK){
         printf("[%s: %d] handle alarm failed\r\n", __func__, __LINE__);
         return RTN_ERROR;
@@ -3792,15 +3792,15 @@ tf_boardReset_alarm(void)
 }
 
 int
-tf_deviceReset_event(void)
+deviceReset_event(void)
 {
-    TF_ALARM_INFO_STRU pAlarmInfo;
+    ALARM_INFO_STRU pAlarmInfo;
     char deviceId=1, slotId=1,ret;
-    memset(&pAlarmInfo, 0, sizeof(TF_ALARM_INFO_STRU));
+    memset(&pAlarmInfo, 0, sizeof(ALARM_INFO_STRU));
 
     pAlarmInfo.code = DEVICE_RESET_EVENT;
     pAlarmInfo.instance[0] = deviceId;
-    ret = ipc_if_exe_cmd(MODULE_SYSCTRL, IPC_SYS_EVENT_TRIGGER, (char *)&pAlarmInfo, sizeof(TF_ALARM_INFO_STRU),NULL);
+    ret = ipc_if_exe_cmd(MODULE_SYSCTRL, IPC_SYS_EVENT_TRIGGER, (char *)&pAlarmInfo, sizeof(ALARM_INFO_STRU),NULL);
     if(ret!=RTN_OK){
         printf("[%s: %d] handle event failed\r\n", __func__, __LINE__);
     }
@@ -3828,8 +3828,8 @@ DEFUN (
         snprintf(msg, sizeof(msg), "%sSystem is about to reboot, please wait!%s", VTY_NEWLINE, VTY_NEWLINE);
         vty_out_to_all(msg);
 
-        //tf_boardReset_alarm();
-        //tf_deviceReset_event();
+        //boardReset_alarm();
+        //deviceReset_event();
     }
     else
     {
@@ -4174,7 +4174,7 @@ sigtstp (int sig)
 
   /* Initialize readline. */
   rl_initialize ();
-  printf ("\n");
+  prin("\n");
 
   /* Check jmpflag for duplicate siglongjmp(). */
   if (! jmpflag)
@@ -4196,7 +4196,7 @@ sigint (int sig)
   if (! execute_flag)
     {
       rl_initialize ();
-      printf ("\n");
+      prin("\n");
       rl_forced_update_display ();
     }
   #endif
@@ -4292,10 +4292,10 @@ void vtysh_init()
     vtysh_install_default (ACL_USER_NODE);
     install_element (ACL_USER_NODE, &vtysh_exit_acl_cmd);
 
-    install_element (CONFIG_NODE, &interface_etf_acl_cmd);
-    install_node (&acl_tf_node, NULL);
-    vtysh_install_default (ACL_TF_NODE);
-    install_element (ACL_TF_NODE, &vtysh_etf_exit_acl_cmd);
+    install_element (CONFIG_NODE, &interface_eacl_cmd);
+    install_node (&acl_node, NULL);
+    vtysh_install_default (ACL_NODE);
+    install_element (ACL_NODE, &vtysh_eexit_acl_cmd);
 
  #ifdef ACL_SUPPORT_IPV6
     install_element (CONFIG_NODE, &interface_acl6_cmd);
@@ -4409,10 +4409,10 @@ void vtysh_init()
     //install_element_with_style (CLASSIFICATION_PROFILE_INTERACTION_NODE, CLI_STYLE_GENERAL, &vtysh_classification_profile_interaction_yes_cmd);
     //install_element_with_style (CLASSIFICATION_PROFILE_INTERACTION_NODE, CLI_STYLE_GENERAL, &vtysh_classification_profile_interaction_no_cmd);
     
-    install_element (INTERFACE_GTF_NODE, &vty_interface_gtf_ont_delete_all_cmd);
+    install_element (INTERFACE_GNODE, &vty_interface_gont_delete_all_cmd);
     install_node (&vtyNodeGtfOntDelInterAction, NULL);
-    install_element (GTF_ONT_DELETE_ALL_INTERACTION_NODE, &vty_interface_gtf_ont_delete_all_yes_cmd);
-    install_element (GTF_ONT_DELETE_ALL_INTERACTION_NODE, &vty_interface_gtf_ont_delete_all_no_cmd);
+    install_element (GONT_DELETE_ALL_INTERACTION_NODE, &vty_interface_gont_delete_all_yes_cmd);
+    install_element (GONT_DELETE_ALL_INTERACTION_NODE, &vty_interface_gont_delete_all_no_cmd);
     
     install_element (CONFIG_NODE, &vty_enter_interface_xge_node_cmd);    
     install_element (INTERFACE_XGE_NODE, &vtysh_exit_interface_xge_node_cmd);
@@ -4422,9 +4422,9 @@ void vtysh_init()
     install_element (INTERFACE_SA_NODE, &vty_exit_interface_sa_node_cmd);
     install_element (INTERFACE_SA_NODE, &vtysh_config_end_all_cmd);
     
-    install_element (CONFIG_NODE, &vty_enter_interface_gtf_node_cmd);
-    install_element (INTERFACE_GTF_NODE, &vtysh_exit_interface_gtf_node_cmd);
-    install_element (INTERFACE_GTF_NODE, &vtysh_config_end_all_cmd);
+    install_element (CONFIG_NODE, &vty_enter_interface_gnode_cmd);
+    install_element (INTERFACE_GNODE, &vtysh_exit_interface_gnode_cmd);
+    install_element (INTERFACE_GNODE, &vtysh_config_end_all_cmd);
 
     install_node(&mgmt_if_node, NULL);
     vtysh_install_default(INTERFACE_MGMT_NODE);

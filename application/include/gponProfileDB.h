@@ -10,11 +10,11 @@
 **************************************************************/
 
 
-#ifndef __GTF_PROFILE_DB_H__
-#define __GTF_PROFILE_DB_H__
+#ifndef __GPROFILE_DB_H__
+#define __GPROFILE_DB_H__
 
 
-#include "tf_types.h"
+#include "types.h"
 #include "sys_common.h"
 
 #pragma pack(1)
@@ -322,8 +322,8 @@ typedef struct SRV_PROFILE_INFO
 #define VALIDATE_USER_DBA_PROFILE_ID(profile_id)  \
         (((profile_id) > 0) && ((profile_id) < MAX_DBA_PROFILE_NUM))
 
-#define MAX_TF_BW                  1060864 //(1036*1024) (136832000 - 33000 * 128) /128000  = 1036
-#define MAX_TF_BW_STR              "1060864" //(1036*1024)
+#define MAX_BW                  1060864 //(1036*1024) (136832000 - 33000 * 128) /128000  = 1036
+#define MAX_BW_STR              "1060864" //(1036*1024)
 #define DBA_DEFAULT_BW              128
 #define DEF_OMCC_FIX_BW             32
 
@@ -374,15 +374,15 @@ typedef struct DBA_PROFILE_INFO
 #define VALIDATE_USER_SIPAGENT_PROFILE_ID(profile_id)  \
         (((profile_id) > 0) && ((profile_id) < MAX_SIPAGENT_PROFILE_NUM))
 
-#define GTF_SIPAGENT_URI_LEN           63
-#define GTF_SIPAGENT_AUTH_REALM_LEN    24
+#define GSIPAGENT_URI_LEN           63
+#define GSIPAGENT_AUTH_REALM_LEN    24
 
 #define SIGNAL_TRANSFER_MODE_UDP        0
 #define SIGNAL_TRANSFER_MODE_TCP        1
 
 typedef struct
 {
-    char                            proxyServerUri[GTF_SIPAGENT_URI_LEN];
+    char                            proxyServerUri[GSIPAGENT_URI_LEN];
 
     UINT8                           rtpDscp;
     UINT16                          rtpMinPort;
@@ -394,14 +394,14 @@ typedef struct
 
     UINT32                          registrationExpiration;
     UINT32                          registrationReregHeadStartTime;
-    char                            registrationServerUri[GTF_SIPAGENT_URI_LEN];
+    char                            registrationServerUri[GSIPAGENT_URI_LEN];
 
-    char                            voiceMailServerUri[GTF_SIPAGENT_URI_LEN];
+    char                            voiceMailServerUri[GSIPAGENT_URI_LEN];
     UINT32                          voiceMailSubscriptionExpiration;
 
-    char                            confFactory[GTF_SIPAGENT_URI_LEN];
-    char                            bridgedLineAgent[GTF_SIPAGENT_URI_LEN];
-    char                            authRealm[GTF_SIPAGENT_AUTH_REALM_LEN];
+    char                            confFactory[GSIPAGENT_URI_LEN];
+    char                            bridgedLineAgent[GSIPAGENT_URI_LEN];
+    char                            authRealm[GSIPAGENT_AUTH_REALM_LEN];
 }SIPAGENT_DATA_T;
 
 
@@ -694,5 +694,5 @@ typedef struct
 #pragma pack()
 
 
-#endif /* __GTF_PROFILE_DB_H__ */
+#endif /* __GPROFILE_DB_H__ */
 

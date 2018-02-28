@@ -237,7 +237,7 @@ fk_onu_db_onu_black_tbl_aging(
 
 int
 fk_onu_db_onu_black_tbl_should_silence(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number)
 {
     int ret;
@@ -254,7 +254,7 @@ fk_onu_db_onu_black_tbl_should_silence(
 
     fk_sn_to_str(p_serial_number, sn_str, sizeof(sn_str));
     snprintf(cmd_str, sizeof(cmd_str),
-        "select * from onu_black_tbl where tf_ni = %d and sn like \'%s\'", tf_ni, sn_str);
+        "select * from onu_black_tbl where ni = %d and sn like \'%s\'", ni, sn_str);
 
     NODE_DB_LOCK;
 
@@ -278,7 +278,7 @@ fk_onu_db_onu_black_tbl_should_silence(
 
 int
 fk_onu_db_onu_black_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 const uint32_t *p_phy_uint,     //null: unknown
                 const uint32_t sec_duration)    //0: no-aging
@@ -309,7 +309,7 @@ fk_onu_db_onu_black_tbl_add(
         ret = sqlite3_reset(stmt);
         BREAK_ON_SQLITE(p_fk_onu_db, ret, SQLITE_OK, sql, ret);
 
-        ret = sqlite3_bind_int(stmt, 1, tf_ni);
+        ret = sqlite3_bind_int(stmt, 1, ni);
         BREAK_ON_SQLITE(p_fk_onu_db, ret, SQLITE_OK, sql, ret);
 
         ret = sqlite3_bind_text(stmt, 2, sn_str, sizeof(sn_str), NULL);
@@ -344,7 +344,7 @@ fk_onu_db_onu_black_tbl_add(
 
 int
 fk_onu_db_onu_black_tbl_del_by_sn(
-                const uint32_t tf_ni,
+                const uint32_t ni,
                 const char *p_serial_number)
 {
     int ret;
@@ -356,7 +356,7 @@ fk_onu_db_onu_black_tbl_del_by_sn(
 
     fk_sn_to_str(p_serial_number, sn_str, sizeof(sn_str));
     snprintf(cmd_str, sizeof(cmd_str),
-        "delete from onu_black_tbl where sn like \'%s\' and tf_ni = %d", sn_str, tf_ni);
+        "delete from onu_black_tbl where sn like \'%s\' and ni = %d", sn_str, ni);
 
     NODE_DB_LOCK;
 
@@ -457,11 +457,11 @@ fk_create_onu_black_tbl(void)
     EXIT_ON_SQLITE(p_fk_onu_db, ret, SQLITE_OK, "drop onu_black_tbl failed", ret);
 
     ret = sqlite3_exec(p_fk_onu_db, "create table onu_black_tbl("
-                                            "tf_ni int8 not null, "
+                                            "ni int8 not null, "
                                             "sn text not null COLLATE NOCASE, "
                                             "expire_at int,"        // may be null
                                             "phy_uint int unique,"  // may be null
-                                            "constraint auth_key primary key(tf_ni, sn),"
+                                            "constraint auth_key primary key(ni, sn),"
                                             "FOREIGN KEY(phy_uint) REFERENCES onu_phy_info_tbl(phy_uint))",
                                             NULL, NULL, NULL);
     EXIT_ON_SQLITE(p_fk_onu_db, ret, SQLITE_OK, "create onu_black_tbl failed", ret);
@@ -494,17 +494,17 @@ fk_onu_db_onu_phy_info_tbl_aging_duration_get(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_free_phy_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 uint16_t *p_phy_id)
 {
     int ret;
     char cmd_str[MAX_SQLITE_CMD_STR_SIZE];
     uint32_t free_phy_uint;
     sqlite3_stmt *stmt = NULL;
-    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(tf_ni, 0);
-    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(tf_ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
+    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(ni, 0);
+    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
 
-    if(tf_ni >= MAX_NUM_OF_PORT || !p_phy_id)
+    if(ni >= MAX_NUM_OF_PORT || !p_phy_id)
         return SQLITE_PERM;
 
     snprintf(cmd_str, sizeof(cmd_str),
@@ -794,7 +794,7 @@ fk_onu_db_onu_phy_info_tbl_set_autofind(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_status(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t phy_id,
                 uint32_t *p_status)
 {
@@ -806,7 +806,7 @@ fk_onu_db_onu_phy_info_tbl_get_status(
         return SQLITE_PERM;
 
     snprintf(cmd_str, sizeof(cmd_str),
-        "select * from onu_phy_info_tbl where phy_uint = %d", PHY_ID_2_PHY_UINT(tf_ni, phy_id));
+        "select * from onu_phy_info_tbl where phy_uint = %d", PHY_ID_2_PHY_UINT(ni, phy_id));
 
     NODE_DB_LOCK;
 
@@ -831,7 +831,7 @@ fk_onu_db_onu_phy_info_tbl_get_status(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_phy_uint(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 uint32_t *p_phy_uint,
                 uint32_t *p_status)
@@ -840,8 +840,8 @@ fk_onu_db_onu_phy_info_tbl_get_phy_uint(
     char cmd_str[MAX_SQLITE_CMD_STR_SIZE];
     sqlite3_stmt *stmt = NULL;
     char sn_str[MAX_SN_STR_SIZE];
-    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(tf_ni, 0);
-    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(tf_ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
+    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(ni, 0);
+    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
 
     if(!p_serial_number || !p_phy_uint || !p_status)
         return SQLITE_PERM;
@@ -875,7 +875,7 @@ fk_onu_db_onu_phy_info_tbl_get_phy_uint(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_valid_phy_uint(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 uint32_t *p_phy_uint)
 {
@@ -883,8 +883,8 @@ fk_onu_db_onu_phy_info_tbl_get_valid_phy_uint(
     char cmd_str[MAX_SQLITE_CMD_STR_SIZE];
     sqlite3_stmt *stmt = NULL;
     char sn_str[MAX_SN_STR_SIZE];
-    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(tf_ni, 0);
-    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(tf_ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
+    const uint32_t phy_uint_start = PHY_ID_2_PHY_UINT(ni, 0);
+    const uint32_t phy_uint_end   = PHY_ID_2_PHY_UINT(ni, MAX_NODE_EACH_PORT-1); /*TODO: MAX_NODE_EACH_PORT GTF ?*/
 
     if(!p_serial_number || !p_phy_uint)
         return SQLITE_PERM;
@@ -1309,13 +1309,13 @@ fk_create_onu_phy_info_tbl(void)
 
 static int
 fk_does_sn_offline(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number)
 {
     int ret;
     uint32_t phy_uint, onu_uint;
 
-    ret = fk_onu_db_onu_phy_info_tbl_get_valid_phy_uint(tf_ni, p_serial_number, &phy_uint);
+    ret = fk_onu_db_onu_phy_info_tbl_get_valid_phy_uint(ni, p_serial_number, &phy_uint);
     if(ret)
         return TRUE;
 
@@ -1329,7 +1329,7 @@ fk_does_sn_offline(
 
 int
 fk_onu_db_onu_auth_info_tbl_get_free_onu_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 uint16_t *p_onu_id)
 {
 
@@ -1337,7 +1337,7 @@ fk_onu_db_onu_auth_info_tbl_get_free_onu_id(
 
     NODE_DB_LOCK;
 
-    ret = fk_onu_uint_bit_map_alloc(tf_ni, p_onu_id);
+    ret = fk_onu_uint_bit_map_alloc(ni, p_onu_id);
 
     NODE_DB_UNLOCK;
 
@@ -1347,12 +1347,12 @@ fk_onu_db_onu_auth_info_tbl_get_free_onu_id(
 
 int
 fk_onu_db_onu_auth_info_tbl_free_onu_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id)
 {
     NODE_DB_LOCK;
 
-    fk_onu_uint_bit_map_clear(tf_ni, onu_id);
+    fk_onu_uint_bit_map_clear(ni, onu_id);
 
     NODE_DB_UNLOCK;
 
@@ -1362,7 +1362,7 @@ fk_onu_db_onu_auth_info_tbl_free_onu_id(
 
 int
 fk_onu_db_onu_auth_info_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const uint8_t auth_mode,
                 const uint32_t lineprofile_id,
@@ -1374,7 +1374,7 @@ fk_onu_db_onu_auth_info_tbl_add(
     uint32_t onu_uint;
     struct sysinfo sys_info;
 
-    onu_uint = NODE_ID_2_NODE_UINT(tf_ni, onu_id);
+    onu_uint = NODE_ID_2_NODE_UINT(ni, onu_id);
     if(!VALID_NODE_UINT(onu_uint))
         return SQLITE_PERM;
 
@@ -1425,7 +1425,7 @@ fk_onu_db_onu_auth_info_tbl_add(
 
 int
 fk_onu_db_onu_auth_info_tbl_auth_mode_get(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 uint8_t *p_auth_mode)
 {
@@ -1434,7 +1434,7 @@ fk_onu_db_onu_auth_info_tbl_auth_mode_get(
     sqlite3_stmt *stmt = NULL;
 
     snprintf(cmd_str, sizeof(cmd_str),
-        "select * from onu_auth_info_tbl where onu_uint = %d", NODE_ID_2_NODE_UINT(tf_ni, onu_id));
+        "select * from onu_auth_info_tbl where onu_uint = %d", NODE_ID_2_NODE_UINT(ni, onu_id));
 
     NODE_DB_LOCK;
 
@@ -2193,7 +2193,7 @@ fk_onu_db_onu_auth_sn_pwd_tbl_aging(
 
 int
 fk_onu_db_onu_auth_sn_pwd_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const FK_ONU_AUTH_MODE_E auth_mode,
                 const char *p_serial_number,
@@ -2209,7 +2209,7 @@ fk_onu_db_onu_auth_sn_pwd_tbl_add(
     char sn_str[MAX_SN_STR_SIZE];
     char pwd_str[MAX_PWD_STR_SIZE];
     struct sysinfo sys_info;
-    uint32_t onu_uint = NODE_ID_2_NODE_UINT(tf_ni, onu_id);
+    uint32_t onu_uint = NODE_ID_2_NODE_UINT(ni, onu_id);
 
     if(!VALID_NODE_UINT(onu_uint) || !p_serial_number)
         return SQLITE_PERM;
@@ -2233,12 +2233,12 @@ fk_onu_db_onu_auth_sn_pwd_tbl_add(
     if(time_mode == FK_ONU_AUTH_TIME_MODE_ONCE_AGING && !sec_duration)
         return SQLITE_PERM;
 
-    if(!fk_does_sn_offline(tf_ni, p_serial_number))
+    if(!fk_does_sn_offline(ni, p_serial_number))
         return SQLITE_PERM;
 
     fk_sn_to_str(p_serial_number, sn_str, MAX_SN_STR_SIZE);
 
-    ret = fk_onu_db_onu_auth_info_tbl_add(tf_ni, onu_id, auth_mode, lineprofile_id, srvprofile_id);
+    ret = fk_onu_db_onu_auth_info_tbl_add(ni, onu_id, auth_mode, lineprofile_id, srvprofile_id);
     if(ret)
         return ret;
 

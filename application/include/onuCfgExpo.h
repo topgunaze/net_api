@@ -31,7 +31,7 @@ typedef enum
     ONUCFG_ERROR_INVALID_MOCA_PORT_NUM,
     ONUCFG_ERROR_INVALID_CATV_PORT_NUM,
     
-    ONUCFG_ERROR_TF_ID_OUT_OF_RANGE,
+    ONUCFG_ERROR_ID_OUT_OF_RANGE,
     ONUCFG_ERROR_ONU_ID_OUT_OF_RANGE,    
     ONUCFG_ERROR_ETH_ID_OUT_OF_RANGE,
     
@@ -47,7 +47,7 @@ typedef enum
 
 
 /**************************************************************
- * 函数名称: Cdt_Gtf_OnuCfg_SrvProfileBindSingleAdd
+ * 函数名称: Cdt_GOnuCfg_SrvProfileBindSingleAdd
  * 作           者: keith.gong
  * 日           期: 2015年04月22日
  *
@@ -59,13 +59,13 @@ typedef enum
  * 其           它: 
 **************************************************************/
 RTN_STATUS 
-Cdt_Gtf_OnuCfg_SrvProfileBindSingleAdd(
+Cdt_GOnuCfg_SrvProfileBindSingleAdd(
                 UINT32 profile_id, 
                 UINT32 tfId, 
                 UINT32 onuId);
 
 RTN_STATUS 
-Cdt_Gtf_OnuCfg_SrvProfileBindSingleDel(
+Cdt_GOnuCfg_SrvProfileBindSingleDel(
                 UINT32 profile_id, 
                 UINT32 tfId, 
                 UINT32 onuId);

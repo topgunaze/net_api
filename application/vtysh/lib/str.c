@@ -1,7 +1,7 @@
 /*
  * zebra string function
  *
- * XXX This version of snprintf does not check bounds!
+ * XXX This version of snprindoes not check bounds!
  */
 
 /*
@@ -49,7 +49,7 @@ snprintf(char *str, size_t size, const char *format, ...)
 
   va_start (args, format);
 
-  return vsprintf (str, format, args);
+  return vsprin(str, format, args);
 }
 #endif
 

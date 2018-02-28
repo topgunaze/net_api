@@ -10,7 +10,7 @@
 #ifndef __FK_NET__
 #define __FK_NET__
 
-#include "tf_adaptor_net_if.h"
+#include "adaptor_net_if.h"
 
 typedef enum
 {
@@ -23,16 +23,16 @@ typedef enum
     FK_NET_STATE_WORK_WAITED       = 8,//等待开工
 
     FK_STATE_NUM_OF
-}TF_FK_NET_STATE;
+}FK_NET_STATE;
 
 typedef struct
 {
-    TF_NET_MUTUX     mutex;
-    TF_NET_PARA      net_param;   /*业务板连接信息*/
-    TF_FK_NET_STATE  state;       /*业务板网络状态*/
+    NET_MUTUX     mutex;
+    NET_PARA      net_param;   /*业务板连接信息*/
+    FK_NET_STATE  state;       /*业务板网络状态*/
     uint8_t          slot_id;     /*业务板槽位信息*/
 
-}TF_FK_STATE;
+}FK_STATE;
 
 //业务板板间消息并发处理线程数，
 #define FK_NET_MSG_CC_PRO_NUM   9
@@ -41,13 +41,13 @@ typedef struct
 
 //请求消息处理错误返回码
 //没有传参
-#define TF_FK_NET_PROCESS_REQ_NO_PARAM_VERIFY()               TF_TF_NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define FK_NET_PROCESS_REQ_NO_PARAM_VERIFY()               TF_NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
 //有传参
-#define TF_FK_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       TF_TF_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define FK_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       TF_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,FK_ZK_RC_PARAM_OUT_OF_RANGE,ack)
 //有回传参数
-#define TF_FK_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       TF_TF_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_fk_net_msg_mp,p_buf,len,rc_info,rc,FK_ZK_RC_MEM_ALLOCATION,ack)
+#define FK_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       TF_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_fk_net_msg_mp,p_buf,len,rc_info,rc,FK_ZK_RC_MEM_ALLOCATION,ack)
 
-#define TF_FK_NET_ERR_INFO2RC(obj,sub_obj,err_no)             TF_TF_ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc)
+#define FK_NET_ERR_INFO2RC(obj,sub_obj,err_no)             TF_ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc)
 
 
 unsigned int fk_net_ev_init(void);
@@ -62,9 +62,9 @@ fk_net_syn_req_profile_get(const uint8_t slot_id,
                                 MSG_PC_TEST *p_out);
 
 uint32_t 
-fk_net_syn_operation(  IN const TF_NET_MSG_TYPE  msg_type,
+fk_net_syn_operation(  IN const NET_MSG_TYPE  msg_type,
                                 IN const  uint64_t         vif_info, 
-                                IN const  TF_NET_MSG_CMD  cmd_info, 
+                                IN const  NET_MSG_CMD  cmd_info, 
                                 IN const  void             *pvar, 
                                 IN const  uint32_t         pvar_len,
                                 OUT void                   *param,
@@ -72,7 +72,7 @@ fk_net_syn_operation(  IN const TF_NET_MSG_TYPE  msg_type,
                                 OUT uint32_t               *state);
 
 uint32_t 
-fk_net_msg_syn_ack_process(TF_NET_MSG *pmsg);
+fk_net_msg_syn_ack_process(NET_MSG *pmsg);
 
 void
 fk_net_state_set(int state);

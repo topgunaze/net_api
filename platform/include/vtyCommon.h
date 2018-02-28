@@ -16,15 +16,15 @@
 #endif
 
 #ifdef FD1216S
-#define TF_CMD_STR      "<1-16>"
+#define CMD_STR      "<1-16>"
 #define GE_F_CMD_STR      "<1-4>" 
 /*表示fibei端口*/
 #define GE_CMD_STR      "<1-8>"
 #define XGE_CMD_STR      "<1-2>"
 #define SA_CMD_STR      "<1-8>"
 #define LACP_CMD_STR      "<9-16>"
-#define DESC_TF_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
-#define DESC_TF_PORT_ID       "Port ID. <U><1-16>\n"
+#define DESC_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
+#define DESC_PORT_ID       "Port ID. <U><1-16>\n"
 #define DESC_GE_PORT_LIST       "Port list. <L><1-8>(e.g.:1,3-5,8)\n"
 #define DESC_GE_PORT_ID         "Port ID. <U><1-8>\n"
 #define DESC_PORT_LIST          "Port list. <U><1-8>(e.g.:1,3-5,8)\n"
@@ -32,10 +32,10 @@
 #define DESC_SA_PORT_ID         "Port ID. <U><1-8>\n"
 
 #elif  defined(FD1104Y)
-#define TF_CMD_STR      "<1-4>"
+#define CMD_STR      "<1-4>"
 #define GE_CMD_STR      "<1-4>"
-#define DESC_TF_PORT_LIST     "Port list. <L><1-4>(e.g.:1,3-5,8)\n"
-#define DESC_TF_PORT_ID       "Port ID. <U><1-4>\n"
+#define DESC_PORT_LIST     "Port list. <L><1-4>(e.g.:1,3-5,8)\n"
+#define DESC_PORT_ID       "Port ID. <U><1-4>\n"
 #define DESC_GE_PORT_LIST       "Port list. <L><1-4>(e.g.:1,3-5,8)\n"
 #define DESC_GE_PORT_ID         "Port ID. <U><1-4>\n"
 #define DESC_PORT_LIST          "Port list. <U><1-4>(e.g.:1,3-5,8)\n"
@@ -43,15 +43,15 @@
 #define DESC_SA_PORT_ID         "Port ID. <U><1-4>\n"
 
 #elif defined(FD1616S)
-#define TF_CMD_STR      "<1-16>"
+#define CMD_STR      "<1-16>"
 #define GE_F_CMD_STR      "<1-4>" 
 /*表示fibei端口*/
 #define GE_CMD_STR      "<1-4>"
 #define XGE_CMD_STR      "<1-2>"
 #define SA_CMD_STR      "<1-8>"
 #define LACP_CMD_STR      "<9-16>"
-#define DESC_TF_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
-#define DESC_TF_PORT_ID       "Port ID. <U><1-16>\n"
+#define DESC_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
+#define DESC_PORT_ID       "Port ID. <U><1-16>\n"
 #define DESC_GE_PORT_LIST       "Port list. <L><1-4>(e.g.:1,3-4)\n"
 #define DESC_GE_PORT_ID         "Port ID. <U><1-4>\n"
 #define DESC_PORT_LIST          "Port list. <U><1-8>(e.g.:1,3-5,8)\n"
@@ -68,14 +68,14 @@
 #define CMD_NO_COS_QUEUE_WRED_STR "{queue0|queue1|queue2|queue3}"
 #define CMD_EARLY_DROP_STR "{cos0 <0-100>|cos1 <0-100>|cos2 <0-100>|cos3 <0-100>}"
 #define CMD_DEST_PORT_ID_STR    "(ge ""<1-4>"")"
-#define CMD_PORT_LIST_STR       "(gtf PORT-LIST|ge PORT-LIST|xge PORT-LIST)"
-#define CMD_PORT_ID_STR         "(gtf ""<1-16>""|ge ""<1-4>""|xge ""<1-2>"")"
+#define CMD_PORT_LIST_STR       "(gPORT-LIST|ge PORT-LIST|xge PORT-LIST)"
+#define CMD_PORT_ID_STR         "(g""<1-16>""|ge ""<1-4>""|xge ""<1-2>"")"
 
 #else 
-#define TF_CMD_STR      "<1-8>"
+#define CMD_STR      "<1-8>"
 #define GE_CMD_STR      "<1-8>"
-#define DESC_TF_PORT_LIST     "Port list. <L><1-8>(e.g.:1,3-5,8)\n"
-#define DESC_TF_PORT_ID       "Port ID. <U><1-8>\n"
+#define DESC_PORT_LIST     "Port list. <L><1-8>(e.g.:1,3-5,8)\n"
+#define DESC_PORT_ID       "Port ID. <U><1-8>\n"
 #define DESC_GE_PORT_LIST       "Port list. <L><1-8>(e.g.:1,3-5,8)\n"
 #define DESC_GE_PORT_ID         "Port ID. <U><1-8>\n"
 #define DESC_XGE_PORT_ID        "Port ID. <U><1-2>\n"
@@ -91,14 +91,14 @@
 
 #define VTY_CURRENT_SLOT_ID (vty->user.env.slot_id >> 16)
 
-#define VTY_CURRENT_TF_ID (vty->user.env.tfId & 0x0000ffff)
+#define VTY_CURRENT_ID (vty->user.env.tfId & 0x0000ffff)
 
 #define VTY_SLOT_ID2ENV(env_id,slot_id) \
     do{\
         (env_id) = ((slot_id) << 16) | ((env_id) & 0x0000ffff);\
     }while(0)
     
-#define VTY_TF_ID2ENV(env_id,port_id) \
+#define VTY_ID2ENV(env_id,port_id) \
     do{\
         (env_id) = ((env_id) & 0xffff0000) | (port_id);\
     }while(0)
@@ -117,9 +117,9 @@
 #define DESC_VLAN_LIST          "VLAN list. <L><1-4094>(e.g.:1,11-27,4094)\n"
 #define DESC_VLAN_ID            "VLAN ID. <U><1-4094>\n"
 #define DESC_VLAN_PRI           "VLAN tag priority. <U><0-7>\n"
-//#define DESC_TF_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
-#define DESC_TF_PORT          "Gtf port.\n"
-#define DESC_TF_PORT_ID       "Port ID. <U><1-16>\n"
+//#define DESC_PORT_LIST     "Port list. <L><1-16>(e.g.:1,3-5,8)\n"
+#define DESC_PORT          "Gport.\n"
+#define DESC_PORT_ID       "Port ID. <U><1-16>\n"
 
 //#define DESC_GE_PORT_LIST       "Port list. <L><1-8>(e.g.:1,3-5,8)\n"
 #define DESC_GE_PORT            "Ge port.\n"
@@ -130,34 +130,34 @@
 #define DESC_PORT_LIST          "Port list. <U><1-8>(e.g.:1,3-5,8)\n"
 #define DESC_SA_PORT_LIST       "Port list. <L><1-8>(e.g.:1,1-2,8)\n"
 #define DESC_SA_PORT_ID         "Port ID. <U><1-8>\n"
-#define DESC_GTF_ONT_ID        "ONT ID. <U><1-128>\n"
-#define DESC_GTF_ONT_ID_LIST   "ONT ID list. <L><1-128>(e.g.:1-17,128)\n"
-#define DESC_GTF_ONT_ALL       "All ONTS in the port\n"
+#define DESC_GONT_ID        "ONT ID. <U><1-128>\n"
+#define DESC_GONT_ID_LIST   "ONT ID list. <L><1-128>(e.g.:1-17,128)\n"
+#define DESC_GONT_ALL       "All ONTS in the port\n"
 
 
 #define DESC_LOID_VALUE         "Logic ONU identifier. <S><Length 1-24>\n"
 #define DESC_PASSWORD_VALUE     "Password. <S><Length 1-12>\n"
 
-#define DESC_GTF_PORT_ALL      "All PORTS in the gtf\n"
+#define DESC_GPORT_ALL      "All PORTS in the gtf\n"
 
-#define DESC_GTF_ONT_SN        "ONT serial number. <S><Length 12,13,16>(XXXXXXXXXXXX, XXXX-XXXXXXXX, XXXXXXXXXXXXXXXX)\n"
-#define DESC_GTF_ONT_PWD       "ONT password. <S><Length 1-10>\n"
-#define DESC_GTF_ONT_LOID      "LOID user. <S><Length 1-24>\n"
-#define DESC_GTF_ONT_LOID_PWD  "LOID password. <S><Length 1-12>\n"
+#define DESC_GONT_SN        "ONT serial number. <S><Length 12,13,16>(XXXXXXXXXXXX, XXXX-XXXXXXXX, XXXXXXXXXXXXXXXX)\n"
+#define DESC_GONT_PWD       "ONT password. <S><Length 1-10>\n"
+#define DESC_GONT_LOID      "LOID user. <S><Length 1-24>\n"
+#define DESC_GONT_LOID_PWD  "LOID password. <S><Length 1-12>\n"
 
-#define DESC_GTF_PROFILE_NAME  "Profile name. <S><Length 1-16>\n"
+#define DESC_GPROFILE_NAME  "Profile name. <S><Length 1-16>\n"
 
-#define DESC_GTF_LINE_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_LINE_PROFILE_ID   "Profile ID. <U><1-512>\n"
-#define DESC_ETF_LLID_LIST         "LLID list. <L><1-8>(e.g.:1-2,3)\n"
-#define DESC_GTF_TCONT_LIST        "T-CONT ID list. <L><1-3>(e.g.:1-2,3)\n"
-#define DESC_GTF_TCONT_LIST_WITH_DEF "T-CONT ID list. <L><0-3>(e.g.:0-2,3)\n"
+#define DESC_GLINE_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GLINE_PROFILE_ID   "Profile ID. <U><1-512>\n"
+#define DESC_ELLID_LIST         "LLID list. <L><1-8>(e.g.:1-2,3)\n"
+#define DESC_GTCONT_LIST        "T-CONT ID list. <L><1-3>(e.g.:1-2,3)\n"
+#define DESC_GTCONT_LIST_WITH_DEF "T-CONT ID list. <L><0-3>(e.g.:0-2,3)\n"
 
-#define DESC_GTF_GEM_ID            "GEM ID. <U><1-24>\n"
-#define DESC_GTF_TCONT_ID          "T-CONT ID. <U><1-3>\n"
+#define DESC_GGEM_ID            "GEM ID. <U><1-24>\n"
+#define DESC_GTCONT_ID          "T-CONT ID. <U><1-3>\n"
 
-#define DESC_GTF_SRV_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_SRV_PROFILE_ID   "Profile ID. <U><1-512>\n"
+#define DESC_GSRV_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GSRV_PROFILE_ID   "Profile ID. <U><1-512>\n"
 #define DESC_ONT_PORT_LIST         "ONT Port list. <L><1-24>(e.g.:1,3-5,8)\n"
 
 #define DESC_ONU_ETH_PORT_ID        "ONT port ID. <U><1-8>\n"
@@ -167,43 +167,43 @@
 #define DESC_ONT_PORT_ID           "ONT Port ID. <U><1-24>\n"
 #define DESC_ONT_PORT_ALL          "All ports in the ONT\n"
 
-#define DESC_GTF_CLASSIFICATION_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_CLASSIFICATION_PROFILE_ID   "Profile ID. <U><1-256>\n"
+#define DESC_GCLASSIFICATION_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GCLASSIFICATION_PROFILE_ID   "Profile ID. <U><1-256>\n"
 
-#define DESC_GTF_SLA_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_SLA_PROFILE_ID   "Profile ID. <U><1-256>\n"
+#define DESC_GSLA_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GSLA_PROFILE_ID   "Profile ID. <U><1-256>\n"
 
-#define DESC_GTF_ALARM_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_ALARM_PROFILE_ID   "Profile ID. <U><1-50>\n"
-#define DESC_GTF_ALARM_PROFILE_THRESHOLD "Threshold <U><0-4294967294>\n"
-#define DESC_GTF_ALARM_PROFILE_RTHRESHOLD "Restore threshold <U><0-4294967294>\n"
+#define DESC_GALARM_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GALARM_PROFILE_ID   "Profile ID. <U><1-50>\n"
+#define DESC_GALARM_PROFILE_THRESHOLD "Threshold <U><0-4294967294>\n"
+#define DESC_GALARM_PROFILE_RTHRESHOLD "Restore threshold <U><0-4294967294>\n"
 
-#define DESC_GTF_OPTICAL_ALARM_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_OPTICAL_ALARM_PROFILE_ID   "Profile ID. <U><1-256>\n"
+#define DESC_GOPTICAL_ALARM_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GOPTICAL_ALARM_PROFILE_ID   "Profile ID. <U><1-256>\n"
 
-#define DESC_GTF_DBA_PROFILE_NAME  "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_DBA_PROFILE_ID    "Profile ID. <U><1-128>\n"
-#define DESC_GTF_DBA_PROFILE_ID_WITH_DEF "Profile ID. <U><0-128>\n"
+#define DESC_GDBA_PROFILE_NAME  "Profile name. <S><Length 1-16>\n"
+#define DESC_GDBA_PROFILE_ID    "Profile ID. <U><1-128>\n"
+#define DESC_GDBA_PROFILE_ID_WITH_DEF "Profile ID. <U><0-128>\n"
 
 
-#define DESC_GTF_SIPAGENT_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_SIPAGENT_PROFILE_ID   "Profile ID. <U><1-16>\n"
-#define DESC_GTF_SIPAGENT_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
+#define DESC_GSIPAGENT_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GSIPAGENT_PROFILE_ID   "Profile ID. <U><1-16>\n"
+#define DESC_GSIPAGENT_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
 
-#define DESC_GTF_POTS_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_POTS_PROFILE_ID   "Profile ID. <U><1-16>\n"
-#define DESC_GTF_POTS_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
+#define DESC_GPOTS_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GPOTS_PROFILE_ID   "Profile ID. <U><1-16>\n"
+#define DESC_GPOTS_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
 
-#define DESC_GTF_DIGITMAP_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_DIGITMAP_PROFILE_ID   "Profile ID. <U><1-16>\n"
-#define DESC_GTF_DIGITMAP_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
+#define DESC_GDIGITMAP_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GDIGITMAP_PROFILE_ID   "Profile ID. <U><1-16>\n"
+#define DESC_GDIGITMAP_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
 
-#define DESC_GTF_SIPRIGHT_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
-#define DESC_GTF_SIPRIGHT_PROFILE_ID   "Profile ID. <U><1-16>\n"
-#define DESC_GTF_SIPRIGHT_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
+#define DESC_GSIPRIGHT_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GSIPRIGHT_PROFILE_ID   "Profile ID. <U><1-16>\n"
+#define DESC_GSIPRIGHT_PROFILE_ID_WITH_DEF   "Profile ID. <U><0-16>\n"
 
-#define DESC_GTF_TRAFFIC_PROFILE_ID   "Profile ID. <U><1-256>\n"
-#define DESC_GTF_TRAFFIC_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
+#define DESC_GTRAFFIC_PROFILE_ID   "Profile ID. <U><1-256>\n"
+#define DESC_GTRAFFIC_PROFILE_NAME "Profile name. <S><Length 1-16>\n"
 
 #define DESC_PORT_RATE_CONFIG "Port rate configuration\n"
 
@@ -245,8 +245,8 @@
 #define DESC_RULE_PRECEDENCE "Priority precedence\n"
 #define DESC_RULE_PRECEDENCE_PRI "precedence: 0(Routine),1(Priority),2(Immediate),3(Flash),4(Flash-override),5(Critical),6(Internetwork control),7(Network control)\n"
 #define CMD_ACL_ID  "<2000-5999>"
-#define CMD_ETF_ACL_ID  "<8000-8199>"
-#define DESC_ETF_ACL_INDEX      "TF side acl. <U>"CMD_ETF_ACL_ID"\n"
+#define CMD_EACL_ID  "<8000-8199>"
+#define DESC_EACL_INDEX      "TF side acl. <U>"CMD_EACL_ID"\n"
 #define DESC_INFO "description information"
 #define DESC_QUEUE_ID      "Queue id. <U><0-7>\n"
 

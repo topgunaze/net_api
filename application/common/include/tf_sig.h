@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_sig.h
+ * 文件名称:  sig.h
  * 作           者:  steven.tian
  * 日           期:  2016.05.03
  * 文件描述:  system signal encapsulation
@@ -9,6 +9,6 @@
 **************************************************************/
 
 /*---------------------function declare----------------------*/
-extern int tf_cfg_restore_notifier(void (*callback)(int));
+extern int cfg_restore_notifier(void (*callback)(int));
 
 

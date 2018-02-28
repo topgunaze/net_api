@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_sig.c
+ * 文件名称:  sig.c
  * 作           者:  steven.tian
  * 日           期:  2016.05.03
  * 文件描述:  system signal encapsulation
@@ -75,7 +75,7 @@ static int install_signal_action(int signo, int flags, void (*handler)(int, sigi
  *
  * return: 0 succeed, -1 on error;
 -------------------------------------------------------------------------*/
-int tf_cfg_restore_notifier(void (*callback)(int))
+int cfg_restore_notifier(void (*callback)(int))
 {
     return callback ? install_signal_handler(SIGCONT, 0, callback) : -1;
 }

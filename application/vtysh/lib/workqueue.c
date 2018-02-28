@@ -372,7 +372,7 @@ stats:
   wq->cycles.total += cycles;
 
 #if 0
-  printf ("%s: cycles %d, new: best %d, worst %d\n",
+  prin("%s: cycles %d, new: best %d, worst %d\n",
             __func__, cycles, wq->cycles.best, wq->cycles.granularity);
 #endif
   

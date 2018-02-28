@@ -36,15 +36,15 @@ $ignore{'"acl ipv6 <1-3999>"'} = "ignore";
 $ignore{'"interface ge"'} = "ignore";
 $ignore{'"interface xge"'} = "ignore";
 $ignore{'"interface link-aggregation"'} = "ignore";
-$ignore{'"interface gtf <0-0>"'} = "ignore";
+$ignore{'"interface g<0-0>"'} = "ignore";
 $ignore{'"interface mgmt"'} = "ignore";
 $ignore{'"interface vlanif ""<1-4092>"'} = "ignore";
 $ignore{'"interface vlanif ""<1-4094>"'} = "ignore";
 $ignore{'"dba-profile {profile-id <0-128>|profile-name PROFILE-NAME}"'} = "ignore";
 $ignore{'"dba-profile"'} = "ignore";
-$ignore{'"ont-srvprofile gtf {profile-id <1-512>|profile-name PROFILE-NAME}"'} = "ignore";
+$ignore{'"ont-srvprofile g{profile-id <1-512>|profile-name PROFILE-NAME}"'} = "ignore";
 $ignore{'"ont-srvprofile gtf"'} = "ignore";
-$ignore{'"ont-lineprofile gtf {profile-id <1-512>|profile-name PROFILE-NAME}"'} = "ignore";
+$ignore{'"ont-lineprofile g{profile-id <1-512>|profile-name PROFILE-NAME}"'} = "ignore";
 $ignore{'"ont-lineprofile gtf"'} = "ignore";
 $ignore{'"ont-slaprofile {profile-id <1-256>|profile-name PROFILE-NAME}"'} = "ignore";
 $ignore{'"ont-slaprofile"'} = "ignore";
@@ -82,7 +82,7 @@ $ignore{'"acl ""<8000-8199>"""'} = "ignore";
 foreach (@ARGV) {
     $file = $_;
 
-    open (FH, "$ENV{CROSS_COMPILE}gcc -E -D$ENV{TF_PRODUCT} -D$ENV{CPU_ENDIAN} -DHAVE_CONFIG_H -DVTYSH_EXTRACT_PL -I./include -I../lib -I../../include -I../switch/include -I$ENV{SWSDK_DIR}/include -I$ENV{APP_DIR}/include -I$ENV{COM_DIR}/include -I$ENV{SYSTEM_DIR}/include $ENV{GTF_INC} $ENV{GTF_SUB_INC_DIRS} $ENV{APP_DIR}/gtf/profile/include $ENV{APP_DIR}/gtf/tfcfg/include $file |");
+    open (FH, "$ENV{CROSS_COMPILE}gcc -E -D$ENV{PRODUCT} -D$ENV{CPU_ENDIAN} -DHAVE_CONFIG_H -DVTYSH_EXTRACT_PL -I./include -I../lib -I../../include -I../switch/include -I$ENV{SWSDK_DIR}/include -I$ENV{APP_DIR}/include -I$ENV{COM_DIR}/include -I$ENV{SYSTEM_DIR}/include $ENV{GINC} $ENV{GSUB_INC_DIRS} $ENV{APP_DIR}/gtf/profile/include $ENV{APP_DIR}/gtf/tfcfg/include $file |");
     local $/; undef $/;
     $line = <FH>;
     close (FH);
@@ -239,7 +239,7 @@ foreach (keys %live) {
     my ($key);
     $key = $live{$_};
     $proto = join ("|", @{$oproto{$key}});
-    printf "DEFSH ($proto$odefun{$key})\n\n";
+    prin"DEFSH ($proto$odefun{$key})\n\n";
 }
 
 # Output install_element
@@ -256,13 +256,13 @@ foreach (keys %odefun) {
     $right = $oright{$_};
 	$style = $ostyle{$_};
     if (defined $right) {
-        printf "  install_element_with_right ($node, $right, &$cmd);\n";
+        prin"  install_element_with_right ($node, $right, &$cmd);\n";
     }
     elsif (defined $style) {
-        printf "  install_element_with_style ($node, $style, &$cmd);\n";
+        prin"  install_element_with_style ($node, $style, &$cmd);\n";
     }
     else {
-        printf "  install_element ($node, &$cmd);\n";
+        prin"  install_element ($node, &$cmd);\n";
     }
 }
 

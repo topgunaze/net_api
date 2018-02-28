@@ -51,7 +51,7 @@
 
 #include "readline/history.h"
 #include "vty_user.h"
-#include "tf_log.h"
+#include "log.h"
 #include "tfNvramParam.h"
 #include "vtyCommon.h"
 #include "tfSysCtrlPub.h"
@@ -142,13 +142,13 @@ vty_out (struct vty *vty, const char *format, ...)
 
     if (vty_shell (vty)) {
         va_start (args, format);
-        vprintf (format, args);
+        vprin(format, args);
         va_end (args);
     }
     else {
         /* Try to write to initial buffer.  */
         va_start (args, format);
-        len = vsnprintf (buf, sizeof buf, format, args);
+        len = vsnprin(buf, sizeof buf, format, args);
         va_end (args);
 
         /* Initial buffer is not enough.  */
@@ -164,7 +164,7 @@ vty_out (struct vty *vty, const char *format, ...)
                     return -1;
 
                 va_start (args, format);
-                len = vsnprintf (p, size, format, args);
+                len = vsnprin(p, size, format, args);
                 va_end (args);
 
                 if (len > -1 && len < size)
@@ -206,7 +206,7 @@ vty_out_line (struct vty *vty, const char *format, ...)
     }
 
     va_start (args, format);
-    len = vsnprintf (buf, sizeof(buf), format, args);
+    len = vsnprin(buf, sizeof(buf), format, args);
     va_end (args);
 
     if (len < 0)
@@ -281,13 +281,13 @@ vty_log_out (struct vty *vty, const char *level, const char *proto_str,
     buf[len] = '\0';
 
     if (level)
-        ret = snprintf (buf + len, sizeof (buf) - len, "%s: %s: ", level, proto_str);
+        ret = snprin(buf + len, sizeof (buf) - len, "%s: %s: ", level, proto_str);
     else
-        ret = snprintf (buf + len, sizeof (buf) - len, "%s: ", proto_str);
+        ret = snprin(buf + len, sizeof (buf) - len, "%s: ", proto_str);
     if ((ret < 0) || ((size_t) (len += ret) >= sizeof (buf)))
         return -1;
 
-    if (((ret = vsnprintf (buf + len, sizeof (buf) - len, format, va)) < 0) ||
+    if (((ret = vsnprin(buf + len, sizeof (buf) - len, format, va)) < 0) ||
         ((size_t) ((len += ret) + 2) > sizeof (buf)))
         return -1;
 
@@ -372,7 +372,7 @@ vty_prompt (struct vty *vty)
     memset(buf, 0x00, sizeof(buf));//stephen.liu
     switch (vty->node) {
     case TEST_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, "test");
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, "test");
         break;
 	case ACL_BASIC_NODE:
     case ACL_ADV_NODE:
@@ -380,51 +380,51 @@ vty_prompt (struct vty *vty)
     case ACL6_ADV_NODE:
     case ACL_LINK_NODE:
     case ACL_USER_NODE:
-    case ACL_TF_NODE:
-        snprintf (buf, sizeof buf, cmd_prompt (vty->node),hostname, vty->user.env.aclId);
+    case ACL_NODE:
+        snprin(buf, sizeof buf, cmd_prompt (vty->node),hostname, vty->user.env.aclId);
 		break;
-    case INTERFACE_GTF_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, VTY_CURRENT_SLOT_ID);
+    case INTERFACE_GNODE:
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, VTY_CURRENT_SLOT_ID);
         break;
     case DBA_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.dbaprofile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.dbaprofile_id);
         break;
     case LINE_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.lineprofile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.lineprofile_id);
         break;
     case SRV_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.srvprofile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.srvprofile_id);
         break;
     case SLA_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.slaprofile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.slaprofile_id);
         break;
     case SIPAGENT_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipagent_profile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipagent_profile_id);
         break;
     case POTS_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.pots_profile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.pots_profile_id);
         break;
     case DIGITMAP_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.digitmap_profile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.digitmap_profile_id);
         break;
     case SIPRIGHT_PROFILE_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipright_profile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipright_profile_id);
         break;
     case CLASSIFICATION_PROFILE_NODE: 
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.classificationprofile_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.classificationprofile_id);
         break;
     case INTERFACE_MVLAN_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.mvlan_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.mvlan_id);
         break;
     case INTERFACE_VLANIF_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.vlanif_id);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.vlanif_id);
         break;
     case ENABLE_REBOOT_INTERACTION_NODE:
     case CONFIG_REBOOT_INTERACTION_NODE:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node));
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node));
         break;
     default:
-        snprintf (buf, sizeof (buf), cmd_prompt (vty->node), hostname);
+        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname);
     }
 
     if (vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH) {
@@ -608,8 +608,8 @@ vty_login_show (struct vty *vty, char showSelfFlag)
 void
 vty_logo_show(struct vty *vty)
 {
-    char  model[TF_NVRAM_MODEL_LEN];
-    char  vendor[TF_NVRAM_VENDOR_LEN];
+    char  model[NVRAM_MODEL_LEN];
+    char  vendor[NVRAM_VENDOR_LEN];
 
     //tfDeviceParametersGet(NULL, model, NULL, vendor);
 
@@ -979,7 +979,7 @@ static void vty_cursor_to_end(struct vty *vty)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprintf (buf, "\033[%dC", vty->width - 1);
+    sprin(buf, "\033[%dC", vty->width - 1);
     vty_out (vty, buf);
 }
 
@@ -1009,7 +1009,7 @@ vty_cursor_to_begin_line (struct vty *vty)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprintf (buf, "\033[%dD", vty->width - 1);
+    sprin(buf, "\033[%dD", vty->width - 1);
     vty_out (vty, buf);
 }
 
@@ -1019,7 +1019,7 @@ vty_cursor_move_left_pos (struct vty *vty, int pos)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprintf (buf, "\033[80D");
+    sprin(buf, "\033[80D");
     vty_out (vty, buf);
 }
 
@@ -1029,7 +1029,7 @@ vty_cursor_move_right_pos (struct vty *vty, int pos)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprintf (buf, "\033[%dC", pos);
+    sprin(buf, "\033[%dC", pos);
     vty_out (vty, buf);
 }
 
@@ -1517,7 +1517,7 @@ vty_end_config (struct vty *vty)
     case ACL_ADV_NODE:
     case ACL_LINK_NODE:
     case ACL_USER_NODE:
-    case ACL_TF_NODE:
+    case ACL_NODE:
         vty_config_unlock (vty);
         vty->node = ENABLE_NODE;
         break;
@@ -1533,7 +1533,7 @@ vty_end_config (struct vty *vty)
     case ACL_ADV_NODE:
     case ACL_LINK_NODE:
     case ACL_USER_NODE:
-    case ACL_TF_NODE:
+    case ACL_NODE:
     case ACL6_BASIC_NODE:
     case ACL6_ADV_NODE:
         vty->node = ENABLE_NODE;
@@ -2982,7 +2982,7 @@ alarm_to_vty (char *str)
     int alarmed = FALSE;
 
     if (NULL == str) {
-        printf ("str is null.\n");
+        prin("str is null.\n");
         return -1;
     }
 
@@ -3016,7 +3016,7 @@ static void
 vclient_close (vtysh_client_info * vclient)
 {
     if (vclient->fd >= 0) {
-        fprintf (stderr, "Warning: closing connection to %s because of an I/O error!\n", vclient->name);
+        fprin(stderr, "Warning: closing connection to %s because of an I/O error!\n", vclient->name);
         close (vclient->fd);
         vclient->fd = -1;
     }
@@ -3030,7 +3030,7 @@ vclient_close (vtysh_client_info * vclient)
 vtysh_client_info g_vty_daemon[] = {
     {.fd = -1,.name = "test",.flag = VTYSH_TEST,.path = TEST_VTYSH_PATH}
     ,
-    {.fd = -1,.name = "gtf",.flag = VTYSH_GTF,.path = GTF_VTYSH_PATH}
+    {.fd = -1,.name = "gtf",.flag = VTYSH_GTF,.path = GVTYSH_PATH}
     ,
     {.fd = -1,.name = "swAcl",.flag = VTYSH_QOSACL,.path = SWACL_VTYSH_PATH}
     ,
@@ -3062,14 +3062,14 @@ vtysh_connect (vtysh_client_info * vclient)
     /* Stat socket to see if we have permission to access it. */
     ret = stat (vclient->path, &s_stat);
     if (ret < 0 && errno != ENOENT) {
-        fprintf (stderr, "vtysh_connect(%s): stat = %s\n", vclient->path, safe_strerror (errno));
+        fprin(stderr, "vtysh_connect(%s): stat = %s\n", vclient->path, safe_strerror (errno));
         return -1;
         //exit(1);
     }
 
     if (ret >= 0) {
         if (!S_ISSOCK (s_stat.st_mode)) {
-            fprintf (stderr, "vtysh_connect(%s): Not a socket\n", vclient->path);
+            fprin(stderr, "vtysh_connect(%s): Not a socket\n", vclient->path);
             return -1;
         }
 
@@ -3078,7 +3078,7 @@ vtysh_connect (vtysh_client_info * vclient)
     sock = socket (AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
 //#ifdef DEBUG
-        fprintf (stderr, "vtysh_connect(%s): socket = %s\n", vclient->path, safe_strerror (errno));
+        fprin(stderr, "vtysh_connect(%s): socket = %s\n", vclient->path, safe_strerror (errno));
 //#endif /* DEBUG */
         return -1;
     }
@@ -3095,7 +3095,7 @@ vtysh_connect (vtysh_client_info * vclient)
     ret = connect (sock, (struct sockaddr *) &addr, len);
     if (ret < 0) {
 //#ifdef DEBUG
-        fprintf (stderr, "vtysh_connect(%s): connect = %s\n", vclient->path, safe_strerror (errno));
+        fprin(stderr, "vtysh_connect(%s): connect = %s\n", vclient->path, safe_strerror (errno));
 //#endif /* DEBUG */
         close (sock);
         return -1;
@@ -3106,7 +3106,7 @@ vtysh_connect (vtysh_client_info * vclient)
 
 #if 0
     if (set_nonblocking (sock) < 0) {
-        fprintf (stderr, "vtysh_accept: could not set vty socket %d to non-blocking,"
+        fprin(stderr, "vtysh_accept: could not set vty socket %d to non-blocking,"
                  " %s, closing", sock, safe_strerror (errno));
         close (sock);
         return -1;
@@ -3151,7 +3151,7 @@ vtysh_connect_all_daemon (void *client, int daemon_num)
         }
     }
     if (!matches)
-        fprintf (stderr, "Error: no daemons match name %s!\n", c[i].name);
+        fprin(stderr, "Error: no daemons match name %s!\n", c[i].name);
     return rc;
 }
 
@@ -3179,7 +3179,7 @@ vtysh_client_daemon_execute (struct vty *vty, vtysh_client_info * vclient, const
     //printf("%s dst[%s]line:%s\r\n", __func__, vclient->name, line);
     ret = send (vclient->fd, line, strlen (line) + 1, 0);
     if (ret <= 0) {
-        fprintf (stderr, "%s %d\r\n", __func__, __LINE__);
+        fprin(stderr, "%s %d\r\n", __func__, __LINE__);
         vclient_close (vclient);
         return CMD_SUCCESS;
     }
@@ -3216,7 +3216,7 @@ vtysh_client_daemon_execute (struct vty *vty, vtysh_client_info * vclient, const
             nbytes = read (vclient->fd, buf, sizeof (buf) - 1);
 
             if (nbytes <= 0 && errno != EINTR) {
-                fprintf (stderr, "%s %d\r\n", __func__, __LINE__);
+                fprin(stderr, "%s %d\r\n", __func__, __LINE__);
                 vclient_close (vclient);
                 return CMD_SUCCESS;
             }
@@ -3591,13 +3591,13 @@ vty_serv_sock_addrinfo (const char *hostname, unsigned short port)
     req.ai_flags = AI_PASSIVE;
     req.ai_family = AF_UNSPEC;
     req.ai_socktype = SOCK_STREAM;
-    sprintf (port_str, "%d", port);
+    sprin(port_str, "%d", port);
     port_str[sizeof (port_str) - 1] = '\0';
 
     ret = getaddrinfo (hostname, port_str, &req, &ainfo);
 
     if (ret != 0) {
-        fprintf (stderr, "getaddrinfo failed: %s\n", gai_strerror (ret));
+        fprin(stderr, "getaddrinfo failed: %s\n", gai_strerror (ret));
         exit (1);
     }
 
@@ -4227,7 +4227,7 @@ thread_process_alarm_recv (void)
 
     serv_sock = vty_serv_un_alarm (ALARM_VTYSH_PATH);
     if (serv_sock < 0) {
-        printf ("start alarm thread error.\n");
+        prin("start alarm thread error.\n");
         //system ("reboot");
         return;
     }
@@ -4251,7 +4251,7 @@ thread_process_alarm_recv (void)
             if (EINTR == errno) {
                 continue;
             }
-            printf ("select error:%s\n", strerror (errno));
+            prin("select error:%s\n", strerror (errno));
             continue;
         }
         for (i = 3; i < max + 1; i++) {
@@ -4782,13 +4782,13 @@ vtysh_client_read (struct thread *thread)
         buffer_reset (vty->obuf);
         vty_close (vty);
 #ifdef VTYSH_DEBUG
-        printf ("close vtysh\n");
+        prin("close vtysh\n");
 #endif /* VTYSH_DEBUG */
         return 0;
     }
 
 #ifdef VTYSH_DEBUG
-    printf ("line: %.*s\n", nbytes, buf);
+    prin("line: %.*s\n", nbytes, buf);
 #endif /* VTYSH_DEBUG */
 
     for (p = buf; p < buf + nbytes; p++) {
@@ -4802,8 +4802,8 @@ vtysh_client_read (struct thread *thread)
 
             /* Return result. */
 #ifdef VTYSH_DEBUG
-            printf ("result: %d\n", ret);
-            printf ("vtysh node: %d\n", vty->node);
+            prin("result: %d\n", ret);
+            prin("vtysh node: %d\n", vty->node);
 #endif /* VTYSH_DEBUG */
 
             header[3] = ret;
@@ -4896,7 +4896,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
     ret = send (vclient->fd, cmd,sizeof(cmd), 0);
     if (ret <= 0)
     {
-        fprintf (stderr, "%s %d\r\n", __func__, __LINE__);
+        fprin(stderr, "%s %d\r\n", __func__, __LINE__);
         vclient_close (vclient);
         return CMD_ERR_INCOMPLETE;
     }
@@ -4944,7 +4944,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
 
             if (nbytes < 0 && !ERRNO_IO_RETRY(errno))
             {
-                fprintf (stderr, "%s %d\r\n", __func__, __LINE__);
+                fprin(stderr, "%s %d\r\n", __func__, __LINE__);
                 vclient_close (vclient);
                 XFREE(MTYPE_TMP, cmdRsp);
                 return CMD_ERR_INCOMPLETE;
@@ -4999,7 +4999,7 @@ int vtysh_user_env_get_from_serv(struct vty * vty,struct cmd_element *cmd)
     return CMD_ERR_INCOMPLETE;
 }
 
-int vtysh_gtf_profile_node_enter_check(struct vty * vty)
+int vtysh_gprofile_node_enter_check(struct vty * vty)
 {
     int idx;
     struct vty *pTmpVty;
@@ -5263,7 +5263,7 @@ vty_use_backup_config (char *fullpath)
     }
 
     fullpath_tmp = malloc (strlen (fullpath) + 8);
-    sprintf (fullpath_tmp, "%s.XXXXXX", fullpath);
+    sprin(fullpath_tmp, "%s.XXXXXX", fullpath);
 
     /* Open file to configuration write. */
     tmp = mkstemp (fullpath_tmp);
@@ -5318,7 +5318,7 @@ vty_read_config (char *config_file, char *config_default_dir)
         if (!IS_DIRECTORY_SEP (config_file[0])) {
             getcwd (cwd, MAXPATHLEN);
             tmp = XMALLOC (MTYPE_TMP, strlen (cwd) + strlen (config_file) + 2);
-            sprintf (tmp, "%s/%s", cwd, config_file);
+            sprin(tmp, "%s/%s", cwd, config_file);
             fullpath = tmp;
         }
         else
@@ -5327,13 +5327,13 @@ vty_read_config (char *config_file, char *config_default_dir)
         confp = fopen (fullpath, "r");
 
         if (confp == NULL) {
-            //fprintf (stderr, "%s: failed to open configuration file %s: %s\n",
+            //fprin(stderr, "%s: failed to open configuration file %s: %s\n",
             //         __func__, fullpath, safe_strerror (errno));
 
             confp = vty_use_backup_config (fullpath);
-            if (confp);         //fprintf (stderr, "WARNING: using backup configuration file!\n");
+            if (confp);         //fprin(stderr, "WARNING: using backup configuration file!\n");
             else {
-                //fprintf (stderr, "can't open configuration file [%s]\n",
+                //fprin(stderr, "can't open configuration file [%s]\n",
                 //     config_file);
                 //exit(1);
             }
@@ -5367,12 +5367,12 @@ vty_read_config (char *config_file, char *config_default_dir)
 
         confp = fopen (config_default_dir, "r");
         if (confp == NULL) {
-            fprintf (stderr, "%s: failed to open configuration file %s: %s\n",
+            fprin(stderr, "%s: failed to open configuration file %s: %s\n",
                      __func__, config_default_dir, safe_strerror (errno));
             return;
             confp = vty_use_backup_config (config_default_dir);
             if(!confp){
-                fprintf (stderr, "WARNING: using backup configuration file!\n");
+                fprin(stderr, "WARNING: using backup configuration file!\n");
                 return;
             }
         }

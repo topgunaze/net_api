@@ -638,7 +638,7 @@ ZEXTERN int ZEXPORT deflateSetDictionary OF((z_streamp strm,
    addition, the current implementation of deflate will use at most the window
    size minus 262 bytes of the provided dictionary.
 
-     Utf return of this function, strm->adler is set to the Adler-32 value
+     Ureturn of this function, strm->adler is set to the Adler-32 value
    of the dictionary; the decompressor may later use this value to determine
    which dictionary has been used by the compressor.  (The Adler-32 value
    applies to the whole dictionary even if only a subset of the dictionary is
@@ -1203,9 +1203,9 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags OF((void));
      21: FASTEST -- deflate algorithm with only one, lowest compression level
      22,23: 0 (reserved)
 
-    The sprintf variant used by gzprintf (zero is best):
+    The sprinvariant used by gzprin(zero is best):
      24: 0 = vs*, 1 = s* -- 1 means limited to 20 arguments after the format
-     25: 0 = *nprintf, 1 = *printf -- 1 means gzprintf() not secure!
+     25: 0 = *nprintf, 1 = *prin-- 1 means gzprintf() not secure!
      26: 0 = returns value, 1 = void -- 1 means inferred string length returned
 
     Remainder:
@@ -1228,9 +1228,9 @@ ZEXTERN int ZEXPORT compress OF((Bytef *dest,   uLongf *destLen,
                                  const Bytef *source, uLong sourceLen));
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
-   the byte length of the source buffer.  Utf entry, destLen is the total size
+   the byte length of the source buffer.  Uentry, destLen is the total size
    of the destination buffer, which must be at least the value returned by
-   compressBound(sourceLen).  Utf exit, destLen is the actual size of the
+   compressBound(sourceLen).  Uexit, destLen is the actual size of the
    compressed data.  compress() is equivalent to compress2() with a level
    parameter of Z_DEFAULT_COMPRESSION.
 
@@ -1245,9 +1245,9 @@ ZEXTERN int ZEXPORT compress2 OF((Bytef *dest,   uLongf *destLen,
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
-   length of the source buffer.  Utf entry, destLen is the total size of the
+   length of the source buffer.  Uentry, destLen is the total size of the
    destination buffer, which must be at least the value returned by
-   compressBound(sourceLen).  Utf exit, destLen is the actual size of the
+   compressBound(sourceLen).  Uexit, destLen is the actual size of the
    compressed data.
 
      compress2 returns Z_OK if success, Z_MEM_ERROR if there was not enough
@@ -1266,11 +1266,11 @@ ZEXTERN int ZEXPORT uncompress OF((Bytef *dest,   uLongf *destLen,
                                    const Bytef *source, uLong sourceLen));
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
-   the byte length of the source buffer.  Utf entry, destLen is the total size
+   the byte length of the source buffer.  Uentry, destLen is the total size
    of the destination buffer, which must be large enough to hold the entire
    uncompressed data.  (The size of the uncompressed data must have been saved
    previously by the compressor and transmitted to the decompressor by some
-   mechanism outside the scope of this compression library.) Utf exit, destLen
+   mechanism outside the scope of this compression library.) Uexit, destLen
    is the actual size of the uncompressed data.
 
      uncompress returns Z_OK if success, Z_MEM_ERROR if there was not
@@ -1400,7 +1400,7 @@ ZEXTERN int ZEXPORT gzread OF((gzFile file, voidp buf, unsigned len));
    that remaining trailing garbage is ignored (and no error is returned).
 
      gzread can be used to read a gzip file that is being concurrently written.
-   Utf reaching the end of the input, gzread will return with the available
+   Ureaching the end of the input, gzread will return with the available
    data.  If the error code returned by gzerror is Z_OK or Z_BUF_ERROR, then
    gzclearerr can be used to clear the end of file indicator in order to permit
    gzread to be tried again.  Z_OK indicates that a gzip stream was completed
@@ -1465,10 +1465,10 @@ ZEXTERN z_size_t ZEXPORT gzfwrite OF((voidpc buf, z_size_t size,
    is returned, and the error state is set to Z_STREAM_ERROR.
 */
 
-ZEXTERN int ZEXPORTVA gzprintf Z_ARG((gzFile file, const char *format, ...));
+ZEXTERN int ZEXPORTVA gzprinZ_ARG((gzFile file, const char *format, ...));
 /*
      Converts, formats, and writes the arguments to the compressed file under
-   control of the format string, as in fprintf.  gzprintf returns the number of
+   control of the format string, as in fprintf.  gzprinreturns the number of
    uncompressed bytes actually written, or a negative zlib error code in case
    of error.  The number of uncompressed bytes written is limited to 8191, or
    one less than the buffer size given to gzbuffer().  The caller should assure
@@ -1899,7 +1899,7 @@ ZEXTERN gzFile         ZEXPORT gzopen_w OF((const wchar_t *path,
 #endif
 #if defined(STDC) || defined(Z_HAVE_STDARG_H)
 #  ifndef Z_SOLO
-ZEXTERN int            ZEXPORTVA gzvprintf Z_ARG((gzFile file,
+ZEXTERN int            ZEXPORTVA gzvprinZ_ARG((gzFile file,
                                                   const char *format,
                                                   va_list va));
 #  endif

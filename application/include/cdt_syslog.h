@@ -1,6 +1,6 @@
 /******************************************************************************
 Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
-  文 件 名   : tf_syslog.h
+  文 件 名   : syslog.h
   作    者   : jh.liang
   版 本 号   : 1.0.0 
   生成日期   : 2015年3月13日
@@ -9,11 +9,11 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 
 
 
-#ifndef TF_SYSLOG_H
-#define TF_SYSLOG_H
+#ifndef SYSLOG_H
+#define SYSLOG_H
 
 //#include <sys/syslog.h>
-#include "tf_log.h"
+#include "log.h"
 
 struct tflog *
 opentflog (const char *progname, int mods, int debugEn,int flags, int syslog_facility, int (*termOut)(char *));
@@ -49,6 +49,6 @@ opentflog (const char *progname, int mods, int debugEn,int flags, int syslog_fac
     do {                                                                        \
                 tflog_debug(0, exp, ##arg);  \
         } while(0)                 
-#endif  //TF_SYSLOG_H
+#endif  //SYSLOG_H
 
 

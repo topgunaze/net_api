@@ -8,8 +8,8 @@
  *     <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
 
-#ifndef __GTF_DEV_IPC_ADAPTER_H__
-#define __GTF_DEV_IPC_ADAPTER_H__
+#ifndef __GDEV_IPC_ADAPTER_H__
+#define __GDEV_IPC_ADAPTER_H__
 
 #pragma pack(1)
 
@@ -31,5 +31,5 @@ typedef struct SUPPORT_TRX_S
 
 #pragma pack()
 
-#endif /* __GTF_DEV_IPC_ADAPTER_H__ */
+#endif /* __GDEV_IPC_ADAPTER_H__ */
 

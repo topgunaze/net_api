@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_file.h reference to busybox
+ * 文件名称:  file.h reference to busybox
  * 作           者:  steven.tian
  * 日           期:  2017/02/27
  * 文件描述:  file operate lib
@@ -7,8 +7,8 @@
  * 修改历史:  
  *     <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
-#ifndef _TF_FILE_H
-#define _TF_FILE_H
+#ifndef _FILE_H
+#define _FILE_H
 
 #include <stddef.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@
 #define STACK_LINE_BUF_MAX_LEN 256
 #define MTD_NAME_MAX_LEN       256
 
-#define tf_file_err(arg...) printf(arg)
+#define file_err(arg...) printf(arg)
 
 #define FD_CLOSE(fd) do { \
                         if (fd >= 0) \

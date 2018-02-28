@@ -9,10 +9,10 @@
   
 **************************************************************/
 
-#ifndef __TF_NNV_PARAM_PUB_H__
-#define __TF_NNV_PARAM_PUB_H__
+#ifndef __NNV_PARAM_PUB_H__
+#define __NNV_PARAM_PUB_H__
 
-#include "tf_flash_images.h"
+#include "flash_images.h"
 
 /* enable structure packing */
 #if defined (__GNUC__)
@@ -32,9 +32,9 @@ typedef struct
 typedef struct
 {
 	UINT8	mac[6];						        /* MAC地址 */
-    char	model[TF_NVRAM_MODEL_LEN];		    /* 产品型号 */
-    char	sn[TF_NVRAM_SN_LEN];		        /* 产品序列号 */
-    char	vendor[TF_NVRAM_VENDOR_LEN];		/* 厂商信息 */
+    char	model[NVRAM_MODEL_LEN];		    /* 产品型号 */
+    char	sn[NVRAM_SN_LEN];		        /* 产品序列号 */
+    char	vendor[NVRAM_VENDOR_LEN];		/* 厂商信息 */
 }PACKED IPC_ENV_PARAM_INFO_T;
 
 
@@ -45,5 +45,5 @@ typedef struct
 #endif
 
 
-#endif  /* __TF_NNV_PARAM_PUB_H__ */
+#endif  /* __NNV_PARAM_PUB_H__ */
 

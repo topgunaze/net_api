@@ -13,9 +13,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdint.h>
-#include "tf_monitor_pub.h"
+#include "monitor_pub.h"
 
-#include "tf_log.h"
+#include "log.h"
 #include "ipc_public.h"
 
 #define PROMPT_LEN     54
@@ -91,7 +91,7 @@ enum
 enum
 {
     APP_EVENT_ID_IPC_KER        = IPC_EVENT_BASE,
-    APP_EVENT_ID_TF            = IPC_EVENT_TF_INITED,
+    APP_EVENT_ID_TF            = IPC_EVENT_INITED,
     APP_EVENT_ID_SW_IGMP_SN     = IPC_EVENT_SW_IGMP_SN_INITED,
     APP_EVENT_ID_SW_RSTP        = IPC_EVENT_SW_RSTP_INITED,
     APP_EVENT_ID_SW_LACP        = IPC_EVENT_SW_LACP_INITED,

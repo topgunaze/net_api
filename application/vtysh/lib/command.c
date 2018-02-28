@@ -189,9 +189,9 @@ level_match (const char *s)
 void
 print_version (const char *progname)
 {
-    printf ("%s version %s\n", progname, QUAGGA_VERSION);
-    printf ("%s\n", QUAGGA_COPYRIGHT);
-    printf ("configured with:\n\t%s\n", QUAGGA_CONFIG_ARGS);
+    prin("%s version %s\n", progname, QUAGGA_VERSION);
+    prin("%s\n", QUAGGA_COPYRIGHT);
+    prin("configured with:\n\t%s\n", QUAGGA_CONFIG_ARGS);
 }
 
 
@@ -232,10 +232,10 @@ install_node (struct cmd_node *node, int (*func) (struct vty *))
 #if 0
     if (node->node == VTY_NODE) {
         if (vector_slot (cmdvec, node->node)) {
-            printf ("ddddd\n");
+            prin("ddddd\n");
         }
         else
-            printf ("aaaaa\n");
+            prin("aaaaa\n");
     }
 #endif
 }
@@ -351,10 +351,10 @@ format_parser_error (struct format_parser_state *state, const char *message)
 {
     int offset = state->cp - state->string + 1;
 
-    fprintf (stderr, "\nError parsing command: \"%s\"\n", state->string);
-    fprintf (stderr, "                        %*c\n", offset, '^');
-    fprintf (stderr, "%s at offset %d.\n", message, offset);
-    fprintf (stderr, "This is a programming error. Check your DEFUNs etc.\n");
+    fprin(stderr, "\nError parsing command: \"%s\"\n", state->string);
+    fprin(stderr, "                        %*c\n", offset, '^');
+    fprin(stderr, "%s at offset %d.\n", message, offset);
+    fprin(stderr, "This is a programming error. Check your DEFUNs etc.\n");
     exit (1);
 }
 
@@ -694,7 +694,7 @@ install_element (enum node_type ntype, struct cmd_element *cmd)
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprintf (stderr, "Command node %d doesn't exist, please check it, cmd:%s\n", ntype, cmd->string);
+        fprin(stderr, "Command node %d doesn't exist, please check it, cmd:%s\n", ntype, cmd->string);
         //exit (1);
         return;
     }
@@ -721,7 +721,7 @@ install_element_with_right(enum node_type ntype, int right, struct cmd_element *
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprintf (stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         exit (1);
     }
 
@@ -770,7 +770,7 @@ install_element_with_style(enum node_type ntype, int style, struct cmd_element *
     cnode = vector_slot (cmdvec, ntype);
 
     if (cnode == NULL) {
-        fprintf (stderr, "Command node %d doesn't exist, please check it\n", ntype);
+        fprin(stderr, "Command node %d doesn't exist, please check it\n", ntype);
         exit (1);
     }
 
@@ -3704,7 +3704,7 @@ DEFUN (config_exit,
     case INTERFACE_SA_NODE:
     case INTERFACE_MVLAN_NODE:
 	case INTERFACE_BTV_NODE:
-    case INTERFACE_GTF_NODE:
+    case INTERFACE_GNODE:
     case INTERFACE_MGMT_NODE:
     case INTERFACE_VLANIF_NODE:
 	case ACL_BASIC_NODE:
@@ -3713,7 +3713,7 @@ DEFUN (config_exit,
     case ACL6_ADV_NODE:
     case ACL_LINK_NODE:
     case ACL_USER_NODE:
-    case ACL_TF_NODE:
+    case ACL_NODE:
         vty->node = CONFIG_NODE;
         break;
     default:
@@ -3851,7 +3851,7 @@ DEFUN (config_write_file,
     }
 
     config_file_tmp = XMALLOC (MTYPE_TMP, strlen (config_file) + 8);
-    sprintf (config_file_tmp, "%s.XXXXXX", config_file);
+    sprin(config_file_tmp, "%s.XXXXXX", config_file);
 
     /* Open file to configuration write. */
     fd = mkstemp (config_file_tmp);
@@ -4488,7 +4488,7 @@ set_log_file (struct vty *vty, const char *fname, int loglevel)
             zlog_err ("config_log_file: Unable to alloc mem!");
             return CMD_WARNING;
         }
-        sprintf (p, "%s/%s", cwd, fname);
+        sprin(p, "%s/%s", cwd, fname);
         fullpath = p;
     }
     else

@@ -26,7 +26,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "sockunion.h"
 
 #include "sys_common.h"
-#include "tf_common.h"
+#include "common.h"
 #include "gtfProfileDB.h"
 #include "loadExpo.h"
 #include "vtyCommon.h"
@@ -401,11 +401,11 @@ typedef struct vty_interactive_t{
 #define IS_DIRECTORY_SEP(c) ((c) == DIRECTORY_SEP)
 #endif
 
-/* GCC have printf type attribute check.  */
+/* GCC have printype attribute check.  */
 #ifdef __GNUC__
-#define PRINTF_ATTRIBUTE(a,b) __attribute__ ((__format__ (__printf__, a, b)))
+#define PRINATTRIBUTE(a,b) __attribute__ ((__format__ (__prin_, a, b)))
 #else
-#define PRINTF_ATTRIBUTE(a,b)
+#define PRINATTRIBUTE(a,b)
 #endif /* __GNUC__ */
 
 /* Utility macros to convert VTY argument to unsigned long */
@@ -493,7 +493,7 @@ extern void vty_init_vtysh (void);
 extern void vty_terminate (void);
 extern void vty_reset (void);
 extern struct vty *vty_new (void);
-extern int vty_out (struct vty *, const char *, ...) PRINTF_ATTRIBUTE(2, 3);
+extern int vty_out (struct vty *, const char *, ...) PRINATTRIBUTE(2, 3);
 extern void vty_read_config (char *, char *);
 extern void vty_time_print (struct vty *, int);
 extern void vty_serv_sock (const char *, unsigned short, const char *);
@@ -530,9 +530,9 @@ int alarm_to_vty(char *str);
 
 int vty_get_data(struct vty *vty, unsigned char *data);
 extern void vty_print_string_line (struct vty *vty, char *pString, unsigned int length, char fill);
-extern int vty_out_line (struct vty *, const char *, ...) PRINTF_ATTRIBUTE(2, 3);
+extern int vty_out_line (struct vty *, const char *, ...) PRINATTRIBUTE(2, 3);
 extern int vtysh_user_env_get_from_serv(struct vty * vty,struct cmd_element *cmd);
-extern int vtysh_gtf_profile_node_enter_check(struct vty * vty);
+extern int vtysh_gprofile_node_enter_check(struct vty * vty);
 
 extern char *getNameByPid(pid_t pid, char *task_name) ;
 void create_thread_no_arg (void *func);

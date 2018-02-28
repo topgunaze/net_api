@@ -31,8 +31,8 @@
 	FD1216S             0x04010101  
 **************************************************************/
 
-#ifndef __TF_MAC_SECRET_EXPO_H__
-#define __TF_MAC_SECRET_EXPO_H__
+#ifndef __MAC_SECRET_EXPO_H__
+#define __MAC_SECRET_EXPO_H__
 
 /********************************************************************/
 /* tfKeyCheck()       16bytes secret                               */
@@ -102,4 +102,4 @@ int bootFirmwareFailedFlag(void);
 int tfValidateManuUser(char *pPasswd);
 
 
-#endif /* __TF_MAC_SECRET_EXPO_H__ */
+#endif /* __MAC_SECRET_EXPO_H__ */

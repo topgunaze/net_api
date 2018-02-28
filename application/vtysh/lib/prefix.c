@@ -766,7 +766,7 @@ prefix2str (const struct prefix *p, char *str, int size)
   char buf[BUFSIZ];
 
   inet_ntop (p->family, &p->u.prefix, buf, BUFSIZ);
-  snprintf (str, size, "%s/%d", buf, p->prefixlen);
+  snprin(str, size, "%s/%d", buf, p->prefixlen);
   return 0;
 }
 
@@ -888,7 +888,7 @@ netmask_str2prefix_str (const char *net_str, const char *mask_str,
 	return 0;
     }
 
-  sprintf (prefix_str, "%s/%d", net_str, prefixlen);
+  sprin(prefix_str, "%s/%d", net_str, prefixlen);
 
   return 1;
 }

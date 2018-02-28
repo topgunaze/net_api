@@ -10,7 +10,7 @@
 #ifndef __FK_DB_H__
 #define __FK_DB_H__
 
-#include "tf_adaptor_net_if.h"
+#include "adaptor_net_if.h"
 #include "fk_common.h"
 #include "fk_thread_pool.h"
 
@@ -83,7 +83,7 @@ typedef enum
 
 typedef enum
 {
-    ONU_BLACK_TBL_STMT_IDX_TF_NI,
+    ONU_BLACK_TBL_STMT_IDX_NI,
     ONU_BLACK_TBL_STMT_IDX_SN,
     ONU_BLACK_TBL_STMT_IDX_EXPIRE_AT,
     ONU_BLACK_TBL_STMT_IDX_PHY_UINT,
@@ -135,7 +135,7 @@ typedef enum
 typedef enum
 {
     ONU_AUTH_PWD_TBL_STMT_IDX_ONU_UINT,
-    ONU_AUTH_PWD_TBL_STMT_IDX_TF_ID,
+    ONU_AUTH_PWD_TBL_STMT_IDX_ID,
     ONU_AUTH_PWD_TBL_STMT_IDX_PWD,
     ONU_AUTH_PWD_TBL_STMT_IDX_TIME_MODE,
     ONU_AUTH_PWD_TBL_STMT_IDX_EXPIRE_AT,
@@ -257,7 +257,7 @@ typedef struct
 }NODE_AUTOAUTH_RULE;
 
 
-#define COMBINE_DEV_ID_TF_ID(dev_id, port_id) ((port_id) + (dev_id)*MAX_NUM_OF_PORT)
+#define COMBINE_DEV_ID_ID(dev_id, port_id) ((port_id) + (dev_id)*MAX_NUM_OF_PORT)
 
 
 #if DEFUNC("onu_black_tbl")
@@ -265,13 +265,13 @@ typedef struct
 
 int
 fk_onu_db_onu_black_tbl_should_silence(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number);
 
 
 int
 fk_onu_db_onu_black_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 const uint32_t *p_phy_uint,     //null: unknown
                 const uint32_t sec_duration);    //0: no-aging
@@ -279,7 +279,7 @@ fk_onu_db_onu_black_tbl_add(
 
 int
 fk_onu_db_onu_black_tbl_del_by_sn(
-                const uint32_t tf_ni,
+                const uint32_t ni,
                 const char *p_serial_number);
 
 
@@ -314,7 +314,7 @@ fk_onu_db_onu_phy_info_tbl_aging_duration_get(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_free_phy_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 uint16_t *p_phy_id);
 
 
@@ -365,14 +365,14 @@ fk_onu_db_onu_phy_info_tbl_set_autofind(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_status(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t phy_id,
                 uint32_t *p_status);
 
 
 int
 fk_onu_db_onu_phy_info_tbl_get_phy_uint(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 uint32_t *p_phy_uint,
                 uint32_t *p_status);
@@ -380,7 +380,7 @@ fk_onu_db_onu_phy_info_tbl_get_phy_uint(
 
 int
 fk_onu_db_onu_phy_info_tbl_get_valid_phy_uint(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_serial_number,
                 uint32_t *p_phy_uint);
 
@@ -459,17 +459,17 @@ fk_onu_db_onu_phy_info_tbl_del(
 
 int
 fk_onu_db_onu_auth_info_tbl_get_free_onu_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 uint16_t *p_onu_id);
 
 int
 fk_onu_db_onu_auth_info_tbl_free_onu_id(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id);
 
 int
 fk_onu_db_onu_auth_info_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const uint8_t auth_mode,
                 const uint32_t lineprofile_id,
@@ -478,7 +478,7 @@ fk_onu_db_onu_auth_info_tbl_add(
 
 int
 fk_onu_db_onu_auth_info_tbl_auth_mode_get(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 uint8_t *p_auth_mode);
 
@@ -607,7 +607,7 @@ fk_onu_db_onu_auth_info_tbl_del(
 
 int
 fk_onu_db_onu_auth_sn_pwd_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const FK_ONU_AUTH_MODE_E auth_mode,
                 const char *p_serial_number,
@@ -658,7 +658,7 @@ fk_onu_db_onu_auth_sn_pwd_tbl_get_onu_uint_by_pwd_first(
 
 int
 fk_onu_db_onu_auth_pwd_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const char *p_password,
                 const FK_ONU_AUTH_TIME_MODE_E time_mode,
@@ -669,7 +669,7 @@ fk_onu_db_onu_auth_pwd_tbl_add(
 
 int
 fk_onu_db_onu_auth_pwd_tbl_check(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const char *p_password,
                 uint32_t *p_onu_uint,
                 uint8_t *p_auth_mode);
@@ -698,7 +698,7 @@ fk_onu_db_onu_auth_pwd_tbl_get_onu_uint_by_pwd_first(
 
 int
 fk_onu_db_onu_auth_loid_tbl_add(
-                const uint8_t tf_ni,
+                const uint8_t ni,
                 const uint16_t onu_id,
                 const FK_ONU_AUTH_MODE_E auth_mode,
                 const fk_loid_user *p_loid_user,

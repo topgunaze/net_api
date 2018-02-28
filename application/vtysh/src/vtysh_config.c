@@ -25,7 +25,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "memory.h"
 
 #include "vtysh.h"
-#include "tf_log.h"
+#include "log.h"
 #include "vtyCommon.h"
 
 vector configvec;
@@ -286,7 +286,7 @@ vtysh_config_parse_line (const char *line)
     if (c == '\0')
         return;
 
-    /*fprintf (stderr, "[%s]\n", line); */
+    /*fprin(stderr, "[%s]\n", line); */
     
     switch (c)
     {
@@ -467,13 +467,13 @@ vtysh_config_dump (FILE *fp)
             if (line_level->level == level)
             {
                 line_match = 1;
-                fprintf (fp, "%s\r\n", line_level->line);
+                fprin(fp, "%s\r\n", line_level->line);
                 fflush (fp);
             }
         }
         if (line_match)
         {
-            fprintf (fp, "!\r\n");
+            fprin(fp, "!\r\n");
             fflush (fp);
         }
 
@@ -490,14 +490,14 @@ vtysh_config_dump (FILE *fp)
                     #if 0
                     if(!strncmp(config->name, "acl ", strlen("acl ")) && (config->level == level)){
                         line_match = 1;
-                        fprintf (fp, "%s\r\n", config->name);
+                        fprin(fp, "%s\r\n", config->name);
                         fflush (fp);
                     }
                     #endif
                     if(config->level == level)
                     {
                         line_match = 1;
-                        fprintf (fp, "%s\r\n", config->name);
+                        fprin(fp, "%s\r\n", config->name);
                         fflush (fp);
                     }
                     for (ALL_LIST_ELEMENTS (config->line, mnode, mnnode, line_level))
@@ -507,10 +507,10 @@ vtysh_config_dump (FILE *fp)
                             if (line_match == 0)
                             {
                                 line_match = 1;
-                                fprintf (fp, "%s\r\n", config->name);
+                                fprin(fp, "%s\r\n", config->name);
                                 fflush (fp);
                             }
-                            fprintf  (fp, "%s\r\n", line_level->line);
+                            fprin (fp, "%s\r\n", line_level->line);
                             fflush (fp);
                         }
                     }
@@ -518,11 +518,11 @@ vtysh_config_dump (FILE *fp)
                     if (line_match)
                     {
                         config_match = 1;
-                        fprintf (fp, " exit\r\n");
+                        fprin(fp, " exit\r\n");
                         fflush (fp);
                         if (! NO_DELIMITER (i))
                         {
-                            fprintf (fp, "!\r\n");
+                            fprin(fp, "!\r\n");
                             fflush (fp);
                         }
                     }
@@ -533,7 +533,7 @@ vtysh_config_dump (FILE *fp)
                     haveCfg = 1;
                     if (NO_DELIMITER (i))
                     {
-                        fprintf (fp, "!\r\n");
+                        fprin(fp, "!\r\n");
                         fflush (fp);
                     }
                 }
@@ -542,7 +542,7 @@ vtysh_config_dump (FILE *fp)
 
     if (haveCfg)
     {
-        fprintf (fp, "end\r\n");
+        fprin(fp, "end\r\n");
         fflush (fp);
     }
 
@@ -722,13 +722,13 @@ vtysh_read_file (FILE *confp)
         switch (ret)
         {
             case CMD_ERR_AMBIGUOUS:
-                fprintf (stderr, "Ambiguous command.\n");
+                fprin(stderr, "Ambiguous command.\n");
                 break;
             case CMD_ERR_NO_MATCH:
-                fprintf (stderr, "There is no such command.\n");
+                fprin(stderr, "There is no such command.\n");
                 break;
         }
-        fprintf (stderr, "Error occured during reading below line.\n%s\n", vty->buf);
+        fprin(stderr, "Error occured during reading below line.\n%s\n", vty->buf);
     }
 }
 
@@ -894,7 +894,7 @@ vtysh_config_write ()
 
   if (host.name)
     {
-      sprintf (line, "hostname %s", host.name);
+      sprin(line, "hostname %s", host.name);
       vtysh_config_parse_line(line);
     }
   if (vtysh_writeconfig_integrated)

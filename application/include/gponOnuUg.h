@@ -10,11 +10,11 @@
 **************************************************************/
 
 
-#ifndef __GTF_ONUUG_H__
-#define __GTF_ONUUG_H__
+#ifndef __GONUUG_H__
+#define __GONUUG_H__
 
 
-#include "tf_types.h"
+#include "types.h"
 #include "sys_common.h"
 
 #pragma pack(1)
@@ -65,9 +65,9 @@ typedef struct
     UINT8               loading_flag;
     UINT8               active_mode;
     UINT8               result;
-    UINT8               bind_bitmap[SYS_MAX_TF_NUM][SYS_MAX_ONU_NUM/8];
+    UINT8               bind_bitmap[SYS_MAX_NUM][SYS_MAX_ONU_NUM/8];
 }
-GTF_ONT_LOAD_INFO;
+GONT_LOAD_INFO;
 
 typedef struct
 {
@@ -89,5 +89,5 @@ typedef struct
 
 #pragma pack()
 
-#endif /* __GTF_ONUUG_H__ */
+#endif /* __GONUUG_H__ */
 

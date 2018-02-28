@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_log.c
+ * 文件名称:  log.c
  * 作           者:  steven.tian
  * 日           期:  2015.09.22
  * 文件描述:  system log interface
@@ -70,7 +70,7 @@ tflog_info(LOG_INFO):普通通知信息
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "tf_log.h"
+#include "log.h"
 
 struct tflog *tflog_default = NULL;
 
@@ -201,12 +201,12 @@ int tflog_file_safe_write(tflog_catogory_t *cat, char *buf, int datalen)
 			}
 
 			/* save last len byte */
-			len = TF_LOG_LINE_LEN * 100;
+			len = LOG_LINE_LEN * 100;
 			if((pBuf = malloc(len)) != NULL)
 			{
 				fseek(fp, 0-len, SEEK_END);
 				/* drop first line */
-				fgets(pBuf, TF_LOG_LINE_LEN, fp);
+				fgets(pBuf, LOG_LINE_LEN, fp);
 				len = fread(pBuf, 1, len, fp);	
 				fclose(fp);
 
@@ -278,7 +278,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     char orgMsgBuf[CLI_MSG_LEN] = {0};
     #endif
 
-    const char *mark[TF_LOG_TYPE_NUM] = {"oper","alarm","debug"};
+    const char *mark[LOG_TYPE_NUM] = {"oper","alarm","debug"};
     va_list ac;
     int msglen = 0;
     char timeStr[32] = {0};
@@ -294,9 +294,9 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     if (cl == NULL)
     {
         #if 0
-        fprintf (stderr, "%s: ", "unknown");
-        vfprintf (stderr, format, args);
-        fprintf (stderr, "\n");
+        fprin(stderr, "%s: ", "unknown");
+        vfprin(stderr, format, args);
+        fprin(stderr, "\n");
         fflush (stderr);
         #endif
 
@@ -304,7 +304,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
         return;
     }
 
-    if (type >= TF_LOG_TYPE_NUM)
+    if (type >= LOG_TYPE_NUM)
         return;
 
     if (cl->flags & TFLOG_STDERR)
@@ -316,7 +316,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
 
     /* Syslog output */
     if ((cl->flags & TFLOG_SYSLOG) 
-        && (TF_LOG_PRIO_MASK(priority) & cl->catogory[type].syslogPrioMask))
+        && (LOG_PRIO_MASK(priority) & cl->catogory[type].syslogPrioMask))
     {
         va_copy(ac, args);
         vsyslog (priority|tflog_default->facility, format, ac);
@@ -354,7 +354,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     }
     
     /* File output. */
-    if ((TF_LOG_PRIO_MASK(priority) & cl->catogory[type].recordPrioMask) && cl->catogory[type].fd != -1)
+    if ((LOG_PRIO_MASK(priority) & cl->catogory[type].recordPrioMask) && cl->catogory[type].fd != -1)
     {
         snprintf(cliMsgBuf, CLI_MSG_LEN, "%s%s", timeStr, orgMsgBuf);
 
@@ -364,7 +364,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     /* Terminal monitor. */
     if (cl->termOut
         && (cl->flags & TFLOG_CLI)
-        && (TF_LOG_PRIO_MASK(priority) & cl->catogory[type].termPrioMask))
+        && (LOG_PRIO_MASK(priority) & cl->catogory[type].termPrioMask))
     {
         char *nextline = orgMsgBuf;
 
@@ -398,49 +398,49 @@ tflog_oper (const char *format, ...)
         return;
 
     va_start(args, format);
-    vtflog (tflog_default, TF_LOG_TYPE_OPER, LOG_NOTICE, format, args);
+    vtflog (tflog_default, LOG_TYPE_OPER, LOG_NOTICE, format, args);
     va_end (args);
 
 }
 
-#define TF_OPER_FUNC(funcname, level)\
+#define OPER_FUNC(funcname, level)\
 void funcname(const char *format, ...)\
 {\
     va_list args;\
     if (tflog_default == NULL)\
         return;\
     va_start(args, format);\
-    vtflog (tflog_default, TF_LOG_TYPE_OPER, level, format, args);\
+    vtflog (tflog_default, LOG_TYPE_OPER, level, format, args);\
     va_end (args);\
 }
 
-TF_OPER_FUNC(tflog_oper_crit, LOG_CRIT)
-TF_OPER_FUNC(tflog_oper_err, LOG_ERR)
-TF_OPER_FUNC(tflog_oper_warn, LOG_WARNING)
-TF_OPER_FUNC(tflog_oper_info, LOG_INFO)
-TF_OPER_FUNC(tflog_oper_notice, LOG_NOTICE)
+OPER_FUNC(tflog_oper_crit, LOG_CRIT)
+OPER_FUNC(tflog_oper_err, LOG_ERR)
+OPER_FUNC(tflog_oper_warn, LOG_WARNING)
+OPER_FUNC(tflog_oper_info, LOG_INFO)
+OPER_FUNC(tflog_oper_notice, LOG_NOTICE)
 
-#define TF_ALARM_FUNC(funcname, level)\
+#define ALARM_FUNC(funcname, level)\
 void funcname(const char *format, ...)\
 {\
     va_list args;\
     if (tflog_default == NULL)\
         return;\
     va_start(args, format);\
-    vtflog (tflog_default, TF_LOG_TYPE_ALARM, level, format, args);\
+    vtflog (tflog_default, LOG_TYPE_ALARM, level, format, args);\
     va_end (args);\
 }
 
-TF_ALARM_FUNC(tflog_alarm_crit, LOG_CRIT)
-TF_ALARM_FUNC(tflog_alarm_err, LOG_ERR)
-TF_ALARM_FUNC(tflog_alarm_warn, LOG_WARNING)
-TF_ALARM_FUNC(tflog_alarm_info, LOG_INFO)
-TF_ALARM_FUNC(tflog_alarm_notice, LOG_NOTICE)
-TF_ALARM_FUNC(tflog_crit, LOG_CRIT)
-TF_ALARM_FUNC(tflog_err, LOG_ERR)
-TF_ALARM_FUNC(tflog_warn, LOG_WARNING)
-TF_ALARM_FUNC(tflog_info, LOG_INFO)
-TF_ALARM_FUNC(tflog_notice, LOG_NOTICE)
+ALARM_FUNC(tflog_alarm_crit, LOG_CRIT)
+ALARM_FUNC(tflog_alarm_err, LOG_ERR)
+ALARM_FUNC(tflog_alarm_warn, LOG_WARNING)
+ALARM_FUNC(tflog_alarm_info, LOG_INFO)
+ALARM_FUNC(tflog_alarm_notice, LOG_NOTICE)
+ALARM_FUNC(tflog_crit, LOG_CRIT)
+ALARM_FUNC(tflog_err, LOG_ERR)
+ALARM_FUNC(tflog_warn, LOG_WARNING)
+ALARM_FUNC(tflog_info, LOG_INFO)
+ALARM_FUNC(tflog_notice, LOG_NOTICE)
 
 void 
 tflog_debug (int mod, const char *format, ...)
@@ -457,7 +457,7 @@ tflog_debug (int mod, const char *format, ...)
         return;
     
     va_start(args, format);
-    vtflog (tflog_default, TF_LOG_TYPE_DEBUG, LOG_DEBUG, format, args);
+    vtflog (tflog_default, LOG_TYPE_DEBUG, LOG_DEBUG, format, args);
     va_end (args);
 
 }
@@ -536,40 +536,40 @@ opentflog (const char *progname, int mods, int debugEn,int flags, int syslog_fac
         cl->debug.ctrl[idx].debugEn = debugEn;
     }
 
-    cl->catogory[TF_LOG_TYPE_OPER].fd = open(TF_OPER_LOG_FILE, O_APPEND|O_CREAT|O_WRONLY);
-    set_close_on_exec(cl->catogory[TF_LOG_TYPE_OPER].fd);
-    cl->catogory[TF_LOG_TYPE_OPER].fileSizeLimit = TF_LOG_FILE_SIZE;
-    snprintf(cl->catogory[TF_LOG_TYPE_OPER].filename,
-             sizeof(cl->catogory[TF_LOG_TYPE_OPER].filename), 
-             "%s", TF_OPER_LOG_FILE);
-    cl->catogory[TF_LOG_TYPE_OPER].syslogPrioMask = TF_LOG_PRIO_MASK_DEF_DEBUG;
-    cl->catogory[TF_LOG_TYPE_OPER].termPrioMask = 0;
-    cl->catogory[TF_LOG_TYPE_OPER].recordPrioMask = TF_LOG_PRIO_MASK_DEF_ALARM;
-    pthread_mutex_init(&cl->catogory[TF_LOG_TYPE_OPER].lock_mutex, NULL);
-    cl->catogory[TF_LOG_TYPE_OPER].lock_fd = open(TF_OPER_LOG_FILE".lock", O_RDWR | O_CREAT,
+    cl->catogory[LOG_TYPE_OPER].fd = open(OPER_LOG_FILE, O_APPEND|O_CREAT|O_WRONLY);
+    set_close_on_exec(cl->catogory[LOG_TYPE_OPER].fd);
+    cl->catogory[LOG_TYPE_OPER].fileSizeLimit = LOG_FILE_SIZE;
+    snprintf(cl->catogory[LOG_TYPE_OPER].filename,
+             sizeof(cl->catogory[LOG_TYPE_OPER].filename), 
+             "%s", OPER_LOG_FILE);
+    cl->catogory[LOG_TYPE_OPER].syslogPrioMask = LOG_PRIO_MASK_DEF_DEBUG;
+    cl->catogory[LOG_TYPE_OPER].termPrioMask = 0;
+    cl->catogory[LOG_TYPE_OPER].recordPrioMask = LOG_PRIO_MASK_DEF_ALARM;
+    pthread_mutex_init(&cl->catogory[LOG_TYPE_OPER].lock_mutex, NULL);
+    cl->catogory[LOG_TYPE_OPER].lock_fd = open(OPER_LOG_FILE".lock", O_RDWR | O_CREAT,
 		                                            S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    set_close_on_exec(cl->catogory[TF_LOG_TYPE_OPER].lock_fd);
+    set_close_on_exec(cl->catogory[LOG_TYPE_OPER].lock_fd);
     
-    cl->catogory[TF_LOG_TYPE_ALARM].fd = open(TF_ALARM_LOG_FILE, O_APPEND|O_CREAT|O_WRONLY);
-    set_close_on_exec(cl->catogory[TF_LOG_TYPE_ALARM].fd);
-    cl->catogory[TF_LOG_TYPE_ALARM].fileSizeLimit = TF_LOG_FILE_SIZE;
-    snprintf(cl->catogory[TF_LOG_TYPE_ALARM].filename,
-             sizeof(cl->catogory[TF_LOG_TYPE_ALARM].filename), 
-             "%s", TF_ALARM_LOG_FILE);
-    cl->catogory[TF_LOG_TYPE_ALARM].syslogPrioMask= TF_LOG_PRIO_MASK_DEF_DEBUG;
-    cl->catogory[TF_LOG_TYPE_ALARM].termPrioMask= TF_LOG_PRIO_MASK_DEF_ALARM;
-    cl->catogory[TF_LOG_TYPE_ALARM].recordPrioMask = TF_LOG_PRIO_MASK_DEF_ALARM;
-    pthread_mutex_init(&cl->catogory[TF_LOG_TYPE_ALARM].lock_mutex, NULL);
-    cl->catogory[TF_LOG_TYPE_ALARM].lock_fd = open(TF_ALARM_LOG_FILE".lock", O_RDWR | O_CREAT,
+    cl->catogory[LOG_TYPE_ALARM].fd = open(ALARM_LOG_FILE, O_APPEND|O_CREAT|O_WRONLY);
+    set_close_on_exec(cl->catogory[LOG_TYPE_ALARM].fd);
+    cl->catogory[LOG_TYPE_ALARM].fileSizeLimit = LOG_FILE_SIZE;
+    snprintf(cl->catogory[LOG_TYPE_ALARM].filename,
+             sizeof(cl->catogory[LOG_TYPE_ALARM].filename), 
+             "%s", ALARM_LOG_FILE);
+    cl->catogory[LOG_TYPE_ALARM].syslogPrioMask= LOG_PRIO_MASK_DEF_DEBUG;
+    cl->catogory[LOG_TYPE_ALARM].termPrioMask= LOG_PRIO_MASK_DEF_ALARM;
+    cl->catogory[LOG_TYPE_ALARM].recordPrioMask = LOG_PRIO_MASK_DEF_ALARM;
+    pthread_mutex_init(&cl->catogory[LOG_TYPE_ALARM].lock_mutex, NULL);
+    cl->catogory[LOG_TYPE_ALARM].lock_fd = open(ALARM_LOG_FILE".lock", O_RDWR | O_CREAT,
 		                                            S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-    set_close_on_exec(cl->catogory[TF_LOG_TYPE_ALARM].lock_fd);
+    set_close_on_exec(cl->catogory[LOG_TYPE_ALARM].lock_fd);
 
-    cl->catogory[TF_LOG_TYPE_DEBUG].fd = -1;
-    cl->catogory[TF_LOG_TYPE_DEBUG].fileSizeLimit = TF_LOG_FILE_SIZE;
-    cl->catogory[TF_LOG_TYPE_DEBUG].syslogPrioMask = TF_LOG_PRIO_MASK_DEF_DEBUG;
-    cl->catogory[TF_LOG_TYPE_DEBUG].termPrioMask = TF_LOG_PRIO_MASK_DEF_DEBUG;
-    cl->catogory[TF_LOG_TYPE_DEBUG].recordPrioMask = 0;
-    pthread_mutex_init(&cl->catogory[TF_LOG_TYPE_DEBUG].lock_mutex, NULL);
+    cl->catogory[LOG_TYPE_DEBUG].fd = -1;
+    cl->catogory[LOG_TYPE_DEBUG].fileSizeLimit = LOG_FILE_SIZE;
+    cl->catogory[LOG_TYPE_DEBUG].syslogPrioMask = LOG_PRIO_MASK_DEF_DEBUG;
+    cl->catogory[LOG_TYPE_DEBUG].termPrioMask = LOG_PRIO_MASK_DEF_DEBUG;
+    cl->catogory[LOG_TYPE_DEBUG].recordPrioMask = 0;
+    pthread_mutex_init(&cl->catogory[LOG_TYPE_DEBUG].lock_mutex, NULL);
 
     openlog (progname, syslog_flags, cl->facility);
     
@@ -587,12 +587,12 @@ closetflog (struct tflog *cl)
     
     closelog();
 
-    for (idx = 0; idx < TF_LOG_TYPE_NUM; idx++)
+    for (idx = 0; idx < LOG_TYPE_NUM; idx++)
     {
         if (cl->catogory[idx].fd != -1)
             close (cl->catogory[idx].fd);
 
-        pthread_mutex_destroy(&cl->catogory[TF_LOG_TYPE_DEBUG].lock_mutex);
+        pthread_mutex_destroy(&cl->catogory[LOG_TYPE_DEBUG].lock_mutex);
     }
     #if defined(BUF_USE_HEAP) && !defined(BUF_USE_STACK)
     ZFREE(MTYPE_TFLOG, orgMsgBuf);
@@ -738,9 +738,9 @@ int tflog_syslog_priority_set(int prio)
         return -1;
     }
 
-    for (idx = 0; idx < TF_LOG_TYPE_NUM; idx++)
+    for (idx = 0; idx < LOG_TYPE_NUM; idx++)
     {
-        cl->catogory[idx].syslogPrioMask = TF_LOG_PRIO_MASK_HL(prio);
+        cl->catogory[idx].syslogPrioMask = LOG_PRIO_MASK_HL(prio);
     }
 
     return 0;
@@ -782,7 +782,7 @@ int tflog_syslog_priority_get(void)
         return -1;
     }
     
-    return priority_mask_to_int(cl->catogory[TF_LOG_TYPE_ALARM].syslogPrioMask);
+    return priority_mask_to_int(cl->catogory[LOG_TYPE_ALARM].syslogPrioMask);
 }
 
 /*************************************************************
@@ -802,7 +802,7 @@ int tflog_alarm_priority_set(int prio)
         return -1;
     }
 
-    cl->catogory[TF_LOG_TYPE_ALARM].termPrioMask = TF_LOG_PRIO_MASK_HL(prio);
+    cl->catogory[LOG_TYPE_ALARM].termPrioMask = LOG_PRIO_MASK_HL(prio);
 
     return 0;
 }
@@ -822,7 +822,7 @@ int tflog_alarm_priority_get(void)
         return -1;
     }
 
-    return priority_mask_to_int(cl->catogory[TF_LOG_TYPE_ALARM].termPrioMask);
+    return priority_mask_to_int(cl->catogory[LOG_TYPE_ALARM].termPrioMask);
 }
 
 

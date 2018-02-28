@@ -4,8 +4,8 @@
 *  	2014/01/06-?
 */
 
-#ifndef __TF_TYPE_H__
-#define __TF_TYPE_H__
+#ifndef __TYPE_H__
+#define __TYPE_H__
 
 
 /*
@@ -26,14 +26,14 @@ typedef unsigned char              BYTE;
 #define	PERM	(S_IRUSR | S_IWUSR)
 
 
-#define TF_VALID 					1
-#define TF_INVALID 				0
+#define VALID 					1
+#define INVALID 				0
 
 typedef enum
 {
 	SYS_IMAGE_TYPE_FILE=0,
 	ONU_IMAGE_TYPE_FILE
-}TF_FILE_TYPE;
+}FILE_TYPE;
 
 
 /* Add by steven.tian 2014.09.05 ****begin */

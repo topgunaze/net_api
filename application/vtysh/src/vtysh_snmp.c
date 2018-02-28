@@ -17,7 +17,7 @@
 ******************************************************************************/
 
 
-#include "tf_types.h"
+#include "types.h"
 #include "zebra.h"
 #include "thread.h"
 #include "command.h"
@@ -27,7 +27,7 @@
 #include "sys_common.h"
 #include "ipc_if.h"
 #include "ipc_public.h"
-#include "tf_snmp.h"
+#include "snmp.h"
 
 SNMP_CONF_INFO_STRU snmpConfInfo;
 int reconfig=0;
@@ -37,7 +37,7 @@ vtysh_config_parse_line (const char *line);
 
 
 static void
-_tf_snmp_reconfig(void)
+_snmp_reconfig(void)
 {
     if(snmpConfInfo.sysInfo.enable)
         system("killall "SNMP_PROGRAM_NAME" 2>/dev/null"";"""SNMP_PROGRAM_NAME);
@@ -45,7 +45,7 @@ _tf_snmp_reconfig(void)
 
 
 static void
-_tf_snmp_stop(
+_snmp_stop(
                 struct vty *vty)
 {
     if(!snmpConfInfo.sysInfo.enable)
@@ -61,7 +61,7 @@ _tf_snmp_stop(
 
 
 static void
-_tf_snmp_start(
+_snmp_start(
                 struct vty *vty)
 {
     if(snmpConfInfo.sysInfo.enable)
@@ -71,13 +71,13 @@ _tf_snmp_start(
     }
     
     snmpConfInfo.sysInfo.enable = 1;
-    _tf_snmp_reconfig();
+    _snmp_reconfig();
     ipc_if_release_event(IPC_EVENT_SNMP_AGENT_SWITCH, &snmpConfInfo.sysInfo.enable, 1);
 }
 
 
 int
-tf_snmp_conf_update(
+snmp_conf_update(
                 const char *pFullName,
                 UINT8 reconfigFlag)
 {
@@ -206,13 +206,13 @@ tf_snmp_conf_update(
     fclose(pF);
 
     if(reconfigFlag)
-        _tf_snmp_reconfig();
+        _snmp_reconfig();
 
     return 0;
 }
 
 static int 
-_tf_snmp_trap_set(
+_snmp_trap_set(
                 struct vty *vty,
                 const char *pHostName,
                 const char *pIpAddress,
@@ -270,7 +270,7 @@ _tf_snmp_trap_set(
             snmpConfInfo.trapInfo[idx1].ipAddress = htonl(inet_addr(pIpAddress));
             snmpConfInfo.trapInfo[idx1].port = atoi(pTrapPort);
             snprintf(snmpConfInfo.trapInfo[idx1].community, SNMP_COMMUNITY_LEN+1, "%s", pCommunity);
-            tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);               
+            snmp_conf_update(SNMP_CONF_FULL_NAME, 1);               
             vty_out_line(vty, "  The trap host name has existed, and has been modified to current one");
             return CMD_SUCCESS;
         }        
@@ -311,7 +311,7 @@ _tf_snmp_trap_set(
          snmpConfInfo.trapInfo[emptyIdx].ipAddress = htonl(inet_addr(pIpAddress));
          snmpConfInfo.trapInfo[emptyIdx].port = atoi(pTrapPort);
          snprintf(snmpConfInfo.trapInfo[emptyIdx].community, SNMP_COMMUNITY_LEN+1, "%s", pCommunity);
-         tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+         snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
      }
     
       return 0;
@@ -319,7 +319,7 @@ _tf_snmp_trap_set(
 
 
 static int
-_tf_snmp_trap_del(
+_snmp_trap_del(
                 struct vty *vty,
                 const char *pHostName)
 {
@@ -339,7 +339,7 @@ _tf_snmp_trap_del(
         if(strncmp(pHostName, snmpConfInfo.trapInfo[idx].hostName, SNMP_TRAP_HOST_NAME_LEN) == 0)
         {
             memset(&snmpConfInfo.trapInfo[idx], 0, sizeof(snmpConfInfo.trapInfo[idx]));
-            tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+            snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
             
             return CMD_SUCCESS;
         }
@@ -352,7 +352,7 @@ _tf_snmp_trap_del(
 
 
 static int
-_tf_snmp_trap_show(
+_snmp_trap_show(
                 struct vty *vty)
 {    
     int idx, count=0;
@@ -396,7 +396,7 @@ _tf_snmp_trap_show(
 
 
 static int
-_tf_snmp_community_set(
+_snmp_community_set(
                 struct vty *vty,
                 const char *pType,
                 const char *pCommunity)
@@ -454,14 +454,14 @@ _tf_snmp_community_set(
     memset(&snmpConfInfo.snmpCommunity[idx], 0, sizeof(snmpConfInfo.snmpCommunity[idx]));
     snmpConfInfo.snmpCommunity[idx].type = type;
     snprintf(snmpConfInfo.snmpCommunity[idx].community, SNMP_COMMUNITY_LEN+1, "%s", pCommunity);
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return 0;
 }
 
 
 static int
-_tf_snmp_community_del(
+_snmp_community_del(
                 struct vty *vty,
                 const char *pCommunity)
 {
@@ -479,7 +479,7 @@ _tf_snmp_community_del(
         if(strncmp(pCommunity, snmpConfInfo.snmpCommunity[idx].community, SNMP_COMMUNITY_LEN) == 0)
         {
             memset(&snmpConfInfo.snmpCommunity[idx], 0, sizeof(snmpConfInfo.snmpCommunity[idx]));
-            tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+            snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
             
             return CMD_SUCCESS;
         }
@@ -492,7 +492,7 @@ _tf_snmp_community_del(
 
 
 static int
-_tf_snmp_community_show(
+_snmp_community_show(
                 struct vty *vty,
                 const char *pType)
 {
@@ -549,7 +549,7 @@ _tf_snmp_community_show(
 
 
 static int
-_tf_snmp_usm_user_set(
+_snmp_usm_user_set(
                 struct vty *vty,
                 const char *pUser,
                 const char *pGroup,
@@ -643,14 +643,14 @@ _tf_snmp_usm_user_set(
     if(groupLen)
         snprintf(snmpConfInfo.usmUserInfo[idx].group, SNMP_USER_GROUP_LEN+1, "%s", pGroup);
 
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
 
 
 static int
-_tf_snmp_usm_user_del(
+_snmp_usm_user_del(
                     struct vty *vty,
                     const char *pcUser)
 {
@@ -668,7 +668,7 @@ _tf_snmp_usm_user_del(
         if(strncmp(pcUser, snmpConfInfo.usmUserInfo[idx].name, SNMP_USM_USER_NAME_LEN) == 0)
         {
             memset(&snmpConfInfo.usmUserInfo[idx], 0, sizeof(snmpConfInfo.usmUserInfo[idx]));
-            tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+            snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
             
             return CMD_SUCCESS;
         }
@@ -681,7 +681,7 @@ _tf_snmp_usm_user_del(
 
 
 static int
-_tf_snmp_usm_user_show(
+_snmp_usm_user_show(
                 struct vty *vty,
                 const char *pcUser)
 {
@@ -730,7 +730,7 @@ _tf_snmp_usm_user_show(
 
 
 static int
-_tf_snmp_usm_user_show_all(
+_snmp_usm_user_show_all(
                 struct vty *vty)
 {
     int idx;
@@ -778,7 +778,7 @@ _tf_snmp_usm_user_show_all(
 
 
 static int
-_tf_snmp_access_set(
+_snmp_access_set(
                     struct vty *vty,
                     const char *pGroup,
                     const char *pSecLevel,
@@ -895,14 +895,14 @@ _tf_snmp_access_set(
     else
         snprintf(snmpConfInfo.access[idx].notifyView, SNMP_VIEW_NAME_LEN+1, "%s", "none");
 
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
 
 
 static int
-_tf_snmp_access_del(
+_snmp_access_del(
                     struct vty *vty,
                     const char *pGroup)
 {
@@ -930,7 +930,7 @@ _tf_snmp_access_del(
         }
 
         memset(&(snmpConfInfo.access[idx]), 0, sizeof(snmpConfInfo.access[idx]));
-        tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+        snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
         
         return CMD_SUCCESS;
     }
@@ -942,7 +942,7 @@ _tf_snmp_access_del(
 
 
 static int
-_tf_snmp_access_show(
+_snmp_access_show(
                 struct vty *vty,
                 const char *pGroup)
 {
@@ -980,7 +980,7 @@ _tf_snmp_access_show(
 
 
 int
-_tf_snmp_access_show_all(
+_snmp_access_show_all(
                 struct vty *vty)
 {
     int idx;
@@ -1020,7 +1020,7 @@ _tf_snmp_access_show_all(
 
 /* snmp config */
 int
-tf_snmp_config_write(void)
+snmp_config_write(void)
 {
     int idx = 0;
     char line[512];
@@ -1195,7 +1195,7 @@ DEFUN (
     
     snprintf(snmpConfInfo.sysInfo.sysName, SNMP_SYS_NAME_LEN+1, "%s", buf);
     
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1227,7 +1227,7 @@ DEFUN (
     
     snprintf(snmpConfInfo.sysInfo.sysDesc, SNMP_SYS_DESC_LEN+1, "%s", buf);
     
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1259,7 +1259,7 @@ DEFUN (
     
     snprintf(snmpConfInfo.sysInfo.sysContact, SNMP_CONTACT_LEN+1, "%s", buf);
     
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1291,7 +1291,7 @@ DEFUN (
     
     snprintf(snmpConfInfo.sysInfo.sysLocation, SNMP_LOCATION_LEN+1, "%s", buf);
 
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1306,7 +1306,7 @@ DEFUN (
     "Name of the system\n")
 {
     memset(snmpConfInfo.sysInfo.sysName, 0, SNMP_SYS_NAME_LEN);
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1321,7 +1321,7 @@ DEFUN (
     "Description of the system\n")
 {
     memset(snmpConfInfo.sysInfo.sysDesc, 0, SNMP_SYS_DESC_LEN);
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1336,7 +1336,7 @@ DEFUN (
     "Contact information of system maintenance\n")
 {
     memset(snmpConfInfo.sysInfo.sysContact, 0, SNMP_CONTACT_LEN);
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1351,7 +1351,7 @@ DEFUN (
     "Address information of system maintenance\n")
 {
     memset(snmpConfInfo.sysInfo.sysLocation, 0, SNMP_LOCATION_LEN);
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 1);
 
     return CMD_SUCCESS;
 }
@@ -1420,10 +1420,10 @@ DEFUN (
     switch(argv[0][0])
     {
         case 'e':
-            _tf_snmp_start(vty);
+            _snmp_start(vty);
             break;
         case 'd':
-            _tf_snmp_stop(vty);
+            _snmp_stop(vty);
             break;
     }
 
@@ -1459,7 +1459,7 @@ DEFUN (
     "Snmp trap port\n"
     "Community name. <S><Length 1-"SNMP_COMMUNITY_LEN_STR">\n")
 {
-    _tf_snmp_trap_set(vty, argv[0], argv[1], argv[2], argv[3]);
+    _snmp_trap_set(vty, argv[0], argv[1], argv[2], argv[3]);
 
     return CMD_SUCCESS;
 }
@@ -1473,7 +1473,7 @@ DEFUN (
     "Snmp trap\n"
     "Host name. <S><Length 1-"SNMP_TRAP_HOST_NAME_LEN_STR">\n")
 {
-    _tf_snmp_trap_del(vty, argv[0]);
+    _snmp_trap_del(vty, argv[0]);
 
     return CMD_SUCCESS;
 }
@@ -1486,7 +1486,7 @@ DEFUN (
     DESC_SNMP_MODULE
     "Snmp trap\n")
 {
-    _tf_snmp_trap_show(vty);
+    _snmp_trap_show(vty);
 
     return CMD_SUCCESS;
 }
@@ -1509,7 +1509,7 @@ DEFUN (
     "Read-write access for this community in the view\n"
     "Community name. <S><Length 1-"SNMP_COMMUNITY_LEN_STR">\n")
 {
-    _tf_snmp_community_set(vty, argv[0], argv[1]);
+    _snmp_community_set(vty, argv[0], argv[1]);
 
     return CMD_SUCCESS;
 }
@@ -1523,7 +1523,7 @@ DEFUN (
     DESC_SNMP_COMMUNITY_NODE
     "Community name. <S><Length 1-"SNMP_COMMUNITY_LEN_STR">\n")
 {
-    _tf_snmp_community_del(vty, argv[0]);
+    _snmp_community_del(vty, argv[0]);
 
     return CMD_SUCCESS;
 }
@@ -1541,7 +1541,7 @@ DEFUN (
     "Read-only access for this community in the view\n"
     "Read-write access for this community in the view\n")
 {
-    _tf_snmp_community_show(vty, argv[0]);
+    _snmp_community_show(vty, argv[0]);
 
     return CMD_SUCCESS;
 }
@@ -1554,7 +1554,7 @@ DEFUN (
     DESC_SNMP_MODULE
     DESC_SNMP_COMMUNITY_NODE)
 {
-    _tf_snmp_community_show(vty, NULL);
+    _snmp_community_show(vty, NULL);
 
     return CMD_SUCCESS;
 }
@@ -1578,7 +1578,7 @@ DEFUN (
     "The string of user name. <S><Length 1-"SNMP_USM_USER_NAME_LEN_STR">\n"
     "The string of group to which the specified user belongs.<S><Length 1-"SNMP_USER_GROUP_LEN_STR">\n")
 {
-    _tf_snmp_usm_user_set(vty, argv[0], argv[1], NULL, NULL);
+    _snmp_usm_user_set(vty, argv[0], argv[1], NULL, NULL);
 
     return CMD_SUCCESS;
 }
@@ -1597,7 +1597,7 @@ DEFUN (
     "Authenticate with HMAC MD5 algorithm\n"
     "Password of user authentication. <S><Length "SNMP_USM_KEY_MIN_LEN_STR"-"SNMP_USM_AUTH_KEY_LEN_STR">\n")
 {
-    _tf_snmp_usm_user_set(vty, argv[0], argv[1], argv[2], NULL);
+    _snmp_usm_user_set(vty, argv[0], argv[1], argv[2], NULL);
 
     return CMD_SUCCESS;
 }
@@ -1619,7 +1619,7 @@ DEFUN (
     "Use the 56bits DES encryption algorithm\n"
     "Password of user Encryption. <S><Length "SNMP_USM_KEY_MIN_LEN_STR"-"SNMP_USM_PRIV_KEY_LEN_STR">")
 {
-    _tf_snmp_usm_user_set(vty, argv[0], argv[1], argv[2], argv[3]);
+    _snmp_usm_user_set(vty, argv[0], argv[1], argv[2], argv[3]);
 
     return CMD_SUCCESS;
 }
@@ -1636,7 +1636,7 @@ DEFUN (
     DESC_SNMP_USM_USER_V3_NODE
     "The string of user name. <S><Length 1-"SNMP_USM_USER_NAME_LEN_STR">\n")
 {
-    _tf_snmp_usm_user_del(vty, argv[0]);
+    _snmp_usm_user_del(vty, argv[0]);
 
     return CMD_SUCCESS;
 }
@@ -1655,9 +1655,9 @@ DEFUN (
     "The string of user name. <S><Length 1-"SNMP_USM_USER_NAME_LEN_STR">\n")
 {
     if(argc)
-        _tf_snmp_usm_user_show(vty, argv[0]);
+        _snmp_usm_user_show(vty, argv[0]);
     else
-        _tf_snmp_usm_user_show_all(vty);
+        _snmp_usm_user_show_all(vty);
 
     return CMD_SUCCESS;
 }
@@ -1701,7 +1701,7 @@ DEFUN (
     "All views.\n"
     "None view.\n")
 {
-    _tf_snmp_access_set(vty, argv[0], argv[1], argv[2], argv[3], argv[4]);
+    _snmp_access_set(vty, argv[0], argv[1], argv[2], argv[3], argv[4]);
 
     return CMD_SUCCESS;
 }
@@ -1718,7 +1718,7 @@ DEFUN (
     "Secure level noauth.\n"
     "Secure level privacy.\n")
 {
-    _tf_snmp_access_set(vty, argv[0], argv[1], NULL, NULL, NULL);
+    _snmp_access_set(vty, argv[0], argv[1], NULL, NULL, NULL);
     
     return CMD_SUCCESS;
 }
@@ -1736,7 +1736,7 @@ DEFUN (
     "Secure level noauth.\n"
     "Secure level privacy.\n")
 {
-    _tf_snmp_access_del(vty, argv[0]);
+    _snmp_access_del(vty, argv[0]);
     
     return CMD_SUCCESS;
 }
@@ -1756,9 +1756,9 @@ DEFUN (
     "Group name.<S><Length 1-"SNMP_USER_GROUP_LEN_STR">\n")
 {
     if(argc)
-        _tf_snmp_access_show(vty, argv[0]);
+        _snmp_access_show(vty, argv[0]);
     else
-        _tf_snmp_access_show_all(vty);
+        _snmp_access_show_all(vty);
 
     return CMD_SUCCESS;
 }
@@ -1798,7 +1798,7 @@ DEFUN (
 #if DEF_FUNC("cmd install")
 
 void 
-tf_vty_snmp_install(void)
+vty_snmp_install(void)
 {
     /* snmp-agent sys-info */
     install_element (CONFIG_NODE, &vty_snmp_name_set_cmd);
@@ -1893,7 +1893,7 @@ ULONG process_vtysh_task(char *pMsgOut,ULONG ulMsgLen,UCHAR ucMsgType,UCHAR ucSr
 
                 memcpy(&snmpConfInfo, tSnmpConfigInfo, sizeof(SNMP_CONF_INFO_STRU));
                 
-                tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 0);
+                snmp_conf_update(SNMP_CONF_FULL_NAME, 0);
                 reconfig=1;                
             }
             break;			    
@@ -1934,14 +1934,14 @@ void _snmp_reconfig_routine(void)
         sleep(1);
         if(reconfig){
             sleep(2);
-            _tf_snmp_reconfig();
+            _snmp_reconfig();
             reconfig=0;
         }
     }
 }
 
 void 
-tf_vty_snmp_init(void)
+vty_snmp_init(void)
 {
     pthread_t tid;
     pthread_attr_t attr;
@@ -1952,9 +1952,9 @@ tf_vty_snmp_init(void)
 
     system("mkdir -p "SNMP_CONF_DIR);
 
-    tf_snmp_conf_update(SNMP_CONF_FULL_NAME, 0);
+    snmp_conf_update(SNMP_CONF_FULL_NAME, 0);
 
-    tf_vty_snmp_install();
+    vty_snmp_install();
         
     pthread_attr_init(&attr);
     pthread_attr_setschedpolicy(&attr, SCHED_RR);    

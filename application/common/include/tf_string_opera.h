@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_string_opera.h
+ * 文件名称:  string_opera.h
  * 作           者:  keith.gong
  * 日           期:  2015.05.12
  * 文件描述:  字符串处理
@@ -9,11 +9,11 @@
         keith.gong          2015.05.12      V1.00           Create
 **************************************************************/
 
-#ifndef __TF_STRING_OPERA_H__
-#define __TF_STRING_OPERA_H__
+#ifndef __STRING_OPERA_H__
+#define __STRING_OPERA_H__
 
 int 
-tf_str_2_id_array(
+str_2_id_array(
                 char  *str, 
                 unsigned int *pIdArray, 
                 const unsigned int idNum,

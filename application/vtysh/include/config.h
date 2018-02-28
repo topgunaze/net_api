@@ -8,7 +8,7 @@
 //1 Stephen.liu add debug vty port
 #define DEBUG_QOSACL_L2 1500
 #define DEBUG_QOSACL_QOSACL 1501
-#define DEBUG_TF_DEV_CTRL  1505
+#define DEBUG_DEV_CTRL  1505
 #define VTY_SOCK_PORT_LACP  1506
 #define VTY_SOCK_PORT_DOT1X 1507
 
@@ -743,7 +743,7 @@
 #define IGMPSN_VTYSH_PATH "/etc/igmpsn.vty"
 #define DHCPSN_VTYSH_PATH "/etc/dhcpsn.vty"
 #define LACP_VTYSH_PATH "/etc/lacp.vty"
-#define GTF_VTYSH_PATH "/etc/gtfd.vty"
+#define GVTYSH_PATH "/etc/gtfd.vty"
 #define DOT1X_VTYSH_PATH "/etc/dot1x.vty"
 
 #define VTYSH_VTYSH_PATH "/etc/vtysh.vty"

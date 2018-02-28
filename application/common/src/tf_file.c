@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_file.c reference to busybox
+ * 文件名称:  file.c reference to busybox
  * 作           者:  steven.tian
  * 日           期:  2017/02/27
  * 文件描述:  file operate lib
@@ -10,7 +10,7 @@
 
 #include <errno.h>
 #include <sys/mman.h>
-#include "tf_file.h"
+#include "file.h"
 
 size_t safe_read(int fd, void *buf, size_t count)
 {
@@ -157,7 +157,7 @@ size_t full_fd_copy(int src_fd, int dst_fd, size_t size)
 			break;
 		}
 		if (rd < 0) {
-			tf_file_err("read error%s\n", __func__);
+			file_err("read error%s\n", __func__);
 			break;
 		}
 		/* dst_fd == -1 is a fake, else... */
@@ -165,7 +165,7 @@ size_t full_fd_copy(int src_fd, int dst_fd, size_t size)
 			size_t wr = full_write(dst_fd, buffer, rd);
 			if (wr < rd) {
 				if (!continue_on_write_error) {
-					tf_file_err("write error\n");
+					file_err("write error\n");
 					break;
 				}
 				dst_fd = -1;
@@ -209,7 +209,7 @@ size_t full_file_copy(FILE *src, FILE *dst, size_t size)
 
 	if ((src_fd < 0) || (dst_fd < 0))
 	{
-	    tf_file_err("File stream is invalid!\n");
+	    file_err("File stream is invalid!\n");
 	    return -1;
 	}
 
@@ -229,14 +229,14 @@ int find_mtd_dev_by_name(char *name, char *mtd, int len)
     {
         if (!name || !mtd)
         {
-            tf_file_err("Invalid parameters!\n");
+            file_err("Invalid parameters!\n");
             break;
         }
 
         fp = fopen(PROC_MTD_FILE_NAME, "r+");
         if (!fp)
         {
-            tf_file_err("Open %s failed!\n", PROC_MTD_FILE_NAME);
+            file_err("Open %s failed!\n", PROC_MTD_FILE_NAME);
             break;
         }
 
@@ -247,11 +247,11 @@ int find_mtd_dev_by_name(char *name, char *mtd, int len)
             
             if((count = sscanf(lineBuf, "mtd%d: %*s %*s \"%[^\"]\"", &mtdNum, mtdName)) == 2)
             {
-                //tf_file_err("mtdNum=%d mtdName=%s\n", mtdNum, mtdName);
+                //file_err("mtdNum=%d mtdName=%s\n", mtdNum, mtdName);
                 if (0 == strcmp(mtdName, name))
                 {
                     snprintf(mtd, len, "/dev/mtd%d", mtdNum);
-                    tf_file_err("Find line: %s\n", lineBuf);
+                    file_err("Find line: %s\n", lineBuf);
                     ret = 0;
                     break;
                 }
@@ -260,7 +260,7 @@ int find_mtd_dev_by_name(char *name, char *mtd, int len)
         }
 
         if (0 != ret)
-            tf_file_err("\"%s\" is not find in %s!\n", name, PROC_MTD_FILE_NAME);
+            file_err("\"%s\" is not find in %s!\n", name, PROC_MTD_FILE_NAME);
         
     }while(0);
 

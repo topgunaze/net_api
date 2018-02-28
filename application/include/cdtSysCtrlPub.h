@@ -7,25 +7,25 @@
  * 修改历史:  
  *     <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
-#ifndef _TF_SYS_CTRL_PUB_H
-#define _TF_SYS_CTRL_PUB_H
+#ifndef _SYS_CTRL_PUB_H
+#define _SYS_CTRL_PUB_H
 
 #include <stdint.h>
 
 #define SYSTEM_CONF_PATH            "/mnt/cfg/"
 
-#define TF_SYSTEM_CFG_IP_TYPE_INIT    0
-#define TF_SYSTEM_CFG_IP_TYPE_STATIC  1
-#define TF_SYSTEM_CFG_IP_TYPE_DYNAMIC 2
+#define SYSTEM_CFG_IP_TYPE_INIT    0
+#define SYSTEM_CFG_IP_TYPE_STATIC  1
+#define SYSTEM_CFG_IP_TYPE_DYNAMIC 2
 
-#define TF_SYSTEM_CFG_MGMG_IP_DEFAULT          "192.168.1.100"
-#define TF_SYSTEM_CFG_MGMG_IP_NETMASK_DEFAULT  "255.255.255.0"
+#define SYSTEM_CFG_MGMG_IP_DEFAULT          "192.168.1.100"
+#define SYSTEM_CFG_MGMG_IP_NETMASK_DEFAULT  "255.255.255.0"
 
 #define IF_NAME_STR_LEN 16
-#define TF_SYSTEM_CFG_VLAN_IF_NUM  32
-#define TF_IP_ROUTE_STATIC_MAX_NUM   32
-#define TF_SYS_LOG_DESC_STR_LEN    32
-#define TF_SYS_LOG_HOST_NUM        1
+#define SYSTEM_CFG_VLAN_IF_NUM  32
+#define IP_ROUTE_STATIC_MAX_NUM   32
+#define SYS_LOG_DESC_STR_LEN    32
+#define SYS_LOG_HOST_NUM        1
 
 #define IF_DESC_STR_LEN 128
 
@@ -33,30 +33,30 @@
 
 enum
 {
-    TF_IP_ROUTE_STATIC_FLAG_VALID  = (1 << 0),
-    TF_IP_ROUTE_STATIC_DEFAULT     = (1 << 1)
+    IP_ROUTE_STATIC_FLAG_VALID  = (1 << 0),
+    IP_ROUTE_STATIC_DEFAULT     = (1 << 1)
 };
 
 enum
 {
-    TF_IP_ROUTE_PROTO_STATIC   = 0,
-    TF_IP_ROUTE_PROTO_DIRECT   = 1,
-    TF_IP_ROUTE_PROTO_UNKNOWN
+    IP_ROUTE_PROTO_STATIC   = 0,
+    IP_ROUTE_PROTO_DIRECT   = 1,
+    IP_ROUTE_PROTO_UNKNOWN
 };
 
 enum
 {
-    TF_SYS_CTRL_NO_ERR = 0,
-    TF_SYS_CTRL_ERR_EXCEED_LIMIT = -1,
-    TF_SYS_CTRL_GEN_ERR = -2,
-    TF_SYS_CTRL_PARAM_ERR = -3,
-    TF_SYS_CTRL_EXIST_ERR = -4,
+    SYS_CTRL_NO_ERR = 0,
+    SYS_CTRL_ERR_EXCEED_LIMIT = -1,
+    SYS_CTRL_GEN_ERR = -2,
+    SYS_CTRL_PARAM_ERR = -3,
+    SYS_CTRL_EXIST_ERR = -4,
 };
 
 enum
 {
-    TF_SYS_LOG_HOST_INACTIVE = 0,
-    TF_SYS_LOG_HOST_ACTIVE   = 1,
+    SYS_LOG_HOST_INACTIVE = 0,
+    SYS_LOG_HOST_ACTIVE   = 1,
 };
 
 enum
@@ -69,10 +69,10 @@ enum
 
 enum
 {
-    TF_FILE_TYPE_TAR = 0,
-    TF_FILE_TYPE_TXT,
-    TF_FILE_TYPE_GZ,
-    TF_FILE_TYPE_BZIP,
+    FILE_TYPE_TAR = 0,
+    FILE_TYPE_TXT,
+    FILE_TYPE_GZ,
+    FILE_TYPE_BZIP,
 };
 
 enum
@@ -144,7 +144,7 @@ typedef struct
 typedef struct
 {
     uint32_t   ipAddr;
-    char       desc[TF_SYS_LOG_DESC_STR_LEN];
+    char       desc[SYS_LOG_DESC_STR_LEN];
     uint8_t    state;
 }tfSysLogHost_t;
 

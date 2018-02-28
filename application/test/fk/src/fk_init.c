@@ -31,7 +31,7 @@ fk_secondary_init(void)
 
 //#endif
 //extern uint8_t              g_fk_packet_test;
-//extern TF_FK_STATE    g_fk_state;
+//extern FK_STATE    g_fk_state;
 
 int
 main(int argc, char ** argv)
@@ -113,21 +113,21 @@ main(int argc, char ** argv)
 
        if (!g_fk_packet_test)
        {
-           printf("tfdrv %d begin tx syn profile current time(us): %d\r\n", g_fk_state.slot_id, tf_net_timestamp());
+           printf("tfdrv %d begin tx syn profile current time(us): %d\r\n", g_fk_state.slot_id, net_timestamp());
            for (i = 0; i < 5; i++)//MSG_COUNT_PC_TEST
            {
                if (fk_net_syn_req_profile_get(g_fk_state.slot_id, &test_in, &test_out))
                {
-                   printf("tf drv %d send syn error\r\n", g_fk_state.slot_id);
+                   printf("drv %d send syn error\r\n", g_fk_state.slot_id);
                }
 
                if (memcmp(&test_in, &test_out, sizeof(MSG_PC_TEST)))
                {
-                   printf("tf drv %d send syn not match\r\n", g_fk_state.slot_id);
+                   printf("drv %d send syn not match\r\n", g_fk_state.slot_id);
                }
            }
 
-           printf("tf drv %d send test msg %d finish %d !!!\r\n", g_fk_state.slot_id, MSG_COUNT_PC_TEST, tf_net_timestamp());
+           printf("drv %d send test msg %d finish %d !!!\r\n", g_fk_state.slot_id, MSG_COUNT_PC_TEST, net_timestamp());
        }
 
 

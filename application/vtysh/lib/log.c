@@ -163,9 +163,9 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
     {
       tsctl.precision = 0;
       time_print(stderr, &tsctl);
-      fprintf (stderr, "%s: ", "unknown");
-      vfprintf (stderr, format, args);
-      fprintf (stderr, "\n");
+      fprin(stderr, "%s: ", "unknown");
+      vfprin(stderr, format, args);
+      fprin(stderr, "\n");
       fflush (stderr);
 
       /* In this case we return at here. */
@@ -188,12 +188,12 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       va_list ac;
       time_print (zl->fp, &tsctl);
       if (zl->record_priority)
-	fprintf (zl->fp, "%s: ", zlog_priority[priority]);
-      fprintf (zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
+	fprin(zl->fp, "%s: ", zlog_priority[priority]);
+      fprin(zl->fp, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
-      vfprintf (zl->fp, format, ac);
+      vfprin(zl->fp, format, ac);
       va_end(ac);
-      fprintf (zl->fp, "\n");
+      fprin(zl->fp, "\n");
       fflush (zl->fp);
     }
 
@@ -203,12 +203,12 @@ vzlog (struct zlog *zl, int priority, const char *format, va_list args)
       va_list ac;
       time_print (stdout, &tsctl);
       if (zl->record_priority)
-	fprintf (stdout, "%s: ", zlog_priority[priority]);
-      fprintf (stdout, "%s: ", zlog_proto_names[zl->protocol]);
+	fprin(stdout, "%s: ", zlog_priority[priority]);
+      fprin(stdout, "%s: ", zlog_proto_names[zl->protocol]);
       va_copy(ac, args);
-      vfprintf (stdout, format, ac);
+      vfprin(stdout, format, ac);
       va_end(ac);
-      fprintf (stdout, "\n");
+      fprin(stdout, "\n");
       fflush (stdout);
     }
 

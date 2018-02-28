@@ -12,54 +12,54 @@
 #include "fk_net.h"
 #include "ev.h"
 //#include "fk_db.h"
-#include "tf_types.h"
+#include "types.h"
 
 UINT32  g_fk_cc_pro_idx[FK_NET_MSG_CC_PRO_NUM] = {0,1,2,3,4,5,6,7,8};
 
 /*变量名称g_fk_net_msg_mp涉及宏，慎重修改*/
 //业务板板间消息内存池
-static TF_NET_BLK_POOL     g_fk_net_msg_mp;
+static NET_BLK_POOL     g_fk_net_msg_mp;
 //业务板收发消息队列消息内存池
-static TF_NET_BLK_POOL     g_fk_tr_mq_mp;
+static NET_BLK_POOL     g_fk_tr_mq_mp;
 //业务板libev 监视器内存池
-static TF_NET_BLK_POOL     g_fk_watcher_mp;
+static NET_BLK_POOL     g_fk_watcher_mp;
 //业务板 板同步消息连接内存池
-static TF_NET_BLK_POOL     g_fk_conn_mp;
+static NET_BLK_POOL     g_fk_conn_mp;
 //业务板 板同步消息内存池
-static TF_NET_BLK_POOL     g_fk_conn_msg_mp;
+static NET_BLK_POOL     g_fk_conn_msg_mp;
 
 //conn 公共锁
-static TF_NET_MUTUX        g_fk_conn_lock;
+static NET_MUTUX        g_fk_conn_lock;
 
 //业务板与控制板之间的同步消息连接
-static TF_NET_CONN         *g_fk_conn[TF_CTRL_SUPPORT_MAX_SLOT];
+static NET_CONN         *g_fk_conn[CTRL_SUPPORT_MAX_SLOT];
 
 //业务板接收同步请求消息队列
-static TF_NET_ZC_MQ      g_fk_rx_syn_req_mq[FK_NET_MSG_CC_PRO_NUM];
+static NET_ZC_MQ      g_fk_rx_syn_req_mq[FK_NET_MSG_CC_PRO_NUM];
 //业务板接收同步响应消息队列
-static TF_NET_ZC_MQ      g_fk_rx_syn_ack_mq;
+static NET_ZC_MQ      g_fk_rx_syn_ack_mq;
 //业务板接收异步请求消息队列
-static TF_NET_ZC_MQ      g_fk_rx_asyn_req_mq;
+static NET_ZC_MQ      g_fk_rx_asyn_req_mq;
 //业务板接收异步响应消息队列
-static TF_NET_ZC_MQ      g_fk_rx_asyn_ack_mq;
+static NET_ZC_MQ      g_fk_rx_asyn_ack_mq;
 //业务板发送消息队列
-static TF_NET_ZC_MQ      g_fk_tx_mq;
+static NET_ZC_MQ      g_fk_tx_mq;
 //业务板运行状态
-TF_FK_STATE         g_fk_state;
+FK_STATE         g_fk_state;
 //业务板CPU运行时间
-TF_NET_CPU_OCCUPY        g_fk_cpu_time;
+NET_CPU_OCCUPY        g_fk_cpu_time;
 
 static unsigned int 
-fk_net_syn_req_olt_set_process(TF_NET_MSG *p_msg);
+fk_net_syn_req_olt_set_process(NET_MSG *p_msg);
 static unsigned int 
-fk_net_syn_req_olt_get_process(TF_NET_MSG *p_msg);
+fk_net_syn_req_olt_get_process(NET_MSG *p_msg);
 
 static unsigned int
-fk_net_asyn_ack_work_process(TF_NET_MSG *p_msg);
+fk_net_asyn_ack_work_process(NET_MSG *p_msg);
 static unsigned int
-fk_net_asyn_ack_hb_process(TF_NET_MSG *p_msg);
+fk_net_asyn_ack_hb_process(NET_MSG *p_msg);
 static unsigned int
-fk_net_asyn_ack_alarm_process(TF_NET_MSG *p_msg);
+fk_net_asyn_ack_alarm_process(NET_MSG *p_msg);
 static unsigned int 
 fk_net_asyn_req_work_send(void);
 static unsigned int 
@@ -72,8 +72,8 @@ uint8_t g_fk_packet_test;
 static void
 fk_net_state_init(void)
 {
-    bzero(&g_fk_state, sizeof(TF_FK_STATE));
-    tf_net_mutex_create(&g_fk_state.mutex);
+    bzero(&g_fk_state, sizeof(FK_STATE));
+    net_mutex_create(&g_fk_state.mutex);
     
     return ;
 }
@@ -81,9 +81,9 @@ fk_net_state_init(void)
 void
 fk_net_state_set(const int state)
 {  
-    tf_net_mutex_lock(&g_fk_state.mutex);
+    net_mutex_lock(&g_fk_state.mutex);
     g_fk_state.state |= state;
-    tf_net_mutex_unlock(&g_fk_state.mutex);
+    net_mutex_unlock(&g_fk_state.mutex);
 
     return;
 }
@@ -97,9 +97,9 @@ fk_net_state_get(void)
 void
 fk_net_state_clear(const int state)
 {  
-    tf_net_mutex_lock(&g_fk_state.mutex);
+    net_mutex_lock(&g_fk_state.mutex);
     g_fk_state.state &= ~state;
-    tf_net_mutex_unlock(&g_fk_state.mutex);
+    net_mutex_unlock(&g_fk_state.mutex);
 
     return;
 }
@@ -123,11 +123,11 @@ fk_net_state_is_work(void)
 }
 
 static void
-fk_net_state_net_param_set(const TF_NET_PARA  *p_param)
+fk_net_state_net_param_set(const NET_PARA  *p_param)
 {  
-    tf_net_mutex_lock(&g_fk_state.mutex);
-    memcpy(&g_fk_state.net_param, p_param, sizeof(TF_NET_PARA));
-    tf_net_mutex_unlock(&g_fk_state.mutex);
+    net_mutex_lock(&g_fk_state.mutex);
+    memcpy(&g_fk_state.net_param, p_param, sizeof(NET_PARA));
+    net_mutex_unlock(&g_fk_state.mutex);
 
     return;
 }
@@ -143,7 +143,7 @@ fk_net_inactive_disconnect_clear(EV_P_ struct ev_io *watcher)
     close(watcher->fd);
     //2.释放连接对应的读事件
     ev_io_stop(loop, watcher); 
-    tf_net_safe_free(watcher);
+    net_safe_free(watcher);
     //3.清空对应slot的网络状态
     fk_net_state_clear(FK_NET_CONNECTION_COMPLETED|FK_NET_WORK_SYNCHRONOUS|FK_NET_STATE_WORK_WAITED);
 
@@ -156,23 +156,23 @@ fk_net_inactive_disconnect_clear(EV_P_ struct ev_io *watcher)
 
 //接收板间消息异步分发处理
 static void 
-fk_net_msg_asyn_mq_put(TF_NET_OS_MSG *p_os_msg)
+fk_net_msg_asyn_mq_put(NET_OS_MSG *p_os_msg)
 {
-    TF_NET_MSG *p_usr_msg = p_os_msg->data; 
+    NET_MSG *p_usr_msg = p_os_msg->data; 
     
     switch(p_usr_msg ->direction)
     {
         case NET_MSG_DRICTION_REQUEST:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_asyn_req_mq, p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_asyn_req_mq, p_os_msg);
             break;
 
         case NET_MSG_DRICTION_ACK:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_asyn_ack_mq, p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_asyn_ack_mq, p_os_msg);
             break;
 
         default:  
-            tf_net_zc_mq_os_msg_free(p_os_msg);      
-            printf( "%s %s %d tf drv not support msg direction!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
+            net_zc_mq_os_msg_free(p_os_msg);      
+            printf( "%s %s %d drv not support msg direction!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
             break;
     }
   
@@ -181,10 +181,10 @@ fk_net_msg_asyn_mq_put(TF_NET_OS_MSG *p_os_msg)
 
 //接收板间同步请求消息负载均衡方式入队列
 static void
-fk_net_msg_syn_req_mq_put(TF_NET_OS_MSG *p_os_msg)
+fk_net_msg_syn_req_mq_put(NET_OS_MSG *p_os_msg)
 {
     //无序消息以负载均衡方式处理
-    TF_NET_MSG     *p_usr_msg = p_os_msg->data;
+    NET_MSG     *p_usr_msg = p_os_msg->data;
     uint32_t        is_order   = p_usr_msg->cmd_info.order;
     static uint8_t  poll_id    = 0;
 
@@ -193,24 +193,24 @@ fk_net_msg_syn_req_mq_put(TF_NET_OS_MSG *p_os_msg)
     
 #if 0    
         case NET_MSG_ORDER_IN:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[FK_NET_MSG_SER_PRO_ID], p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[FK_NET_MSG_SER_PRO_ID], p_os_msg);
             break;
 #endif    
 
         case NET_MSG_ORDER_OUT_OF:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[poll_id], p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[poll_id], p_os_msg);
             ++poll_id;
             poll_id &= FK_NET_MSG_CC_PRO_MASK;
             break;
 
         default:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[FK_NET_MSG_SER_PRO_ID], p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_syn_req_mq[FK_NET_MSG_SER_PRO_ID], p_os_msg);
             break;
             
 #if 0
         default:
-            tf_net_zc_mq_os_msg_free(p_os_msg);     
-            printf( "%s %s %d tf drv not support msg order!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
+            net_zc_mq_os_msg_free(p_os_msg);     
+            printf( "%s %s %d drv not support msg order!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
             break;
 #endif            
     }
@@ -220,9 +220,9 @@ fk_net_msg_syn_req_mq_put(TF_NET_OS_MSG *p_os_msg)
 
 //接收板间同步消息分发处理
 static void 
-fk_net_msg_syn_mq_put(TF_NET_OS_MSG *p_os_msg)
+fk_net_msg_syn_mq_put(NET_OS_MSG *p_os_msg)
 {
-    TF_NET_MSG *p_usr_msg = p_os_msg->data;
+    NET_MSG *p_usr_msg = p_os_msg->data;
     
     switch(p_usr_msg ->direction)
     {
@@ -231,12 +231,12 @@ fk_net_msg_syn_mq_put(TF_NET_OS_MSG *p_os_msg)
             break;
 
         case NET_MSG_DRICTION_ACK:
-            tf_net_zc_mq_os_msg_put(&g_fk_rx_syn_ack_mq, p_os_msg);
+            net_zc_mq_os_msg_put(&g_fk_rx_syn_ack_mq, p_os_msg);
             break;
 
         default:
-            tf_net_zc_mq_os_msg_free(p_os_msg);     
-            printf( "%s %s %d tf drv not support msg direction!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
+            net_zc_mq_os_msg_free(p_os_msg);     
+            printf( "%s %s %d drv not support msg direction!!! \r\n", __FILE__, __FUNCTION__, __LINE__);
             break;
     }
 
@@ -245,9 +245,9 @@ fk_net_msg_syn_mq_put(TF_NET_OS_MSG *p_os_msg)
 
 //接收板间消息按类型入队列,入参合法性由上级保证
 static void 
-fk_net_rx_mq_dispatch(TF_NET_OS_MSG *p_os_msg)
+fk_net_rx_mq_dispatch(NET_OS_MSG *p_os_msg)
 {
-    TF_NET_MSG *p_usr_msg = (TF_NET_MSG*)p_os_msg->data;
+    NET_MSG *p_usr_msg = (NET_MSG*)p_os_msg->data;
     
     if (NET_MSG_ASYN == p_usr_msg->syn_flag)
     {
@@ -263,15 +263,15 @@ fk_net_rx_mq_dispatch(TF_NET_OS_MSG *p_os_msg)
 
 //接收板间消息入队列,入参合法性由上级保证
 static void 
-fk_net_rx_mq_put(TF_NET_MSG *data)
+fk_net_rx_mq_put(NET_MSG *data)
 {
-    TF_NET_OS_MSG   *p_msg;
+    NET_OS_MSG   *p_msg;
     
     //该申请bcmos msg由队列接收端释放
-    p_msg = (TF_NET_OS_MSG*)tf_net_malloc(&g_fk_tr_mq_mp, sizeof(TF_NET_OS_MSG));
+    p_msg = (NET_OS_MSG*)net_malloc(&g_fk_tr_mq_mp, sizeof(NET_OS_MSG));
     if (!p_msg)
     {
-        tf_net_safe_free(data);
+        net_safe_free(data);
         printf( "%s %s %d malloc fail\r\n", __FILE__, __FUNCTION__, __LINE__);
         return;
     }
@@ -287,14 +287,14 @@ fk_net_rx_mq_put(TF_NET_MSG *data)
 
 //发送板间消息入队列,入参合法性由上级保证
 static unsigned int 
-fk_net_tx_mq_put(TF_NET_MSG *data)
+fk_net_tx_mq_put(NET_MSG *data)
 {
-    TF_NET_OS_MSG  *p_msg;
+    NET_OS_MSG  *p_msg;
     //申请msg内存由队列接收端释放
-    p_msg = (TF_NET_OS_MSG*)tf_net_malloc(&g_fk_tr_mq_mp, sizeof(TF_NET_OS_MSG));
+    p_msg = (NET_OS_MSG*)net_malloc(&g_fk_tr_mq_mp, sizeof(NET_OS_MSG));
     if (!p_msg)
     {
-        tf_net_safe_free(data);
+        net_safe_free(data);
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
         return FK_ZK_RC_MEM_ALLOCATION;
     }
@@ -303,7 +303,7 @@ fk_net_tx_mq_put(TF_NET_MSG *data)
     p_msg->data = data;
     p_msg->size = data->len;
     
-    tf_net_zc_mq_os_msg_put(&g_fk_tx_mq, p_msg);
+    net_zc_mq_os_msg_put(&g_fk_tx_mq, p_msg);
 
     return 0;
 }
@@ -322,7 +322,7 @@ static net_msg_handler fk_net_syn_req_handler[NET_MSG_TYPE_NUM_OF] = {
             
 //处理控制板同步请求消息
 static unsigned int 
-fk_net_msg_syn_req_process(TF_NET_MSG *p_msg)
+fk_net_msg_syn_req_process(NET_MSG *p_msg)
 {
     unsigned int rc = 0;
 
@@ -335,7 +335,7 @@ fk_net_msg_syn_req_process(TF_NET_MSG *p_msg)
     }
     else
     {
-        printf( "%s %s %d syn req tf drv not support msg type %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);
+        printf( "%s %s %d syn req drv not support msg type %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);
     }
     
     return rc;
@@ -343,13 +343,13 @@ fk_net_msg_syn_req_process(TF_NET_MSG *p_msg)
 
 //同步消息fifo 申请
 static uint32_t 
-fk_net_conn_msg_list_alloc(TF_NET_CONN *conn)
+fk_net_conn_msg_list_alloc(NET_CONN *conn)
 {
     int i;
-    TF_NET_CONN_MSG *ptmsg;
+    NET_CONN_MSG *ptmsg;
     
-    conn->msg_array = tf_net_calloc(&g_fk_conn_msg_mp, conn->msg_num, 
-                        sizeof(TF_NET_CONN_MSG));
+    conn->msg_array = net_calloc(&g_fk_conn_msg_mp, conn->msg_num, 
+                        sizeof(NET_CONN_MSG));
    
     if (!conn->msg_array)
         return FK_ZK_RC_MEM_ALLOCATION;
@@ -361,7 +361,7 @@ fk_net_conn_msg_list_alloc(TF_NET_CONN *conn)
 
         TAILQ_INSERT_TAIL(&conn->free_req_list, ptmsg, l);
         
-        rc = tf_net_sem_create(&ptmsg->sem, 0);
+        rc = net_sem_create(&ptmsg->sem, 0);
         if (rc)
             return rc;
     }
@@ -370,23 +370,23 @@ fk_net_conn_msg_list_alloc(TF_NET_CONN *conn)
 }
 
 static uint32_t 
-fk_net_conn_init(uint32_t slot_id, TF_NET_CONN **pconn)
+fk_net_conn_init(uint32_t slot_id, NET_CONN **pconn)
 {
-    TF_NET_CONN *conn;
+    NET_CONN *conn;
 
-    tf_net_mutex_lock(&g_fk_conn_lock);
-    conn = tf_net_calloc(&g_fk_conn_mp, 1, sizeof(*conn));
+    net_mutex_lock(&g_fk_conn_lock);
+    conn = net_calloc(&g_fk_conn_mp, 1, sizeof(*conn));
     
     if (!conn)
     {
-        tf_net_mutex_unlock(&g_fk_conn_lock);
+        net_mutex_unlock(&g_fk_conn_lock);
         return FK_ZK_RC_MEM_ALLOCATION;
     }
 
     snprintf(conn->name, sizeof(conn->name), "2tfctrl_slot_%u", slot_id);
     TAILQ_INIT(&conn->free_req_list);
     TAILQ_INIT(&conn->msg_list);
-    tf_net_mutex_create(&conn->mutex);
+    net_mutex_create(&conn->mutex);
     conn->msg_num = FK_NET_CONN_MSG_NUM;
 
     fk_net_conn_msg_list_alloc(conn);
@@ -395,13 +395,13 @@ fk_net_conn_init(uint32_t slot_id, TF_NET_CONN **pconn)
     conn->slot_id = slot_id;
     *pconn = conn;
     
-    tf_net_mutex_unlock(&g_fk_conn_lock);
+    net_mutex_unlock(&g_fk_conn_lock);
 
     return 0;
 }
 
 static uint32_t 
-fk_net_conn_get_any(uint32_t slot_id, TF_NET_CONN **pconn)
+fk_net_conn_get_any(uint32_t slot_id, NET_CONN **pconn)
 {
     uint32_t err;
 
@@ -410,7 +410,7 @@ fk_net_conn_get_any(uint32_t slot_id, TF_NET_CONN **pconn)
         return FK_ZK_RC_PARAM_NULL;
     }
     
-    if (slot_id >= TF_CTRL_SUPPORT_MAX_SLOT)
+    if (slot_id >= CTRL_SUPPORT_MAX_SLOT)
     {
         return FK_ZK_RC_PARAM_OUT_OF_RANGE;
     }
@@ -429,22 +429,22 @@ fk_net_conn_get_any(uint32_t slot_id, TF_NET_CONN **pconn)
 }
 
 static uint32_t 
-fk_net_conn_get(uint32_t slot_id, TF_NET_CONN **pconn)
+fk_net_conn_get(uint32_t slot_id, NET_CONN **pconn)
 {
     return fk_net_conn_get_any(slot_id, pconn);
 }
 
 //同步消息发送
 static uint32_t 
-fk_net_msg_syn_send(TF_NET_MSG *pmsg)
+fk_net_msg_syn_send(NET_MSG *pmsg)
 {
     if (!pmsg)
     {
         return FK_ZK_RC_PARAM_NULL;
     }
     
-    TF_NET_CONN_MSG *pcmsg;
-    TF_NET_CONN     *pconn;
+    NET_CONN_MSG *pcmsg;
+    NET_CONN     *pconn;
     unsigned int     err;
 
     //根据slot获取conn, 业务面默认使用0
@@ -456,25 +456,25 @@ fk_net_msg_syn_send(TF_NET_MSG *pmsg)
     }
 
     /* request under connection lock */
-    tf_net_mutex_lock(&pconn->mutex);
+    net_mutex_lock(&pconn->mutex);
 
-    pcmsg = tf_net_conn_msg_get_free(&pconn->free_req_list); 
+    pcmsg = net_conn_msg_get_free(&pconn->free_req_list); 
     if (!pcmsg)
     {
-        tf_net_mutex_unlock(&pconn->mutex);
+        net_mutex_unlock(&pconn->mutex);
         printf( "fk_net_conn_msg_get_free error!!!\r\n");
         return FK_ZK_RC_PARAM_GET;
     }
 
     //时间戳作为接收校验魔术字
-    pmsg->corr_tag = tf_net_timestamp();
+    pmsg->corr_tag = net_timestamp();
     
     //拷贝用于发送消息，本体用于同步消息接收
-    TF_NET_MSG *p_autofree_msg = tf_net_malloc(&g_fk_net_msg_mp, pmsg->len);
+    NET_MSG *p_autofree_msg = net_malloc(&g_fk_net_msg_mp, pmsg->len);
     if (!p_autofree_msg)
     {
-        printf( "%s %s %d tf_net_malloc error!!!\r\n", __FILE__, __FUNCTION__, __LINE__);
-        tf_net_conn_msg_free(pcmsg, &pconn->free_req_list);
+        printf( "%s %s %d net_malloc error!!!\r\n", __FILE__, __FUNCTION__, __LINE__);
+        net_conn_msg_free(pcmsg, &pconn->free_req_list);
         return FK_ZK_RC_MEM_ALLOCATION;
     }
     
@@ -489,34 +489,34 @@ fk_net_msg_syn_send(TF_NET_MSG *pmsg)
         printf( "%s %s %d error!!!\r\n", __FILE__, __FUNCTION__, __LINE__);
         //pmsg 由外部释放
         //pcmsg 释放到空闲队列
-        tf_net_conn_msg_free(pcmsg, &pconn->free_req_list);
+        net_conn_msg_free(pcmsg, &pconn->free_req_list);
         return err;
     }
 
     //进入等待消息队列
     TAILQ_INSERT_TAIL(&pconn->msg_list, pcmsg, l);
     
-    tf_net_mutex_unlock(&pconn->mutex);
+    net_mutex_unlock(&pconn->mutex);
 
     /* Wait for restfse or timeout*/
-    if (tf_net_sem_wait(&pcmsg->sem, pmsg->cmd_info.timeout))
+    if (net_sem_wait(&pcmsg->sem, pmsg->cmd_info.timeout))
     {
         //pmsg 由外部释放
         //pcmsg 不再关注需要释放到空闲队列
-        tf_net_mutex_lock(&pconn->mutex);
+        net_mutex_lock(&pconn->mutex);
         
         TAILQ_REMOVE(&pconn->msg_list, pcmsg, l);
-        tf_net_conn_msg_free(pcmsg, &pconn->free_req_list);
+        net_conn_msg_free(pcmsg, &pconn->free_req_list);
         
-        tf_net_mutex_unlock(&pconn->mutex);
+        net_mutex_unlock(&pconn->mutex);
         
         return FK_ZK_RC_MSG_SYN_WAITE;
     }
 
     //正常得到回应入空闲队列
-    tf_net_mutex_lock(&pconn->mutex);
-    tf_net_conn_msg_free(pcmsg, &pconn->free_req_list);
-    tf_net_mutex_unlock(&pconn->mutex);
+    net_mutex_lock(&pconn->mutex);
+    net_conn_msg_free(pcmsg, &pconn->free_req_list);
+    net_mutex_unlock(&pconn->mutex);
 
     return 0;
 }
@@ -530,9 +530,9 @@ fk_net_msg_syn_send(TF_NET_MSG *pmsg)
 
 uint32_t 
 fk_net_syn_operation( 
-                                IN const TF_NET_MSG_TYPE  msg_type,
+                                IN const NET_MSG_TYPE  msg_type,
                                 IN const  uint64_t         vif_info, 
-                                IN const  TF_NET_MSG_CMD  cmd_info, 
+                                IN const  NET_MSG_CMD  cmd_info, 
                                 IN const  void             *pvar, 
                                 IN const  uint32_t         pvar_len,
                                 OUT void                   *param,
@@ -540,44 +540,44 @@ fk_net_syn_operation(
                                 OUT uint32_t               *state)
 {
     uint32_t        syn_ack_len;
-    TF_NET_MSG     *p_msg;
+    NET_MSG     *p_msg;
     uint32_t        rc;
-    tf_rc_info     rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = (vif_info & 0xff)};
+    rc_info     rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = (vif_info & 0xff)};
 
     //判断与控制面的通信是否已经建立
     if (!fk_net_state_is_work())
     {
-        return TF_OBJ_DRV_TF_OLT_RC_OFFSET + FK_ZK_RC_NET_NOT_WORK;
+        return OBJ_DRV_OLT_RC_OFFSET + FK_ZK_RC_NET_NOT_WORK;
     }
   
     if (!state)
     {
-        TF_TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_NULL);
+        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_NULL);
         return rc;
     }
     
     if ((param && 0 == param_len) || (NULL == param && param_len))
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_OUT_OF_RANGE);
+        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_PARAM_OUT_OF_RANGE);
         return rc;
     }
     
     if ((NULL == param && 0 == param_len) || (param_len < pvar_len))
     {
         //需要传参但不需要返回参数|| 传参结构大于返回参数
-        p_msg = tf_net_msg_pack(&g_fk_net_msg_mp, vif_info, cmd_info, pvar, pvar_len, pvar_len);
+        p_msg = net_msg_pack(&g_fk_net_msg_mp, vif_info, cmd_info, pvar, pvar_len, pvar_len);
     }
     else
     {
         //传参结构小于返回参数
-        p_msg = tf_net_msg_pack(&g_fk_net_msg_mp, vif_info, cmd_info, pvar, pvar_len, param_len);
+        p_msg = net_msg_pack(&g_fk_net_msg_mp, vif_info, cmd_info, pvar, pvar_len, param_len);
     }
    
     if (!p_msg)
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        TF_TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MEM_ALLOCATION);
+        TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MEM_ALLOCATION);
         return rc;
     }
     
@@ -589,8 +589,8 @@ fk_net_syn_operation(
     if ((rc = fk_net_msg_syn_send(p_msg)))
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        tf_net_safe_free(p_msg);
-        TF_TF_ERRNO_INFO2RC(rc_info, rc, rc);
+        net_safe_free(p_msg);
+        TF_ERRNO_INFO2RC(rc_info, rc, rc);
         return rc;
     }
     
@@ -603,13 +603,13 @@ fk_net_syn_operation(
             syn_ack_len = p_msg->len - NET_MSG_HEAD_LEN;
             
             if (param_len < syn_ack_len)
-                printf( "tf drv struct msg, body size too small!!!\r\n");
+                printf( "drv struct msg, body size too small!!!\r\n");
 
             memcpy(param, p_msg->body, (syn_ack_len > param_len ? param_len : syn_ack_len));
         }
     }
         
-    tf_net_safe_free(p_msg);
+    net_safe_free(p_msg);
 
     return 0;  
 }
@@ -638,7 +638,7 @@ static net_msg_handler fk_net_asyn_ack_handler[NET_MSG_TYPE_NUM_OF] = {
 
 //处理控制板响应
 static unsigned int 
-fk_net_msg_asyn_ack_process(TF_NET_MSG *p_msg)
+fk_net_msg_asyn_ack_process(NET_MSG *p_msg)
 {
     unsigned int rc = 0;
 
@@ -651,7 +651,7 @@ fk_net_msg_asyn_ack_process(TF_NET_MSG *p_msg)
     }
     else
     {
-        printf( "%s %s %d asyn ack tf drv not support msg type %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);
+        printf( "%s %s %d asyn ack drv not support msg type %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);
     }
 
     return rc;
@@ -659,7 +659,7 @@ fk_net_msg_asyn_ack_process(TF_NET_MSG *p_msg)
 
 //处理控制板响应
 static unsigned int 
-fk_net_msg_asyn_req_process(TF_NET_MSG *p_msg)
+fk_net_msg_asyn_req_process(NET_MSG *p_msg)
 {
     unsigned int rc = 0;
 
@@ -672,7 +672,7 @@ fk_net_msg_asyn_req_process(TF_NET_MSG *p_msg)
     }
     else
     {
-        printf( "%s %s %d req tf drv not support %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);  
+        printf( "%s %s %d req drv not support %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->msg_type);  
     }
 
     return rc;
@@ -685,22 +685,22 @@ fk_net_msg_asyn_req_process(TF_NET_MSG *p_msg)
 //消息发送接口
 static unsigned int 
 fk_net_msg_send( 
-                            TF_NET_MSG         *pmsg,
+                            NET_MSG         *pmsg,
                             const void          *pvar, 
                             const unsigned int  len,
                             const int           state,
                             const int           direction)
 {
-    TF_NET_MSG      *ptmsg;
+    NET_MSG      *ptmsg;
     unsigned int     rc;
 
     if (len)
     {
-        ptmsg = tf_net_msg_pack(&g_fk_net_msg_mp, pmsg->vif_info, pmsg->cmd_info, pvar, len, len);
+        ptmsg = net_msg_pack(&g_fk_net_msg_mp, pmsg->vif_info, pmsg->cmd_info, pvar, len, len);
     }
     else
     {
-        ptmsg = tf_net_msg_pack(&g_fk_net_msg_mp, pmsg->vif_info, pmsg->cmd_info, NULL, 0, 0);  
+        ptmsg = net_msg_pack(&g_fk_net_msg_mp, pmsg->vif_info, pmsg->cmd_info, NULL, 0, 0);  
     }
 
     /*ptmsg 内存由发送端或者发送队列接口释放需要保证body_size 与 len一致*/
@@ -727,7 +727,7 @@ fk_net_msg_send(
 
 //业务板网络接口初始化
 static unsigned int 
-fk_net_init(int *p_fd, TF_NET_PARA *p_net_param)
+fk_net_init(int *p_fd, NET_PARA *p_net_param)
 {
     struct sockaddr_in sin;
     int                addrlen = sizeof(struct sockaddr);
@@ -739,7 +739,7 @@ fk_net_init(int *p_fd, TF_NET_PARA *p_net_param)
         return FK_ZK_RC_PARAM_NULL;
     }
     
-    if ((rc = tf_net_init(&sin, &fd)))
+    if ((rc = net_init(&sin, &fd)))
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
         return rc;
@@ -770,18 +770,18 @@ fk_net_init(int *p_fd, TF_NET_PARA *p_net_param)
 static void 
 fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
 {  
-    TF_NET_MSG  msg_header;
-    TF_NET_MSG  *p_msg = NULL;
+    NET_MSG  msg_header;
+    NET_MSG  *p_msg = NULL;
     unsigned int rc;
 
     if(EV_ERROR & revents)  
     {  
-      printf( "tf drv read event error revents %d\r\n", revents);
+      printf( "drv read event error revents %d\r\n", revents);
       return;
     }
 
     //1. 预读取头
-    if ((rc = tf_net_rec_packet_fix_peek(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
+    if ((rc = net_rec_packet_fix_peek(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
     {
         goto fail;
     }
@@ -817,7 +817,7 @@ fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     内存池中申请消息结构空间固定，
     申请的此段内存由rx队列接收端随bcmos msg的释放而释放
     */
-    p_msg = (TF_NET_MSG*)tf_net_malloc(&g_fk_net_msg_mp, msg_header.len);
+    p_msg = (NET_MSG*)net_malloc(&g_fk_net_msg_mp, msg_header.len);
     if (!p_msg)
     {
         printf( "%s %s %d errorno %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
@@ -825,13 +825,13 @@ fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     }
     
     //3. 预读取消息体，消息体的长度为msg的有效长度与头长之差
-    if ((rc = tf_net_rec_packet_fix_peek(watcher->fd, p_msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
+    if ((rc = net_rec_packet_fix_peek(watcher->fd, p_msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
     {
         goto fail;
     }
 
     //4. 从缓存中取消息
-    if ((rc = tf_net_rec_packet_fix(watcher->fd, p_msg, msg_header.len)))
+    if ((rc = net_rec_packet_fix(watcher->fd, p_msg, msg_header.len)))
     {
         goto fail;
     }
@@ -839,11 +839,11 @@ fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     //5. 头部大小端转换
 
     //6. 消息头部校验
-    if (tf_net_msg_verify(p_msg))
+    if (net_msg_verify(p_msg))
     {
         //丢弃整个消息    
         printf( 
-                "tf drv read cb msg verify error!!!:\n"
+                "drv read cb msg verify error!!!:\n"
                         "msg_type: %d\n"
                         "cmd_id: %d\ntimeout: %d\norder: %d\n" 
                         "vif_info: %lld\n"
@@ -891,9 +891,9 @@ fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     msg_header.body_size);
 #endif
 
-    if (tf_net_msg_uncompress_process(&g_fk_net_msg_mp, &p_msg))
+    if (net_msg_uncompress_process(&g_fk_net_msg_mp, &p_msg))
     {
-        printf("tf drv rx cb uncompress fail\r\n");
+        printf("drv rx cb uncompress fail\r\n");
         goto fail;
     }
 
@@ -904,17 +904,17 @@ fk_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     
 fail:
 
-    tf_net_safe_free(p_msg);
+    net_safe_free(p_msg);
 
     //断开链接的处理,停掉evnet,同时释放记录客户端w结构体
-    if(rc == TF_MDW_NET_RC_REMOTE_DISCONNECT)  
+    if(rc == MDW_NET_RC_REMOTE_DISCONNECT)  
     {  
         fk_net_inactive_disconnect_clear(loop, watcher);
     }
     else
     if (rc)
     {
-        printf( "tf drv read error!!!\r\n");
+        printf( "drv read error!!!\r\n");
     }
 
     return;
@@ -925,7 +925,7 @@ static unsigned int
 fk_net_connect(EV_P)
 {
     int             fd;
-    TF_NET_PARA     net_param;
+    NET_PARA     net_param;
     int             addrlen = sizeof(struct sockaddr);
     ev_io           *client_read;
     unsigned int    rc;
@@ -943,7 +943,7 @@ fk_net_connect(EV_P)
         return FK_ZK_RC_NET_CONNCET;
     }
     
-    client_read = (struct ev_io*)tf_net_malloc(&g_fk_watcher_mp, sizeof(struct ev_io));
+    client_read = (struct ev_io*)net_malloc(&g_fk_watcher_mp, sizeof(struct ev_io));
 
     if (!client_read)
     {
@@ -953,7 +953,7 @@ fk_net_connect(EV_P)
     }
 
     fk_net_state_set(FK_NET_CONNECTION_COMPLETED);
-    printf("tf drv connetion complete\r\n");
+    printf("drv connetion complete\r\n");
 
     //read事件
     ev_io_init(client_read, fk_net_read_cb, fd, EV_READ);  
@@ -1007,7 +1007,7 @@ fk_net_state_machine_cb (EV_P_ ev_timer *w, int revents)
             break;
 
         default:
-            printf( "%s %s %d tf drv state: %d not support!!!\r\n", __FILE__, __FUNCTION__, __LINE__, fk_net_state_get());
+            printf( "%s %s %d drv state: %d not support!!!\r\n", __FILE__, __FUNCTION__, __LINE__, fk_net_state_get());
             break;
     }
 
@@ -1061,7 +1061,7 @@ fk_net_cfg_init(void)
     unsigned int    rc;
     
     //1.读配置文件
-    if (!(rc = tf_net_config_file_paser("tfdrv.ini", "slot", value, sizeof(value))))
+    if (!(rc = net_config_file_paser("tfdrv.ini", "slot", value, sizeof(value))))
     {
         //2. 初始化全局参数
         g_fk_state.slot_id = atoi(value);
@@ -1076,33 +1076,33 @@ unsigned int
 fk_net_mempool_init(void)
 {
     //接收发送线程消息队列消息内存池
-    TF_NET_BLK_POOL_PARM net_mq_parm = { "fk_tr_mq_mp",
-                                            sizeof(TF_NET_OS_MSG),
+    NET_BLK_POOL_PARM net_mq_parm = { "fk_tr_mq_mp",
+                                            sizeof(NET_OS_MSG),
                                             NET_MSG_MAX_COUNT};
                                    
-    TF_NET_BLK_POOL_PARM net_msg_parm = {  "fk_net_msg_mp",
-                                            NET_BUFFER_LEN,//(sizeof(TF_NET_MSG) + 2048),
+    NET_BLK_POOL_PARM net_msg_parm = {  "fk_net_msg_mp",
+                                            NET_BUFFER_LEN,//(sizeof(NET_MSG) + 2048),
                                             NET_MSG_MAX_COUNT};
 
-    TF_NET_BLK_POOL_PARM net_watcher_parm = {  "fk_net_watcher_mp",
+    NET_BLK_POOL_PARM net_watcher_parm = {  "fk_net_watcher_mp",
                                                 sizeof(union ev_any_watcher),
                                                 NET_WATCHER_COUNT};
                                                 
-    TF_NET_BLK_POOL_PARM net_conn_parm    = {  "fk_net_conn_mp",
-                                                sizeof(TF_NET_CONN),
-                                                TF_CTRL_SUPPORT_MAX_SLOT};
+    NET_BLK_POOL_PARM net_conn_parm    = {  "fk_net_conn_mp",
+                                                sizeof(NET_CONN),
+                                                CTRL_SUPPORT_MAX_SLOT};
 
-    TF_NET_BLK_POOL_PARM net_conn_msg_parm = {  "fk_net_conn_msg_mp",
-                                                 (sizeof(TF_NET_CONN_MSG)*FK_NET_CONN_MSG_NUM),
-                                                 TF_CTRL_SUPPORT_MAX_SLOT};
+    NET_BLK_POOL_PARM net_conn_msg_parm = {  "fk_net_conn_msg_mp",
+                                                 (sizeof(NET_CONN_MSG)*FK_NET_CONN_MSG_NUM),
+                                                 CTRL_SUPPORT_MAX_SLOT};
                                                 
     unsigned int rc = 0;
     
-    rc |= tf_net_blk_pool_create(&g_fk_tr_mq_mp, &net_mq_parm);
-    rc |= tf_net_blk_pool_create(&g_fk_net_msg_mp, &net_msg_parm);
-    rc |= tf_net_blk_pool_create(&g_fk_watcher_mp, &net_watcher_parm);
-    rc |= tf_net_blk_pool_create(&g_fk_conn_mp,     &net_conn_parm);
-    rc |= tf_net_blk_pool_create(&g_fk_conn_msg_mp, &net_conn_msg_parm);
+    rc |= net_blk_pool_create(&g_fk_tr_mq_mp, &net_mq_parm);
+    rc |= net_blk_pool_create(&g_fk_net_msg_mp, &net_msg_parm);
+    rc |= net_blk_pool_create(&g_fk_watcher_mp, &net_watcher_parm);
+    rc |= net_blk_pool_create(&g_fk_conn_mp,     &net_conn_parm);
+    rc |= net_blk_pool_create(&g_fk_conn_msg_mp, &net_conn_msg_parm);
 
     return rc;
 }
@@ -1113,7 +1113,7 @@ fk_net_ev_init(void)
     unsigned int rc;
     //网络接口初始化
     
-#ifdef TF_NET_USE_MP
+#ifdef NET_USE_MP
     //网络内存池初始化
     if ((rc = fk_net_mempool_init()))
     {     
@@ -1123,7 +1123,7 @@ fk_net_ev_init(void)
 #endif
 
     //初始系统CPU时间
-    tf_net_cpu_time_get(&g_fk_cpu_time);
+    net_cpu_time_get(&g_fk_cpu_time);
 
     fk_net_state_init();
 
@@ -1147,23 +1147,23 @@ fk_net_ev_init(void)
 static void 
 fk_net_rx_syn_req_task(void    *p_arg)
 {
-    TF_NET_OS_MSG  *p_os_msg;
-    TF_NET_MSG     *p_usr_msg;
+    NET_OS_MSG  *p_os_msg;
+    NET_MSG     *p_usr_msg;
     uint32_t        rc;
     uint32_t        idx = *(uint32_t*)p_arg;
-    TF_NET_ZC_MQ   *p_mq = &g_fk_rx_syn_req_mq[idx]; 
+    NET_ZC_MQ   *p_mq = &g_fk_rx_syn_req_mq[idx]; 
 
     while (1)
     {
         //队列消息 内存由入队列端申请
-        rc = tf_net_zc_mq_os_msg_get(p_mq, TF_NET_WAIT_FOREVER, &p_os_msg);
+        rc = net_zc_mq_os_msg_get(p_mq, NET_WAIT_FOREVER, &p_os_msg);
         if (rc)
         {
             printf( "%s %s %d error %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
             continue;
         }
 
-        p_usr_msg = (TF_NET_MSG*)p_os_msg->data;
+        p_usr_msg = (NET_MSG*)p_os_msg->data;
         
         //处理消息
         if ((rc = fk_net_msg_syn_req_process(p_usr_msg)))
@@ -1172,7 +1172,7 @@ fk_net_rx_syn_req_task(void    *p_arg)
         }
 
         //释放队列消息
-        tf_net_zc_mq_os_msg_free(p_os_msg);      
+        net_zc_mq_os_msg_free(p_os_msg);      
     }
     
     return;
@@ -1182,30 +1182,30 @@ fk_net_rx_syn_req_task(void    *p_arg)
 static void 
 fk_net_rx_syn_ack_task(void)
 {
-    TF_NET_OS_MSG  *p_os_msg;
-    TF_NET_MSG     *p_usr_msg;
+    NET_OS_MSG  *p_os_msg;
+    NET_MSG     *p_usr_msg;
     uint32_t        rc;
 
     while (1)
     {
         //队列消息 内存由入队列端申请
-        rc = tf_net_zc_mq_os_msg_get(&g_fk_rx_syn_ack_mq, TF_NET_WAIT_FOREVER, &p_os_msg);
+        rc = net_zc_mq_os_msg_get(&g_fk_rx_syn_ack_mq, NET_WAIT_FOREVER, &p_os_msg);
         if (rc)
         {
             printf( "%s %s %d error %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
             continue;
         }
 
-        p_usr_msg = (TF_NET_MSG*)p_os_msg->data;
+        p_usr_msg = (NET_MSG*)p_os_msg->data;
 
         //处理消息,业务板默认使用同步连接0
-        if ((rc = tf_net_conn_msg_syn_ack_process(g_fk_conn[0], p_usr_msg)))
+        if ((rc = net_conn_msg_syn_ack_process(g_fk_conn[0], p_usr_msg)))
         {
             printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, rc);
         }
 
         //释放队列消息
-        tf_net_zc_mq_os_msg_free(p_os_msg);      
+        net_zc_mq_os_msg_free(p_os_msg);      
     }
     
     return;
@@ -1215,21 +1215,21 @@ fk_net_rx_syn_ack_task(void)
 static void 
 fk_net_rx_asyn_req_task(void)
 {
-    TF_NET_OS_MSG  *p_os_msg;
-    TF_NET_MSG     *p_usr_msg;
+    NET_OS_MSG  *p_os_msg;
+    NET_MSG     *p_usr_msg;
     uint32_t       rc;
 
     while (1)
     {
         //队列消息 内存由入队列端申请
-        rc = tf_net_zc_mq_os_msg_get(&g_fk_rx_asyn_req_mq, TF_NET_WAIT_FOREVER, &p_os_msg);
+        rc = net_zc_mq_os_msg_get(&g_fk_rx_asyn_req_mq, NET_WAIT_FOREVER, &p_os_msg);
         if (rc)
         {
             printf( "%s %s %d error %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
             continue;
         }
 
-        p_usr_msg = (TF_NET_MSG*)p_os_msg->data;
+        p_usr_msg = (NET_MSG*)p_os_msg->data;
 
         //处理消息
         if ((rc = fk_net_msg_asyn_req_process(p_usr_msg)))
@@ -1238,7 +1238,7 @@ fk_net_rx_asyn_req_task(void)
         }
 
         //释放队列消息
-        tf_net_zc_mq_os_msg_free(p_os_msg);      
+        net_zc_mq_os_msg_free(p_os_msg);      
     }
     
     return;
@@ -1248,21 +1248,21 @@ fk_net_rx_asyn_req_task(void)
 static void 
 fk_net_rx_asyn_ack_task(void)
 {
-    TF_NET_OS_MSG  *p_os_msg;
-    TF_NET_MSG     *p_usr_msg;
+    NET_OS_MSG  *p_os_msg;
+    NET_MSG     *p_usr_msg;
     uint32_t       rc;
 
     while (1)
     {
         //队列消息 内存由入队列端申请
-        rc = tf_net_zc_mq_os_msg_get(&g_fk_rx_asyn_ack_mq, TF_NET_WAIT_FOREVER, &p_os_msg);
+        rc = net_zc_mq_os_msg_get(&g_fk_rx_asyn_ack_mq, NET_WAIT_FOREVER, &p_os_msg);
         if (rc)
         {
             printf( "%s %s %d error %d!!!\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
             continue;
         }
 
-        p_usr_msg = (TF_NET_MSG*)p_os_msg->data;
+        p_usr_msg = (NET_MSG*)p_os_msg->data;
 
         //处理消息
         if ((rc = fk_net_msg_asyn_ack_process(p_usr_msg)))
@@ -1271,7 +1271,7 @@ fk_net_rx_asyn_ack_task(void)
         }
 
         //释放队列消息
-        tf_net_zc_mq_os_msg_free(p_os_msg);      
+        net_zc_mq_os_msg_free(p_os_msg);      
     }
     
     return;
@@ -1285,7 +1285,7 @@ fk_net_rx_syn_req_task_init(void)
     pthread_t           tid;
     pthread_attr_t      attr;
     uint32_t            idx;
-    char                name[TF_TF_NET_NAME_LEN];
+    char                name[TF_NET_NAME_LEN];
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -1295,16 +1295,16 @@ fk_net_rx_syn_req_task_init(void)
     {
         snprintf(name, sizeof(name), "client_rx_syn_req_mq_%d", idx);
         
-        rc = tf_net_zc_mq_create(&g_fk_rx_syn_req_mq[idx], name);
+        rc = net_zc_mq_create(&g_fk_rx_syn_req_mq[idx], name);
         if (rc)
         {
-            printf( "tf drv create rx syn req mq error %d idx %d\r\n", rc, idx);
+            printf( "drv create rx syn req mq error %d idx %d\r\n", rc, idx);
             return FK_ZK_RC_MSG_QUEUE_CREATE;
         }
 
         if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_req_task, (void*)&g_fk_cc_pro_idx[idx]) < 0)
         {
-            printf( "tf drv create rx syn req task error %d idx %d!!! \r\n", errno, idx);
+            printf( "drv create rx syn req task error %d idx %d!!! \r\n", errno, idx);
             return FK_ZK_RC_TASK_CREATE;
         }
     }
@@ -1320,7 +1320,7 @@ fk_net_rx_syn_ack_task_init(void)
     pthread_t       tid;
     pthread_attr_t  attr;
     
-    rc = tf_net_zc_mq_create(&g_fk_rx_syn_ack_mq, "client_rx_syn_ack_mq");
+    rc = net_zc_mq_create(&g_fk_rx_syn_ack_mq, "client_rx_syn_ack_mq");
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
@@ -1348,7 +1348,7 @@ fk_net_rx_asyn_req_task_init(void)
     pthread_t      tid;
     pthread_attr_t attr;
     
-    rc = tf_net_zc_mq_create(&g_fk_rx_asyn_req_mq, "client_rx_asyn_req_mq");
+    rc = net_zc_mq_create(&g_fk_rx_asyn_req_mq, "client_rx_asyn_req_mq");
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
@@ -1376,7 +1376,7 @@ fk_net_rx_asyn_ack_task_init(void)
     pthread_t      tid;
     pthread_attr_t attr;
     
-    rc = tf_net_zc_mq_create(&g_fk_rx_asyn_ack_mq, "client_rx_asyn_ack_mq");
+    rc = net_zc_mq_create(&g_fk_rx_asyn_ack_mq, "client_rx_asyn_ack_mq");
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
@@ -1400,30 +1400,30 @@ fk_net_rx_asyn_ack_task_init(void)
 static void 
 fk_net_tx_task(void)
 {
-    TF_NET_OS_MSG  *p_os_msg;
+    NET_OS_MSG  *p_os_msg;
     uint32_t       rc;
-    TF_NET_MSG     *p_msg;
+    NET_MSG     *p_msg;
     
     while (1)
     {
         //m 内存由入队列端申请
-        rc = tf_net_zc_mq_os_msg_get(&g_fk_tx_mq, TF_NET_WAIT_FOREVER, &p_os_msg);
+        rc = net_zc_mq_os_msg_get(&g_fk_tx_mq, NET_WAIT_FOREVER, &p_os_msg);
         if (rc)
         {
             printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
             continue;
         }
         
-        p_msg = (TF_NET_MSG*)p_os_msg->data;
+        p_msg = (NET_MSG*)p_os_msg->data;
 
         //发送板间消息到控制板
-        if (tf_net_send_alone_packet(g_fk_state.net_param.watcher->fd, p_msg))
+        if (net_send_alone_packet(g_fk_state.net_param.watcher->fd, p_msg))
         {
             printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno); 
         }
         
         //释放队列消息
-        tf_net_zc_mq_os_msg_free(p_os_msg);
+        net_zc_mq_os_msg_free(p_os_msg);
     }
     
     return;
@@ -1437,7 +1437,7 @@ fk_net_tx_task_init(void)
     pthread_t       tid;
     pthread_attr_t  attr;
     
-    rc = tf_net_zc_mq_create(&g_fk_tx_mq, "client_tx_queue");
+    rc = net_zc_mq_create(&g_fk_tx_mq, "client_tx_queue");
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
@@ -1498,7 +1498,7 @@ fk_net_task_init(void)
 static unsigned int 
 fk_net_asyn_req_hb_send(void)
 {
-    TF_NET_MSG msg = { NET_MSG_TYPE_HB,
+    NET_MSG msg = { NET_MSG_TYPE_HB,
                        {NET_MSG_CMD_HB, },
                        0,
                        NET_MSG_ASYN,
@@ -1508,28 +1508,28 @@ fk_net_asyn_req_hb_send(void)
                        NET_MSG_HEAD_LEN};
                 
     unsigned int      rc;
-    TF_NET_CPU_OCCUPY cpu_current_time;
+    NET_CPU_OCCUPY cpu_current_time;
     NIF_LOAD_INFO     load_info;
 
-    tf_net_tf_board2vif_ullong(g_fk_state.slot_id, &msg.vif_info);
+    net_board2vif_ullong(g_fk_state.slot_id, &msg.vif_info);
     
-    if (tf_net_mem_load_get(&load_info.mem_load))
+    if (net_mem_load_get(&load_info.mem_load))
     {
         load_info.mem_load = NET_COM_PARAM_INVALID; 
     }
     
-    if (tf_net_cpu_time_get(&cpu_current_time))
+    if (net_cpu_time_get(&cpu_current_time))
     {
         load_info.cpu_load = NET_COM_PARAM_INVALID;
     }
     else
     {
-        if (tf_net_cpu_cal_occupy(&g_fk_cpu_time, &cpu_current_time, &load_info.cpu_load))
+        if (net_cpu_cal_occupy(&g_fk_cpu_time, &cpu_current_time, &load_info.cpu_load))
         {
             load_info.cpu_load = NET_COM_PARAM_INVALID;
         }
         
-        memcpy(&g_fk_cpu_time, &cpu_current_time, sizeof(TF_NET_CPU_OCCUPY));
+        memcpy(&g_fk_cpu_time, &cpu_current_time, sizeof(NET_CPU_OCCUPY));
     }
 
     if ((rc = fk_net_msg_send(&msg, &load_info, sizeof(NIF_LOAD_INFO), 0, msg.direction)))
@@ -1546,7 +1546,7 @@ unsigned int
 fk_net_req_asyn_hb_load(void)
 {
     //消息体为0
-    TF_NET_MSG msg = { NET_MSG_TYPE_HB,
+    NET_MSG msg = { NET_MSG_TYPE_HB,
                         {NET_MSG_CMD_HB_LOAD, },
                         0,
                         NET_MSG_ASYN,
@@ -1557,10 +1557,10 @@ fk_net_req_asyn_hb_load(void)
                         MSG_BODY_LEN_TEST_PC};
     unsigned int rc;
 
-    tf_net_tf_board2vif_ullong(0, &msg.vif_info);
+    net_board2vif_ullong(0, &msg.vif_info);
 
     //1. 负荷信息预留
-    void *body = (void*)tf_net_malloc(&g_fk_net_msg_mp, MSG_BODY_LEN_TEST_PC);
+    void *body = (void*)net_malloc(&g_fk_net_msg_mp, MSG_BODY_LEN_TEST_PC);
      
     if (!body)
     {
@@ -1576,7 +1576,7 @@ fk_net_req_asyn_hb_load(void)
         return rc;  
     }
     
-    tf_net_safe_free(body);
+    net_safe_free(body);
     
     return 0;
 }
@@ -1586,7 +1586,7 @@ fk_net_req_asyn_hb_load(void)
 static unsigned int 
 fk_net_asyn_req_work_send(void)
 {
-    TF_NET_MSG msg = { NET_MSG_TYPE_WORK,
+    NET_MSG msg = { NET_MSG_TYPE_WORK,
                         {NET_MSG_CMD_WORK, },
                         0,
                         NET_MSG_ASYN,
@@ -1597,7 +1597,7 @@ fk_net_asyn_req_work_send(void)
                         0};
     unsigned int rc;                    
                         
-    tf_net_tf_board2vif_ullong(g_fk_state.slot_id, &msg.vif_info);
+    net_board2vif_ullong(g_fk_state.slot_id, &msg.vif_info);
     
     if ((rc = fk_net_msg_send(&msg, NULL, 0, 0, msg.direction)))
     {
@@ -1618,20 +1618,20 @@ fk_net_syn_req_profile_get(
                                     MSG_PC_TEST     *p_in,
                                     MSG_PC_TEST     *p_out)
 {
-    TF_NET_MSG_CMD     cmd_info;
+    NET_MSG_CMD     cmd_info;
     uint32_t            state;
     uint32_t            rc;
-    TF_NET_PHY_INFO    obj_info = {TF_BOARD, {slot_id}};
+    NET_PHY_INFO    obj_info = {BOARD, {slot_id}};
     uint64_t            obj_id;
 
-    if((rc = tf_net_phy2vif(&obj_info, &obj_id)))
+    if((rc = net_phy2vif(&obj_info, &obj_id)))
     {
        printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, rc);
        return rc;
     }
 
     cmd_info.cmd_id     = NET_MSG_CMD_PROFILE_GET;
-    cmd_info.timeout    = TF_NET_WAIT_FOREVER;
+    cmd_info.timeout    = NET_WAIT_FOREVER;
     cmd_info.order      = NET_MSG_ORDER_IN;
 
     rc = fk_net_syn_operation(NET_MSG_TYPE_DRV_PULL, obj_id, cmd_info,
@@ -1652,74 +1652,74 @@ fk_net_syn_req_profile_get(
 4. sql -> operation
 */
 static unsigned int 
-fk_net_syn_req_olt_set_process(TF_NET_MSG *p_msg)
+fk_net_syn_req_olt_set_process(NET_MSG *p_msg)
 {
     /*参数名称和标志p_msg,rc,rc_info,p_buf,len,ack涉及宏，慎重修改*/
     unsigned int      rc;
-    tf_rc_info       rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
+    rc_info       rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
     void              *p_buf = NULL;
     unsigned int      len = 0;
     
-    TF_NET_PHY_INFO  phy_info;
+    NET_PHY_INFO  phy_info;
     //uint8_t           dev_id;
     //uint8_t           port_id;
     //uint16_t          onu_id;
     
     //获取消息基础参数
-    if((rc = tf_net_vif2phy(p_msg->vif_info, &phy_info)))
+    if((rc = net_vif2phy(p_msg->vif_info, &phy_info)))
     {
         printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, rc);
         goto ack;
     }
     
-    //dev_id = TF_NET_PHY_INFO_TO_DEV_ID(phy_info);
-    //port_id = TF_NET_PHY_INFO_TO_TF_ID(phy_info);
-    //onu_id = TF_NET_PHY_INFO_TO_ONU_ID(phy_info);
+    //dev_id = NET_PHY_INFO_TO_DEV_ID(phy_info);
+    //port_id = NET_PHY_INFO_TO_ID(phy_info);
+    //onu_id = NET_PHY_INFO_TO_ONU_ID(phy_info);
     
     switch(p_msg->cmd_info.cmd_id)
     {
 #if 0    
-        case NET_MSG_CMD_TF_ACTIVATE_STANDBY:
+        case NET_MSG_CMD_ACTIVATE_STANDBY:
             {
-                TF_FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
+                FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
                 rc = fk_if_ni_activate_standby(dev_id, port_id);
-                TF_FK_NET_ERR_INFO2RC(OBJ_DRV_TF_NI, port_id, rc);
+                FK_NET_ERR_INFO2RC(OBJ_DRV_NI, port_id, rc);
             }
             break;
             
         case NET_MSG_CMD_ONU_BL_SN_CLEAR:
             {
-                TF_FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
+                FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
                 rc = fk_onu_db_onu_filter_tbl_del_all();
-                TF_FK_NET_ERR_INFO2RC(OBJ_MDW_SQL, 0, rc);
+                FK_NET_ERR_INFO2RC(OBJ_MDW_SQL, 0, rc);
             }
             break;
 
         case NET_MSG_CMD_ONU_BL_SW_SET:
             {
                 uint8_t *p_sw;
-                TF_FK_NET_PROCESS_REQ_PARAM_STRUCT(uint8_t, p_sw);
+                FK_NET_PROCESS_REQ_PARAM_STRUCT(uint8_t, p_sw);
                 rc = fk_onu_db_onu_fliter_tbl_set_switch(*p_sw);
-                TF_FK_NET_ERR_INFO2RC(OBJ_MDW_SQL, 0, rc);
+                FK_NET_ERR_INFO2RC(OBJ_MDW_SQL, 0, rc);
             }
             break;
             
         case NET_MSG_CMD_ONU_ROGUE_SIGNAL_RUN_CHECK:
             {
-                TF_FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
+                FK_NET_PROCESS_REQ_NO_PARAM_VERIFY();
                 uint8_t *p_info;
-                TF_FK_NET_PROCESS_ACK_PARAM_STRUCT(uint8_t, p_info);
+                FK_NET_PROCESS_ACK_PARAM_STRUCT(uint8_t, p_info);
                 rc = fk_if_onu_rogue_detect(dev_id, port_id, p_info);
-                TF_FK_NET_ERR_INFO2RC(OBJ_DRV_TF_NI, port_id, rc);
+                FK_NET_ERR_INFO2RC(OBJ_DRV_NI, port_id, rc);
             }
             break;
 
         case NET_MSG_CMD_DIGITMAP_PROFILE_SYNC_DELETE:
            {
                 uint16_t *p_profile_id;
-                TF_FK_NET_PROCESS_REQ_PARAM_STRUCT(uint16_t, p_profile_id);
+                FK_NET_PROCESS_REQ_PARAM_STRUCT(uint16_t, p_profile_id);
                 rc = fk_if_digitmap_profile_delete_by_id(*p_profile_id);
-                TF_FK_NET_ERR_INFO2RC(OBJ_DRV_TF_OLT, 0, rc);
+                FK_NET_ERR_INFO2RC(OBJ_DRV_OLT, 0, rc);
            }
            break;  
 #endif           
@@ -1728,30 +1728,30 @@ fk_net_syn_req_olt_set_process(TF_NET_MSG *p_msg)
         case NET_MSG_CMD_MSG_PC_TEST_SW:
             {
                 uint8_t *p_sw;
-                TF_FK_NET_PROCESS_REQ_PARAM_STRUCT(uint8_t, p_sw);
+                FK_NET_PROCESS_REQ_PARAM_STRUCT(uint8_t, p_sw);
                 g_fk_packet_test = *p_sw;
                
-                TF_FK_NET_ERR_INFO2RC(OBJ_DRV_TF_OLT, 0, rc);
+                FK_NET_ERR_INFO2RC(OBJ_DRV_OLT, 0, rc);
             }
             break;
 #endif
 
         default:
-            TF_TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
+            TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
             break;
     }
 
     //no error return 0
-    if (!(rc%TF_RETURNCODE_BASE))rc = 0;
+    if (!(rc%RETURNCODE_BASE))rc = 0;
     
 ack:    
     if (rc)
     {
-        printf( "%s %s %d msg %d error %d \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->cmd_info.cmd_id, rc%TF_RETURNCODE_BASE);
+        printf( "%s %s %d msg %d error %d \r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->cmd_info.cmd_id, rc%RETURNCODE_BASE);
     }
 
     fk_net_msg_send(p_msg, p_buf, len, rc, NET_MSG_DRICTION_ACK);
-    tf_net_safe_free(p_buf);
+    net_safe_free(p_buf);
    
     return rc;
 }
@@ -1765,28 +1765,28 @@ ack:
 4. sql -> operation
 */
 static unsigned int 
-fk_net_syn_req_olt_get_process(TF_NET_MSG *p_msg)
+fk_net_syn_req_olt_get_process(NET_MSG *p_msg)
 {
     /*参数名称和标志p_msg,rc,rc_info,p_buf,len,ack涉及宏，慎重修改*/
     unsigned int        rc;
-    tf_rc_info         rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
+    rc_info         rc_info = {.obj_id = OBJ_DRV_FK, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
     void                *p_buf = NULL;
     unsigned int        len = 0;
     
-    TF_NET_PHY_INFO    phy_info;
+    NET_PHY_INFO    phy_info;
     //uint8_t             dev_id;
     //uint8_t             port_id;
     //uint16_t            onu_id;
 
     //获取消息基础参数
-    if ((rc = tf_net_vif2phy(p_msg->vif_info, &phy_info)))
+    if ((rc = net_vif2phy(p_msg->vif_info, &phy_info)))
     {
         goto ack;
     }
 
-    //dev_id = TF_NET_PHY_INFO_TO_DEV_ID(phy_info);
-    //port_id = TF_NET_PHY_INFO_TO_TF_ID(phy_info);
-    //onu_id = TF_NET_PHY_INFO_TO_ONU_ID(phy_info);
+    //dev_id = NET_PHY_INFO_TO_DEV_ID(phy_info);
+    //port_id = NET_PHY_INFO_TO_ID(phy_info);
+    //onu_id = NET_PHY_INFO_TO_ONU_ID(phy_info);
 
     switch(p_msg->cmd_info.cmd_id)
     {
@@ -1796,31 +1796,31 @@ fk_net_syn_req_olt_get_process(TF_NET_MSG *p_msg)
         case NET_MSG_CMD_POTS_PROFILE_DATA_GET:
             {
                 uint16_t *p_profile_id;
-                TF_FK_NET_PROCESS_REQ_PARAM_STRUCT(uint16_t, p_profile_id);
+                FK_NET_PROCESS_REQ_PARAM_STRUCT(uint16_t, p_profile_id);
                 POTS_DATA_T *p_data;
-                TF_FK_NET_PROCESS_ACK_PARAM_STRUCT(POTS_DATA_T, p_data);
+                FK_NET_PROCESS_ACK_PARAM_STRUCT(POTS_DATA_T, p_data);
                 rc = fk_if_pots_profile_get(*p_profile_id, p_data);
-                TF_FK_NET_ERR_INFO2RC(OBJ_DRV_TF_OLT, 0, rc);
+                FK_NET_ERR_INFO2RC(OBJ_DRV_OLT, 0, rc);
             }
         break;
 #endif
 
         default:
-            TF_TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
+            TF_ERRNO_INFO2RC(rc_info, rc, FK_ZK_RC_MSG_CMD_UNKNOWN);
             break;
     }
 
     //no error return 0
-    if (!(rc%TF_RETURNCODE_BASE))rc = 0;
+    if (!(rc%RETURNCODE_BASE))rc = 0;
 
 ack:    
     if (rc)
     {
-        printf( "%s %s %d msg %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->cmd_info.cmd_id, rc%TF_RETURNCODE_BASE);
+        printf( "%s %s %d msg %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, p_msg->cmd_info.cmd_id, rc%RETURNCODE_BASE);
     }
     
     fk_net_msg_send(p_msg, p_buf, len, rc, NET_MSG_DRICTION_ACK);
-    tf_net_safe_free(p_buf);
+    net_safe_free(p_buf);
 
     return rc;
 }
@@ -1830,7 +1830,7 @@ ack:
 #if DEFUNC("控制板接收异步响应消息处理接口")
 
 static unsigned int
-fk_net_asyn_ack_work_process(TF_NET_MSG *p_msg)
+fk_net_asyn_ack_work_process(NET_MSG *p_msg)
 {
     //1.业务板开工
     fk_net_state_set(FK_NET_WORK_SYNCHRONOUS);
@@ -1842,7 +1842,7 @@ fk_net_asyn_ack_work_process(TF_NET_MSG *p_msg)
 
 //目前业务板没有hb响应，预留接口
 static unsigned int
-fk_net_asyn_ack_hb_process(TF_NET_MSG *p_msg)
+fk_net_asyn_ack_hb_process(NET_MSG *p_msg)
 {
     //记录状态
     p_msg = p_msg;
@@ -1850,7 +1850,7 @@ fk_net_asyn_ack_hb_process(TF_NET_MSG *p_msg)
 }
 
 static unsigned int
-fk_net_asyn_ack_alarm_process(TF_NET_MSG *p_msg)
+fk_net_asyn_ack_alarm_process(NET_MSG *p_msg)
 {
     p_msg = p_msg;
     return 0;

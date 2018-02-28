@@ -1,14 +1,14 @@
 /*******************************************************************************
 * Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
-* 文   件   名: \tf_snmp.h
+* 文   件   名: \snmp.h
 * 作           者: jq.deng
 * 版   本   号: V1.0.0
 * 生成日期: 2016年8月31日
 * 功能描述: 
 *******************************************************************************/
 
-#ifndef __TF_SNMP_H__
-#define __TF_SNMP_H__
+#ifndef __SNMP_H__
+#define __SNMP_H__
 
 /*module info*/
 #define SNMP_CONF_DIR               "/etc/snmp/"
@@ -131,5 +131,5 @@ typedef struct SNMP_CONF_INFO
     SNMP_TRAP_INFO_STRU trapInfo[MAX_TRAP];
 }SNMP_CONF_INFO_STRU;
 
-#endif /* __TF_SNMP_H__ */
+#endif /* __SNMP_H__ */
 

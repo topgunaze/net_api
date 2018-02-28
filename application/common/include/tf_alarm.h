@@ -1,16 +1,16 @@
 /*******************************************************************************
 * Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
-* 文   件   名: tf_alarm.h
+* 文   件   名: alarm.h
 * 作           者: jq.deng
 * 版   本   号: V1.0.0
 * 生成日期: 2016年9月2日
 * 功能描述: 
 *******************************************************************************/
 
-#ifndef __TF_ALARM_H__
-#define __TF_ALARM_H__
+#ifndef __ALARM_H__
+#define __ALARM_H__
 
-#include "tf_types.h"
+#include "types.h"
 
 #define MAX_EVENT_LOG_TABLE_ENTRY_NUM   256
 #define MAX_ALARM_ACTIVE_TABLE_ENTRY_NUM   4096
@@ -56,20 +56,20 @@
 #define POWER_REMOVAL_SEVERITYTYPE   SEVERITYTYPE_CRITICAL
 #define FATAL_OLT_HW_ERROR_SEVERITYTYPE   SEVERITYTYPE_MAJOR
 
-/*sni/tf level*/
-#define TF_LOOPBACK_ALARM   201
-#define OLT_TF_OPTICAL_MODULE_FAULTY_ALARM   202
+/*sni/level*/
+#define LOOPBACK_ALARM   201
+#define OLT_OPTICAL_MODULE_FAULTY_ALARM   202
 #define SNI_OPERATION_DISABLED_ALARM   203
-#define TF_OPERATION_DISABLED_ALARM   204
+#define OPERATION_DISABLED_ALARM   204
 #define NUM_OFLINKS_EXCEEDED_ALARM   205
-#define TF_LONGEMIT_ALARM   206
+#define LONGEMIT_ALARM   206
 
-#define TF_LOOPBACK_SEVERITYTYPE   SEVERITYTYPE_MAJOR
-#define OLT_TF_OPTICAL_MODULE_FAULTY_SEVERITYTYPE   SEVERITYTYPE_MAJOR
+#define LOOPBACK_SEVERITYTYPE   SEVERITYTYPE_MAJOR
+#define OLT_OPTICAL_MODULE_FAULTY_SEVERITYTYPE   SEVERITYTYPE_MAJOR
 #define SNI_OPERATION_DISABLED_SEVERITYTYPE   SEVERITYTYPE_CRITICAL
-#define TF_OPERATION_DISABLED_SEVERITYTYPE   SEVERITYTYPE_MAJOR
+#define OPERATION_DISABLED_SEVERITYTYPE   SEVERITYTYPE_MAJOR
 #define NUM_OFLINKS_EXCEEDED_SEVERITYTYPE   SEVERITYTYPE_WARNING
-#define TF_LONGEMIT_SEVERITYTYPE   SEVERITYTYPE_MAJOR
+#define LONGEMIT_SEVERITYTYPE   SEVERITYTYPE_MAJOR
 
 
 /*onu level*/
@@ -139,7 +139,7 @@
 
 
 
-typedef struct TF_ALARM_INFO
+typedef struct ALARM_INFO
 {
     unsigned int seqNum;
     unsigned int raisingNum;
@@ -162,7 +162,7 @@ typedef struct TF_ALARM_INFO
     unsigned int repeats;
     char additionalText[MAX_ALARM_ADDITIONAL_TEXT_LEN];      
     char additionalText_len;   
-}TF_ALARM_INFO_STRU;
+}ALARM_INFO_STRU;
 
 
 
@@ -182,7 +182,7 @@ typedef struct
 {
     ALARM_ENTRY_LINK             links;
     //ALARM_ENTRY_KEY        key;
-    TF_ALARM_INFO_STRU       data;
+    ALARM_INFO_STRU       data;
 }ALARM_DATABASE_ENTRY;
 
 /**********************    hash 表数据结构******************/
@@ -276,8 +276,8 @@ typedef enum{
     SNMP_TXPower,
     SNMP_RXPower,
     
-    ETF_STATS_THRESHOLD_TYPE_NUM
-}ETF_STATS_THRESHOLD_TYPE;
+    ESTATS_THRESHOLD_TYPE_NUM
+}ESTATS_THRESHOLD_TYPE;
 
 typedef struct STATS_THRESHOLD
 {
@@ -292,13 +292,13 @@ typedef struct
     UINT32 ifindex;    
     UINT8 upperAlarmFlag;   /*1:active, 0:no active*/    
     UINT8 lowerAlarmFlag;   /*1:active, 0:no active*/    
-    STATS_THRESHOLD_STRU  threshold[ETF_STATS_THRESHOLD_TYPE_NUM];
+    STATS_THRESHOLD_STRU  threshold[ESTATS_THRESHOLD_TYPE_NUM];
 }PORT_STATS_THRESHOLD_INFO;
 
 /**************性能统计门限告警相关数据结构(start)******************/
 
 
-#endif /* __TF_ALARM_H__ */
+#endif /* __ALARM_H__ */
 
 
 

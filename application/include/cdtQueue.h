@@ -6,45 +6,45 @@
  *
  */
 
-#ifndef __TF_QUEUE_H__
-#define __TF_QUEUE_H__
+#ifndef __QUEUE_H__
+#define __QUEUE_H__
 
-#include <tf_types.h>
+#include <types.h>
 
-#define TF_QUEUE_NO_WAIT                      (0)
-#define TF_QUEUE_WAIT_FOREVER              (-1)
+#define QUEUE_NO_WAIT                      (0)
+#define QUEUE_WAIT_FOREVER              (-1)
 
 
 typedef enum
 {
-    TF_QUEUE_SWITCH_IGMP,
-    TF_QUEUE_SWITCH_RSTP,
-    TF_QUEUE_RSTP_TIMER,
+    QUEUE_SWITCH_IGMP,
+    QUEUE_SWITCH_RSTP,
+    QUEUE_RSTP_TIMER,
 
-    TF_QUEUE_NUM,
+    QUEUE_NUM,
 }tfQueueSubKey;
 
 
 typedef enum
 {
-    TF_SW_MSG_ANY = 0,
-    TF_SW_MSG_ARP,
-    TF_SW_MSG_DHCP,
-    TF_SW_MSG_IGMP,
-    TF_SW_MSG_RSTP,
-    TF_SW_MSG_LACP,
-    TF_SW_MSG_DOT1X,
-    TF_SW_MSG_PPPOEPLUS,
+    SW_MSG_ANY = 0,
+    SW_MSG_ARP,
+    SW_MSG_DHCP,
+    SW_MSG_IGMP,
+    SW_MSG_RSTP,
+    SW_MSG_LACP,
+    SW_MSG_DOT1X,
+    SW_MSG_PPPOEPLUS,
 
-	TF_SW_MSG_MAX,
+	SW_MSG_MAX,
 }tfSwQueueMsgType;
 
 
-#define TF_SW_MSG_TEXT_SIZE                1550
-#define TF_SW_MSG_MAX_NUM                  30
-#define TF_DHCP_PKT_LEN_MAX 900     /*发送给DHCP 模块的消息长度*/
-#define TF_DHCP_PKT_LEN_LIMIT 800   /*接收到的DHCP包的最大长度*/
-#define TF_DHCP_PKT_LEN_EXPEND 100     /*发送给DHCP 模块的消息长度=pkt_len+TF_DHCP_PKT_LEN_EXPEND*/
+#define SW_MSG_TEXT_SIZE                1550
+#define SW_MSG_MAX_NUM                  30
+#define DHCP_PKT_LEN_MAX 900     /*发送给DHCP 模块的消息长度*/
+#define DHCP_PKT_LEN_LIMIT 800   /*接收到的DHCP包的最大长度*/
+#define DHCP_PKT_LEN_EXPEND 100     /*发送给DHCP 模块的消息长度=pkt_len+DHCP_PKT_LEN_EXPEND*/
 
 typedef struct
 {
@@ -66,13 +66,13 @@ typedef struct
     UINT8       noVlan;
     UINT16      vid;
     UINT16      len;
-    UINT8       data[TF_SW_MSG_TEXT_SIZE];
+    UINT8       data[SW_MSG_TEXT_SIZE];
 }tfRstpBpduMsg_t;
 
 typedef struct
 {
     tfSwitchIgmpMsgHeader_t                hdr;
-    UINT8                                   data[TF_SW_MSG_TEXT_SIZE];
+    UINT8                                   data[SW_MSG_TEXT_SIZE];
 }tfSwitchIgmpMsg_t;
 
 
@@ -95,7 +95,7 @@ typedef struct
 typedef struct
 {
     tfSwitchDhcpMsgHeader_t hdr;
-    UINT8 data[TF_SW_MSG_TEXT_SIZE];
+    UINT8 data[SW_MSG_TEXT_SIZE];
 }tfSwitchDhcpMsg_t;
 
 typedef struct
@@ -109,12 +109,12 @@ typedef struct
 typedef struct
 {
     tfSwitchArpMsgHeader_t hdr;
-    UINT8 data[TF_SW_MSG_TEXT_SIZE];
+    UINT8 data[SW_MSG_TEXT_SIZE];
 }tfSwitchArpMsg_t;
 
 typedef struct
 {
-    long        type;       /* TF_SW_MSG_LACP */
+    long        type;       /* SW_MSG_LACP */
     UINT8       srcPort;    /* 入接口索引 */
     UINT16      pktLen;
     UINT16      vid;        /* 实际不涉及 */
@@ -123,12 +123,12 @@ typedef struct
 typedef struct
 {
     tfSwitchLacpMsgHeader_t hdr;
-    UINT8 data[TF_SW_MSG_TEXT_SIZE];
+    UINT8 data[SW_MSG_TEXT_SIZE];
 }tfSwitchLacpMsg_t;
 
 typedef struct
 {
-    long        type;       /* TF_SW_MSG_DOT1X */
+    long        type;       /* SW_MSG_DOT1X */
     UINT8       srcPort;    /* 入接口索引 */
     UINT16      pktLen;
     UINT16      vid;        /* 暂时不区分 */
@@ -137,12 +137,12 @@ typedef struct
 typedef struct
 {
     tfSwitchDot1xMsgHeader_t hdr;
-    UINT8 data[TF_SW_MSG_TEXT_SIZE];
+    UINT8 data[SW_MSG_TEXT_SIZE];
 }tfSwitchDot1xMsg_t;
 
 typedef struct
 {
-    long        type;       /* TF_SW_MSG_DOT1X */
+    long        type;       /* SW_MSG_DOT1X */
     UINT8       srcPort;    /* 入接口索引 */
     UINT16      pktLen;
     UINT16      vid;        /* 暂时不区分 */
@@ -151,7 +151,7 @@ typedef struct
 typedef struct
 {
     tfSwitchPplusMsgHeader_t hdr;
-    UINT8 data[TF_SW_MSG_TEXT_SIZE];
+    UINT8 data[SW_MSG_TEXT_SIZE];
 }tfSwitchPplusMsg_t;
 
 INT32 tfQueueCreate (INT32 *queue_id, INT32 subKey, UINT32 queue_size);

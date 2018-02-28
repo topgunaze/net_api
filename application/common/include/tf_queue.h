@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_queue.h
+ * 文件名称:  queue.h
  * 作           者:  keith.gong
  * 日           期:  2014.12.27
  * 文件描述:  系统消息队列管理
@@ -9,10 +9,10 @@
 **************************************************************/
 
  
-#ifndef __TF_QUEUE_H__
-#define __TF_QUEUE_H__
+#ifndef __QUEUE_H__
+#define __QUEUE_H__
 
-#include <tf_types.h>
+#include <types.h>
 
 
 #define SYS_QUEUE_NO_WAIT                   (0)
@@ -55,11 +55,11 @@ typedef enum
     SYS_QUEUE_OMCI_PRIORITY_0,
     SYS_QUEUE_OMCI_PRIORITY_1,
 
-    SYS_QUEUE_TF_CTRL_RX_SYN_REQ_MSG,
-    SYS_QUEUE_TF_CTRL_RX_SYN_ACK_MSG,
-    SYS_QUEUE_TF_CTRL_RX_ASYN_REQ_MSG,
-    SYS_QUEUE_TF_CTRL_RX_ASYN_ACK_MSG,
-    SYS_QUEUE_TF_CTRL_TX_MSG,
+    SYS_QUEUE_CTRL_RX_SYN_REQ_MSG,
+    SYS_QUEUE_CTRL_RX_SYN_ACK_MSG,
+    SYS_QUEUE_CTRL_RX_ASYN_REQ_MSG,
+    SYS_QUEUE_CTRL_RX_ASYN_ACK_MSG,
+    SYS_QUEUE_CTRL_TX_MSG,
 
     SYS_QUEUE_LINEMGMT_MSG,
 
@@ -73,13 +73,13 @@ typedef enum
 }SYS_QUEUE_SUB_KEY_E;
 
 extern RTN_STATUS 
-tf_queue_create (
+queue_create (
                 INT32 *p_queue_id, 
                 SYS_QUEUE_SUB_KEY_E sub_key, 
                 UINT32 queue_size);
 
 extern RTN_STATUS
-tf_queue_get (
+queue_get (
                 INT32  queue_id, 
                 long   type, 
                 void   *p_data, 
@@ -87,7 +87,7 @@ tf_queue_get (
                 INT32  timeout, /* ms  */
                 UINT32 *p_size_copied);
 extern RTN_STATUS
-tf_queue_put (
+queue_put (
                 INT32  queue_id, 
                 void   *p_data, 
                 UINT32 size, 

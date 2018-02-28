@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_monitor_pub.h
+ * 文件名称:  monitor_pub.h
  * 作           者:  steven.tian
  * 日           期:  2015.07.07
  * 文件描述:  monitor hardware event header
@@ -7,8 +7,8 @@
  * 修改历史:
  *     <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
-#ifndef _TF_MONITOR_PUB_H
-#define _TF_MONITOR_PUB_H
+#ifndef _MONITOR_PUB_H
+#define _MONITOR_PUB_H
 
 #include <time.h>
 #include <unistd.h>
@@ -61,50 +61,50 @@
 
 #define START_CFG_RESTORE(pid)  kill(pid, SIGRTMIN)
 
-#define  TF_MAX_PORTS  16
+#define  MAX_PORTS  16
 #define  GE_MAX_PORTS   4
 #define  XGE_MAX_PORTS  2
 #define  XnGE_MAX_PORTS (GE_MAX_PORTS+XGE_MAX_PORTS)
 #define  MAX_CARDS_XGE  1
 #define  PWR_MAX_CARDS  2
-#define  TF_MAX_CHIPS  1
+#define  MAX_CHIPS  1
 
-#define ALL_TF_PORT_LIST(max) (~(0xFFFFFFFF << (max)))
-#define ALL_TF_TF_PORT_LIST     ALL_TF_PORT_LIST(TF_MAX_PORTS)
-#define ALL_TF_GE_PORT_LIST      ALL_TF_PORT_LIST(GE_MAX_PORTS)
-#define ALL_TF_XGE_CARD_LIST    ALL_TF_PORT_LIST(MAX_CARDS_XGE)
-#define ALL_TF_PWR_CARD_LIST     ALL_TF_PORT_LIST(PWR_MAX_CARDS)
+#define ALL_PORT_LIST(max) (~(0xFFFFFFFF << (max)))
+#define ALL_TF_PORT_LIST     ALL_PORT_LIST(MAX_PORTS)
+#define ALL_GE_PORT_LIST      ALL_PORT_LIST(GE_MAX_PORTS)
+#define ALL_XGE_CARD_LIST    ALL_PORT_LIST(MAX_CARDS_XGE)
+#define ALL_PWR_CARD_LIST     ALL_PORT_LIST(PWR_MAX_CARDS)
 
-#define IS_TF_PORT_TRUE(list, port) ((list) & (1 << (port)))
+#define IS_PORT_TRUE(list, port) ((list) & (1 << (port)))
 
-#define TF_PORT_TF_LIST_ADD(list, port) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | (1 << (port))))
-#define TF_PORT_GE_LIST_ADD(list, port) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_GE << 24 ) | (1 << (port))))
-#define TF_CARD_XGE_LIST_ADD(list, card) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_XGE << 24 ) | (1 << (card))))
-#define TF_CARD_PWR_LIST_ADD(list, card) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | (1 << (card))))
-#define TF_DEV_LIST_ADD(list, devId) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_DEV << 24 ) | (1 << (devId))))
+#define PORT_LIST_ADD(list, port) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | (1 << (port))))
+#define PORT_GE_LIST_ADD(list, port) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_GE << 24 ) | (1 << (port))))
+#define CARD_XGE_LIST_ADD(list, card) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_XGE << 24 ) | (1 << (card))))
+#define CARD_PWR_LIST_ADD(list, card) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | (1 << (card))))
+#define DEV_LIST_ADD(list, devId) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_DEV << 24 ) | (1 << (devId))))
 
-#define ALL_TF_PORT_TF_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | ALL_TF_TF_PORT_LIST))
-#define ALL_TF_PORT_GE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_GE << 24 ) | ALL_TF_GE_PORT_LIST))
-#define ALL_TF_CARD_XGE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_XGE << 24 ) | ALL_TF_XGE_CARD_LIST))
-#define ALL_TF_CARD_PWR_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | ALL_TF_PWR_CARD_LIST))
+#define ALL_PORT_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_TF << 24 ) | ALL_TF_PORT_LIST))
+#define ALL_PORT_GE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_GE << 24 ) | ALL_GE_PORT_LIST))
+#define ALL_CARD_XGE_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_XGE << 24 ) | ALL_XGE_CARD_LIST))
+#define ALL_CARD_PWR_LIST_ADD(list) ((list) = (((list) & 0x00ffffff) | (LIST_TYPE_PWR << 24 ) | ALL_PWR_CARD_LIST))
 
-#define IS_TF_TF_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_TF << 24)) && ((list) & (1 << (port))))
-#define IS_TF_GE_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_GE << 24)) && ((list) & (1 << (port))))
-#define IS_TF_XGE_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_XGE << 24)) && ((list) & (1 << (card))))
-#define IS_TF_PWR_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_PWR << 24)) && ((list) & (1 << (card))))
-#define IS_TF_DEV(list, dev) ((((list) & 0xff000000) == (LIST_TYPE_DEV << 24)) && ((list) & (1 << (dev))))
+#define IS_TF_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_TF << 24)) && ((list) & (1 << (port))))
+#define IS_GE_PORT(list, port) ((((list) & 0xff000000) == (LIST_TYPE_GE << 24)) && ((list) & (1 << (port))))
+#define IS_XGE_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_XGE << 24)) && ((list) & (1 << (card))))
+#define IS_PWR_CARD(list, card) ((((list) & 0xff000000) == (LIST_TYPE_PWR << 24)) && ((list) & (1 << (card))))
+#define IS_DEV(list, dev) ((((list) & 0xff000000) == (LIST_TYPE_DEV << 24)) && ((list) & (1 << (dev))))
 
-#define IS_TF_TF_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_TF << 24))
-#define IS_TF_GE_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_GE << 24))
-#define IS_TF_XGE_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_XGE << 24))
-#define IS_TF_PWR_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_PWR << 24))
-#define IS_TF_DEV_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_DEV << 24))
+#define IS_TF_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_TF << 24))
+#define IS_GE_PORT_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_GE << 24))
+#define IS_XGE_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_XGE << 24))
+#define IS_PWR_CARD_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_PWR << 24))
+#define IS_DEV_LIST(list) (((list) & 0xff000000) == (LIST_TYPE_DEV << 24))
 
-#define TF_ITER_PORT_LIST(list, port, total)	\
+#define ITER_PORT_LIST(list, port, total)	\
     for ((port) = 0; (port) < total; (port)++) \
         if (IS_PORT_TRUE((list), (port)))
 
-#define ITER_SFP_GE_PORT_LIST(list, port) TF_ITER_PORT_LIST((list), (port), GE_MAX_PORTS)
+#define ITER_SFP_GE_PORT_LIST(list, port) ITER_PORT_LIST((list), (port), GE_MAX_PORTS)
 
 #define LIST_EXTRACT(list, port, newfiled) (((list) & (1 << (port))) ? (newfiled) : 0)
 #define IS_FILED_TRUE(com, filed) ((com) & (filed))
@@ -175,7 +175,7 @@ typedef struct
     char    date[DATA_STR_MAX_LEN];   /* 2014/12/31 */
 }portBaseInfo_t;
 
-/* tf port event data structure */
+/* port event data structure */
 typedef struct tfPortEvt_st
 {
     unsigned int  port;

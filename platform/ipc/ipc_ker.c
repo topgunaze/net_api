@@ -13,7 +13,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <tf_syslog.h>
+#include <syslog.h>
 #include <stdarg.h>
 #include "pthread.h"
 #include "stdio.h"

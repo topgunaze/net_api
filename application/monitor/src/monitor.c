@@ -23,9 +23,9 @@
 #include <sched.h>
 #include <linux/kernel.h>
 
-#include "tf_types.h"
+#include "types.h"
 #include "monitor.h"
-#include "tf_syslog.h"
+#include "syslog.h"
 //#include "tfMacCryptExpo.h"
 #include <termios.h>
 
@@ -67,7 +67,7 @@ static appDesc_t app[] =
 {
     /*path       name           argStr          flag                                                                pid     status          exitStatus    eventId           waitflag    prompt*/
     {"/usr/bin", "ipc_ker",     NULL, APP_START_STAGE1 | APP_RESTART_SELF,                                          0,  APP_STATUS_INITIAL,    0, IPC_EVENT_BASE,               0, NULL},
-    {"/usr/bin", "tfdevctrl",  NULL, APP_START_STAGE2 | APP_EXCLUSIVE_WAIT,                       0,  APP_STATUS_INITIAL,    0, IPC_EVENT_TF_INITED,    0, "Start TF Ctrl"},
+    {"/usr/bin", "tfdevctrl",  NULL, APP_START_STAGE2 | APP_EXCLUSIVE_WAIT,                       0,  APP_STATUS_INITIAL,    0, IPC_EVENT_INITED,    0, "Start TF Ctrl"},
     {"/usr/bin", "tfdrv",      NULL, APP_START_STAGE2 | APP_EXCLUSIVE_WAIT |APP_DISABLE_WTD,      0,  APP_STATUS_INITIAL,    0, 0,     0, "Start TF Drv"},
     //{"/usr/bin", "swigmpsn",    NULL, APP_START_STAGE3 | APP_RESTART_SYSTEM | APP_SHARE_WAIT,                       0,  APP_STATUS_INITIAL,    0, IPC_EVENT_SW_IGMP_SN_INITED,  0, "Start Switch App"},
     //{"/usr/bin", "swrstp",      NULL, APP_START_STAGE3 | APP_RESTART_SYSTEM | APP_SHARE_WAIT,                       0,  APP_STATUS_INITIAL,    0, IPC_EVENT_SW_RSTP_INITED,     0, NULL},
@@ -147,11 +147,11 @@ static int check_file_table(void)
 #endif
 
 /*************************************************************
- * tf_cfg_factory - factory function
+ * cfg_factory - factory function
  *
  * Returns: a negative errno code else positive on success.
  ************************************************************/
-static int tf_cfg_factory(void)
+static int cfg_factory(void)
 {
     short       cmdRet = OK;
     int         rc     = OK;
@@ -183,7 +183,7 @@ static int factory_reset_key_monitor(void)
     }
     else if (status == KEY_LONG)
     {
-        tf_cfg_factory();
+        cfg_factory();
         MONITOR_CRIT("Detect button request to factory!");
         ret = ERROR;
     }
@@ -1008,7 +1008,7 @@ static int monitor_init()
 
     tflog_default = opentflog("MONITOR", 1, TRUE, TFLOG_SYSLOG | TFLOG_STDERR, LOG_DAEMON, NULL);
 
-    /*alarm_event_reg(&ALARM_FAULT_VAL_NAME(tf_sfp));*/
+    /*alarm_event_reg(&ALARM_FAULT_VAL_NAME(sfp));*/
 
     setup_sigaction(SIGSEGV, signal_segv);
 
@@ -1060,7 +1060,7 @@ int main(int argc, char * argv[])
         /* stage1: base process */
         apps_start(APP_START_STAGE1);
 
-        /* stage2: tf */
+        /* stage2: */
         apps_start(APP_START_STAGE2);
 
         /* stage3: switch */

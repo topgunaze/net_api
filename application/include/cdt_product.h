@@ -1,13 +1,13 @@
 /******************************************************************************
 Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
-  文 件 名   : tf_product.h
+  文 件 名   : product.h
   作    者   : jh.liang
   版 本 号   : 1.0.0 
   生成日期   : 2015年3月13日
   功能描述   : 定义产品相关的属性,包括产品的端口，芯片平台，sdk等相关的属性
 ******************************************************************************/
-#ifndef IPC_TF_PRODUCT_H
-#define IPC_TF_PRODUCT_H
+#ifndef IPC_PRODUCT_H
+#define IPC_PRODUCT_H
 
 #define ETHERADDR_LEN               6
 
@@ -19,7 +19,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #define SYS_DEF_MGMT_VLAN			1
 #define SYSINFO_PATH "/mnt/sysInfo.dat"
 
-#define TF_FD1616_16
+#define FD1616_16
 
 enum{
     SDK_VER_NONE,
@@ -32,34 +32,34 @@ enum{
 
 
 #define AGGR_MAX_PORT_PER_GROUP     8
-#if defined TF_FD1008_4
+#if defined FD1008_4
 #define MAX_AGGR_GROUP				2
-#define TF_SW_MAX_PORTCNT   		4
-#define TF_FB_MAX_PORTCNT   		8
+#define SW_MAX_PORTCNT   		4
+#define FB_MAX_PORTCNT   		8
 #define SDK_VER                     SDK_VER_5_10_2
 #define PLATFORM_BCM53314
-#elif defined (TF_FD1008_8)
+#elif defined (FD1008_8)
 #define MAX_AGGR_GROUP				4
-#define TF_SW_MAX_PORTCNT   		8
-#define TF_FB_MAX_PORTCNT   		16
+#define SW_MAX_PORTCNT   		8
+#define FB_MAX_PORTCNT   		16
 #define SDK_VER                     SDK_VER_5_10_2
 #define PLATFORM_BCM53314
-#elif defined (TF_FD1508_8)
+#elif defined (FD1508_8)
 #define MAX_AGGR_GROUP				8
-#define TF_SW_MAX_PORTCNT   		19
-#define TF_FB_MAX_PORTCNT   		27
+#define SW_MAX_PORTCNT   		19
+#define FB_MAX_PORTCNT   		27
 #define PLATFORM_BCM55440
 #define SDK_VER                     SDK_VER_6_3_8
 #define RSTP_TRUNK
-#elif defined (TF_FD3000_40)
+#elif defined (FD3000_40)
 #define MAX_AGGR_GROUP				8
-#define TF_SW_MAX_PORTCNT   		19
-#define TF_FB_MAX_PORTCNT   		27
+#define SW_MAX_PORTCNT   		19
+#define FB_MAX_PORTCNT   		27
 #define PLATFORM_BCM56334
-#elif defined (TF_FD1616_16)
+#elif defined (FD1616_16)
 #define MAX_AGGR_GROUP				8
-#define TF_SW_MAX_PORTCNT   		10
-#define TF_FB_MAX_PORTCNT   		16
+#define SW_MAX_PORTCNT   		10
+#define FB_MAX_PORTCNT   		16
 #define PLATFORM_BCM56452
 #define SDK_VER                     SDK_VER_6_4_8
 #endif
@@ -126,6 +126,6 @@ do{\
 }while(0)
 #endif
 
-#endif //IPC_TF_PRODUCT_H
+#endif //IPC_PRODUCT_H
 
 

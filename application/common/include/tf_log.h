@@ -1,5 +1,5 @@
 /**************************************************************
- * 文件名称:  tf_log.h
+ * 文件名称:  log.h
  * 作           者:  steven.tian
  * 日           期:  2015.09.22
  * 文件描述:  system log interface header
@@ -9,8 +9,8 @@
 **************************************************************/
 
 
-#ifndef _TF_LOG_H
-#define _TF_LOG_H
+#ifndef _LOG_H
+#define _LOG_H
 
 #include <stdio.h>
 #include <string.h>
@@ -25,17 +25,17 @@
 #undef __FACTORY_VER__
 
 #ifndef __FACTORY_VER__ 
-#define TF_LOG_PATH "/mnt/log/"
-#define TF_TMP_LOG_PATH "/var/log/"
+#define LOG_PATH "/mnt/log/"
+#define TMP_LOG_PATH "/var/log/"
 #else
-#define TF_LOG_PATH "/var/log/"
-#define TF_TMP_LOG_PATH TF_LOG_PATH
+#define LOG_PATH "/var/log/"
+#define TMP_LOG_PATH LOG_PATH
 #endif
-#define TF_LOG_CFG "/etc/tf_log.cfg"
-#define TF_OPER_LOG_FILE TF_LOG_PATH "oper.log"
-#define TF_ALARM_LOG_FILE TF_LOG_PATH "alarm.log"
-#define TF_OPER_LOG_TMP_FILE TF_TMP_LOG_PATH "oper.log"
-#define TF_LOG_FILE_MAX_LEN 32
+#define LOG_CFG "/etc/log.cfg"
+#define OPER_LOG_FILE LOG_PATH "oper.log"
+#define ALARM_LOG_FILE LOG_PATH "alarm.log"
+#define OPER_LOG_TMP_FILE TMP_LOG_PATH "oper.log"
+#define LOG_FILE_MAX_LEN 32
 enum
 {
     TFLOG_NOLOG_INDEX        = 0,
@@ -57,31 +57,31 @@ enum
 
 enum
 {
-    TF_LOG_TYPE_OPER  = 0,
-    TF_LOG_TYPE_ALARM = 1,
-    TF_LOG_TYPE_DEBUG = 2,
-    TF_LOG_TYPE_NUM
+    LOG_TYPE_OPER  = 0,
+    LOG_TYPE_ALARM = 1,
+    LOG_TYPE_DEBUG = 2,
+    LOG_TYPE_NUM
 };
 
-#define TF_LOG_PRIO_MASK(p) (((p) > LOG_DEBUG) ? 0 : (1 << (p)))
-#define TF_LOG_PRIO_MASK_HL(p) (((p) > LOG_DEBUG) ? (~(0xFFFFUL << (LOG_DEBUG + 1))) : (~(0xFFFFUL << ((p) + 1))))
-#define TF_LOG_PRIO_MASK_DEF_DEBUG TF_LOG_PRIO_MASK_HL(LOG_DEBUG)
-#define TF_LOG_PRIO_MASK_DEF_ALARM TF_LOG_PRIO_MASK_HL(LOG_NOTICE)
+#define LOG_PRIO_MASK(p) (((p) > LOG_DEBUG) ? 0 : (1 << (p)))
+#define LOG_PRIO_MASK_HL(p) (((p) > LOG_DEBUG) ? (~(0xFFFFUL << (LOG_DEBUG + 1))) : (~(0xFFFFUL << ((p) + 1))))
+#define LOG_PRIO_MASK_DEF_DEBUG LOG_PRIO_MASK_HL(LOG_DEBUG)
+#define LOG_PRIO_MASK_DEF_ALARM LOG_PRIO_MASK_HL(LOG_NOTICE)
 
 
 #define CLI_MSG_LEN               (1 << 10)
 #if 0
-#define TF_LOG_FILE_SIZE  (1 << 20) /* 1MBytes */
-#define TF_LOG_LINE_LEN   256
+#define LOG_FILE_SIZE  (1 << 20) /* 1MBytes */
+#define LOG_LINE_LEN   256
 #else
-#define TF_LOG_FILE_SIZE  (1 << 14) /* 1MBytes */
-#define TF_LOG_LINE_LEN   100
+#define LOG_FILE_SIZE  (1 << 14) /* 1MBytes */
+#define LOG_LINE_LEN   100
 #endif
 
-#define TF_ALARM_FAULT_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
-#define TF_ALARM_RECOVERY_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
-#define TF_EVENT_RUNNING_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
-#define TF_EVENT_SECURITY_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
+#define ALARM_FAULT_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
+#define ALARM_RECOVERY_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
+#define EVENT_RUNNING_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
+#define EVENT_SECURITY_ID(mod, sub, type, id) ((((mod) & 0xF)) << 24 | ((sub) & 0xF) << 20 | 1 << 16 | ((type) & 0xF) << 12 | ((id) & 0xFFF))
 #define ALARM_FAULT_VAL_NAME(name) alarm_fault_##name
 
 
@@ -96,12 +96,12 @@ enum
 
 enum
 {
-    TF_ALARM_EVENT_TYPE_COMMUNICATION = 0,
-    TF_ALARM_EVENT_TYPE_SERVICE       = 1,
-    TF_ALARM_EVENT_TYPE_PROCESS       = 2,
-    TF_ALARM_EVENT_TYPE_EQUIPMENT     = 3,
-    TF_ALARM_EVENT_TYPE_ENVIRONMENT   = 4,
-    TF_ALARM_EVENT_TYPE_UNKNOWN
+    ALARM_EVENT_TYPE_COMMUNICATION = 0,
+    ALARM_EVENT_TYPE_SERVICE       = 1,
+    ALARM_EVENT_TYPE_PROCESS       = 2,
+    ALARM_EVENT_TYPE_EQUIPMENT     = 3,
+    ALARM_EVENT_TYPE_ENVIRONMENT   = 4,
+    ALARM_EVENT_TYPE_UNKNOWN
 };
 
 
@@ -135,10 +135,10 @@ typedef struct
     int fd;
     dev_t dev;
     ino_t ino;
-    char filename[TF_LOG_FILE_MAX_LEN];
+    char filename[LOG_FILE_MAX_LEN];
     unsigned long fileSizeLimit;
     pthread_mutex_t lock_mutex;
-    char filelock[TF_LOG_FILE_MAX_LEN];
+    char filelock[LOG_FILE_MAX_LEN];
     int  lock_fd;
     unsigned int syslogPrioMask;
     unsigned int termPrioMask;
@@ -153,7 +153,7 @@ struct tflog
     int facility;		/* as per syslog facility */
     tflog_debug_t debug;
     int (*termOut)(char *);
-    tflog_catogory_t catogory[TF_LOG_TYPE_NUM];
+    tflog_catogory_t catogory[LOG_TYPE_NUM];
 };
 
 typedef struct alarm_event_st
@@ -208,34 +208,34 @@ struct tflog *opentflog (const char *, int, int, int, int, int (*)(char *));
 /* Close tflog function. */
 void closetflog (struct tflog *cl);
 
-/* GCC have printf type attribute check.  */
+/* GCC have printype attribute check.  */
 #ifdef __GNUC__
-#define PRINTF_ATTRIBUTE(a,b) __attribute__ ((__format__ (__printf__, a, b)))
+#define PRINATTRIBUTE(a,b) __attribute__ ((__format__ (__prin_, a, b)))
 #else
-#define PRINTF_ATTRIBUTE(a,b)
+#define PRINATTRIBUTE(a,b)
 #endif /* __GNUC__ */
 
 /* Generic function for tflog. */
-void tflog (struct tflog *cl, int priority, const char *format, ...) PRINTF_ATTRIBUTE(3, 4);
+void tflog (struct tflog *cl, int priority, const char *format, ...) PRINATTRIBUTE(3, 4);
 
 /* Handy tflog functions. */
-void tflog_oper_crit (const char *format, ...)PRINTF_ATTRIBUTE(1, 2);
-void tflog_oper_err (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_oper_warn (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_oper_info (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_oper_notice (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_oper (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_alarm_crit (const char *format, ...)PRINTF_ATTRIBUTE(1, 2);
-void tflog_alarm_err (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_alarm_warn (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_alarm_info (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_alarm_notice (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_crit (const char *format, ...)PRINTF_ATTRIBUTE(1, 2);
-void tflog_err (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_warn (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_info (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_notice (const char *format, ...) PRINTF_ATTRIBUTE(1, 2);
-void tflog_debug (int mod, const char *format, ...) PRINTF_ATTRIBUTE(2, 3);
+void tflog_oper_crit (const char *format, ...)PRINATTRIBUTE(1, 2);
+void tflog_oper_err (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_oper_warn (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_oper_info (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_oper_notice (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_oper (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_alarm_crit (const char *format, ...)PRINATTRIBUTE(1, 2);
+void tflog_alarm_err (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_alarm_warn (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_alarm_info (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_alarm_notice (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_crit (const char *format, ...)PRINATTRIBUTE(1, 2);
+void tflog_err (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_warn (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_info (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_notice (const char *format, ...) PRINATTRIBUTE(1, 2);
+void tflog_debug (int mod, const char *format, ...) PRINATTRIBUTE(2, 3);
 
 /* Set tflog flags. */
 void tflog_set_flag (struct tflog *cl, int flags);

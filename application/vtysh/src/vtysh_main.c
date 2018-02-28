@@ -38,8 +38,8 @@
 #include "vtysh_user.h"
 #include <global.h>
 
-#include "tf_log.h"
-#include "tf_monitor_pub.h"
+#include "log.h"
+#include "monitor_pub.h"
 #include "tfNvramParam.h"
 
 /* VTY shell program name. */
@@ -80,7 +80,7 @@ sigtstp (int sig)
   
   /* Initialize readline. */
   rl_initialize ();
-  printf ("\n");
+  prin("\n");
 
   /* Check jmpflag for duplicate siglongjmp(). */
   if (! jmpflag)
@@ -100,7 +100,7 @@ sigint (int sig)
   if (! execute_flag)
     {
       rl_initialize ();
-      printf ("\n");
+      prin("\n");
       rl_forced_update_display ();
     }
 }
@@ -145,9 +145,9 @@ static void
 usage (int status)
 {
   if (status != 0)
-    fprintf (stderr, "Try `%s --help' for more information.\n", progname);
+    fprin(stderr, "Try `%s --help' for more information.\n", progname);
   else
-    printf ("Usage : %s [OPTION...]\n\n" \
+    prin("Usage : %s [OPTION...]\n\n" \
 	    "Integrated shell for Quagga routing software suite. \n\n" \
 	    "-b, --boot               Execute boot startup configuration\n" \
 	    "-c, --command            Execute argument as command\n" \
@@ -291,7 +291,7 @@ int vtysh_rl_select(void)
         }
     }
     
-    printf ("rltest: Event loop has exited\n");
+    prin("rltest: Event loop has exited\n");
     return 0;
 }
 
@@ -442,7 +442,7 @@ void cli_client_init(void)
     vty_init (master);
     vty_user_init();
     vty_user_save();
-    tf_vty_snmp_init();
+    vty_snmp_init();
 
     tflog_default = opentflog("VTYSH", 1, TRUE, TFLOG_SYSLOG | TFLOG_CLI, LOG_LOCAL3, alarm_to_vty);
     
@@ -562,7 +562,7 @@ main (int argc, char **argv, char **env)
     vtysh_rl_select ();
     
     history_truncate_file(history_file,1000);
-    printf ("\n");
+    prin("\n");
 #endif
 
     return 0;
