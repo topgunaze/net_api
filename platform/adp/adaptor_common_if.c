@@ -753,6 +753,9 @@ net_systemv_mq_create (
                 SYS_V_MQ_ID_E   sub_key, 
                 unsigned int    queue_size)
 {
+
+    //IPC_PRIVATE IPC_CREATE IPC_EXCL
+    
     int             tmp_skt;
     key_t           q_key;
     struct msqid_ds msg_ds;
@@ -779,6 +782,7 @@ net_systemv_mq_create (
         return -1;
     }
 
+    //
     if(msgctl(tmp_skt, IPC_RMID, NULL) < 0)
     {
         printf("Delete queue failed.\r\n");
@@ -827,6 +831,8 @@ net_systemv_mq_get (
     /* Read the socket for data */
     if (timeout == SYS_V_MQ_WAIT_FOREVER)
     {
+        //size not have long int 
+        //type 
         size_copied = msgrcv(queue_id, p_data, size, type, 0);
 
         if (size_copied <= 0)
@@ -906,7 +912,8 @@ net_systemv_mq_put (
         printf("Can not put NULL msg into the queue. \r\n");
         return -1;
     }
-
+    
+    //size not have long int 
     if(msgsnd(queue_id, p_data, size, (SYS_V_MQ_NO_WAIT == timeout) ? IPC_NOWAIT : 0) < 0)
     {
         printf("Send msg failed.\r\n");

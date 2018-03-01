@@ -32,9 +32,9 @@ typedef struct
 {
     NET_MUTUX mutex;
     NET_PARA  net_param;       
-    UINT8        slot_id;
-    UINT8        is_used;
-    UINT32       timeout_stamp;
+    UINT8     slot_id;
+    UINT8     is_used;
+    UINT32    timeout_stamp;
 }CTRL_NET_MAP;
 
 typedef struct
@@ -57,11 +57,11 @@ typedef struct
 //TF卡槽位信息
 typedef struct
 {
-    NET_MUTUX           mutex;
+    NET_MUTUX        mutex;
     CTRL_NET_STATE   state;
-    UINT8                  map_id;
-    UINT8                  online_num[SYS_MAX_EXIST_PORT_NUM];
-    UINT8                  hb_timeout_cnt;                     //心跳超时计数器
+    UINT8            map_id;
+    UINT8            online_num[SYS_MAX_EXIST_PORT_NUM];
+    UINT8            hb_timeout_cnt;                     //心跳超时计数器
     CTRL_CFG_STATE   cfg_sync[NET_CFG_TYPE_NUM_OF];  //全局配置表项状态
 }CTRL_STATE;
 

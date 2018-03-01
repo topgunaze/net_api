@@ -15,7 +15,7 @@ PRJ_ROOT_DIR   ?= $(shell cd ../..; pwd)
 MODULE_OBJS          := $(subst .c,.o,$(wildcard src/*.c)) 
 MODULE_DEPS          := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 
-INCLUDE_DIRS         := $(PLATFORM_DIR)/include \
+INCLUDE_DIRS         := $(PRJ_INC_DIR) \
 						$(PLATFORM_DIR)/sqlite/include \
 						$(PLATFORM_DIR)/libev/include \
 						$(PLATFORM_DIR)/zlib/include

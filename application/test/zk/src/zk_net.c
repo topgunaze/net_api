@@ -12,6 +12,7 @@
 #include "ev.h"
 #include "zk_net.h"
 #include <sys/sysinfo.h>
+#include "bit_map.h"
 
 static void
 ctrl_net_active_disconnect_clear(EV_P_ struct ev_io *watcher);
@@ -80,9 +81,9 @@ static CTRL_STATE       g_ctrl_state[NET_MANAGE_MAX_SLOT];
 //控制板全局表项配置状态
 CTRL_GBL_CFG_STATE      g_ctrl_gbl_cfg_state;
 //conn 公共锁
-static NET_MUTUX            g_ctrl_conn_lock;
+static NET_MUTUX        g_ctrl_conn_lock;
 //控制板与业务板之间的同步消息连接
-static NET_CONN             *g_ctrl_conn[NET_MANAGE_MAX_SLOT];
+static NET_CONN         *g_ctrl_conn[NET_MANAGE_MAX_SLOT];
 
 //该宏只在本文件使用
 #define SLOT2NET_IO(slot_id)        (g_ctrl_net_map[g_ctrl_state[slot_id].map_id].net_param)
@@ -104,8 +105,8 @@ ctrl_net_cfg_init(void)
 //全局配置项有效标示设置
 unsigned int
 ctrl_net_cfg_valid_set(
-                        const uint8_t   type_idx,
-                        const uint16_t  item_idx)
+                const uint8_t   type_idx,
+                const uint16_t  item_idx)
 {  
     if (type_idx >= NET_CFG_TYPE_NUM_OF || item_idx >= NET_CFG_ITEM_NUM)
     {
@@ -113,7 +114,7 @@ ctrl_net_cfg_valid_set(
     }
     
     net_mutex_lock(&g_ctrl_gbl_cfg_state.mutex);
-    //bitListSet(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, item_idx);
+    bitListSet(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, (uint32_t)item_idx);
     net_mutex_unlock(&g_ctrl_gbl_cfg_state.mutex);
 
     return 0;
@@ -131,7 +132,7 @@ ctrl_net_cfg_valid_clear(
     }
     
     net_mutex_lock(&g_ctrl_gbl_cfg_state.mutex);
-    //bitListClr(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, item_idx);
+    bitListClr(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, (uint32_t)item_idx);
     net_mutex_unlock(&g_ctrl_gbl_cfg_state.mutex);
 
     return 0;
@@ -140,16 +141,15 @@ ctrl_net_cfg_valid_clear(
 //全局配置项是否有效
 unsigned int
 ctrl_net_cfg_is_valid(
-                            const uint8_t   type_idx,
-                            const uint16_t  item_idx)
+                const uint8_t   type_idx,
+                const uint16_t  item_idx)
 {  
     if (type_idx >= NET_CFG_TYPE_NUM_OF || item_idx >= NET_CFG_ITEM_NUM)
     {
         return 0;
     }
 
-    return 0;
-    //return bitListTst(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, item_idx);
+    return bitListTst(g_ctrl_gbl_cfg_state.gbl_cfg[type_idx].valid, (uint32_t)item_idx);
 }
 
 //全局配置板间同步状态
@@ -303,13 +303,13 @@ ctrl_net_map_free_id_get(uint32_t *p_idx)
 //网络地址映射记录设置
 static unsigned int
 ctrl_net_map_net_param_init(
-                                    struct ev_loop     *loop,
-                                    struct ev_io       *watcher,
-                                    uint8_t            map_id, 
-                                    struct sockaddr_in *p_addr)
+                    struct ev_loop     *loop,
+                    struct ev_io       *watcher,
+                    uint8_t            map_id, 
+                    struct sockaddr_in *p_addr)
 {
     struct sysinfo sys_info;
-    NET_PARA    net_param;
+    NET_PARA       net_param;
 
     if (map_id >= NET_MANAGE_MAX_SLOT || !p_addr)
     {
@@ -342,7 +342,7 @@ ctrl_net_state_init(void)
 {
     int slot_id;
     
-    for (slot_id = 0; slot_id < NET_MANAGE_MAX_SLOT; slot_id++)
+    for (slot_id = 0; slot_id < NET_MANAGE_MAX_SLOT; ++slot_id)
     {
         bzero(&g_ctrl_state[slot_id], sizeof(CTRL_NET_STATE));
         g_ctrl_state[slot_id].map_id = NET_COM_PARAM_INVALID; 
@@ -1001,9 +1001,9 @@ ctrl_net_rx_asyn_req_task_init()
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_req_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_req_task, NULL))
     {
-        printf("%s %s %d errorno %d\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf("%s %s %d error %d %s\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return APP_ZK_RC_TASK_CREATE;
     }
 
@@ -1031,9 +1031,9 @@ ctrl_net_rx_asyn_ack_task_init()
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_ack_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_ack_task, NULL))
     {
-        printf("%s %s %d errorno %d\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf("%s %s %d error %d %s\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return APP_ZK_RC_TASK_CREATE;
     }
 
@@ -1174,9 +1174,9 @@ ctrl_net_rx_syn_req_task_init()
             return APP_ZK_RC_MSG_QUEUE_CREATE;
         }
 
-        if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_req_task, (void *)slot_id) < 0)
+        if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_req_task, (void *)slot_id))
         {
-            printf("ctrl create rx syn req task error %d slot %d\r\n", errno, slot_id);
+            printf("ctrl create rx syn req task error %d %s, slot %d\r\n", errno, strerror(errno), slot_id);
             return APP_ZK_RC_TASK_CREATE;
         }
     }
@@ -1210,9 +1210,9 @@ ctrl_net_rx_syn_ack_task_init()
             return APP_ZK_RC_MSG_QUEUE_CREATE;
         }
 
-        if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_ack_task, (void *)slot_id) < 0)
+        if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_ack_task, (void *)slot_id))
         {
-            printf("ctrl create rx syn ack task error %d slot %d\r\n", errno, slot_id);
+            printf("ctrl create rx syn ack task error %d %s, slot %d\r\n", errno, strerror(errno), slot_id);
             return APP_ZK_RC_TASK_CREATE;
         }
     }
@@ -1288,7 +1288,7 @@ ctrl_net_tx_task_init()
 
         if (pthread_create(&tid, &attr, (void *)ctrl_net_tx_task, (void *)slot_id) < 0)
         {
-            printf("ctrl create tx task error %d slot %d!!!\n", errno, slot_id);
+            printf("ctrl create tx task error %d %s, slot %d!!!\n", errno, strerror(errno), slot_id);
             return APP_ZK_RC_TASK_CREATE;
         }
     }
@@ -1750,7 +1750,6 @@ ctrl_net_work_main(void)
     net_mutex_create(&g_ctrl_conn_lock);
     
     // 监听io事件
-
     ev_io_init(&accept_watcher, ctrl_net_accept_cb, fd, EV_READ);  
     ev_io_start(loop, &accept_watcher);
     //定时事件
@@ -1765,33 +1764,32 @@ UINT32
 ctrl_net_mempool_init()
 {
     //接收发送线程消息队列消息内存池
-    NET_BLK_POOL_PARM net_tr_mq_parm    = { "ctrl_tr_mq_mp",
-                                                sizeof(NET_OS_MSG),
-                                                NET_MSG_MAX_COUNT};
+    NET_BLK_POOL_PARM net_tr_mq_parm    = {"ctrl_tr_mq_mp",
+                                           sizeof(NET_OS_MSG),
+                                           NET_MSG_MAX_COUNT};
+              
+    NET_BLK_POOL_PARM net_msg_parm      = {"ctrl_net_msg_mp",
+                                           NET_BUFFER_LEN,//(sizeof(NET_MSG) + NET_BUFFER_LEN),
+                                           NET_MSG_MAX_COUNT};
 
-                                   
-    NET_BLK_POOL_PARM net_msg_parm      = {   "ctrl_net_msg_mp",
-                                                  NET_BUFFER_LEN,//(sizeof(NET_MSG) + NET_BUFFER_LEN),
-                                                  NET_MSG_MAX_COUNT};
+    NET_BLK_POOL_PARM net_watcher_parm  = {"ctrl_net_watcher_mp",
+                                           sizeof(union ev_any_watcher),
+                                           NET_WATCHER_COUNT};
 
-    NET_BLK_POOL_PARM net_watcher_parm  = { "ctrl_net_watcher_mp",
-                                                sizeof(union ev_any_watcher),
-                                                NET_WATCHER_COUNT};
+    NET_BLK_POOL_PARM net_conn_parm     = {"ctrl_net_conn_mp",
+                                           sizeof(NET_CONN),
+                                           NET_MANAGE_MAX_SLOT};
 
-    NET_BLK_POOL_PARM net_conn_parm     = { "ctrl_net_conn_mp",
-                                                sizeof(NET_CONN),
-                                                NET_MANAGE_MAX_SLOT};
-
-    NET_BLK_POOL_PARM net_conn_msg_parm = {  "ctrl_net_conn_msg_mp",
-                                                 (sizeof(NET_CONN_MSG)*CTRL_NET_CONN_MSG_NUM),
-                                                 NET_MANAGE_MAX_SLOT};
-    UINT32 rc = 0;
+    NET_BLK_POOL_PARM net_conn_msg_parm = {"ctrl_net_conn_msg_mp",
+                                           (sizeof(NET_CONN_MSG)*CTRL_NET_CONN_MSG_NUM),
+                                           NET_MANAGE_MAX_SLOT};
+    UINT32 rc;
     
-    rc |= net_blk_pool_create(&g_ctrl_tr_mq_mp,    &net_tr_mq_parm);
-    rc |= net_blk_pool_create(&g_ctrl_net_msg_mp,  &net_msg_parm);
-    rc |= net_blk_pool_create(&g_ctrl_watcher_mp,  &net_watcher_parm);
-    rc |= net_blk_pool_create(&g_ctrl_conn_mp,     &net_conn_parm);
-    rc |= net_blk_pool_create(&g_ctrl_conn_msg_mp, &net_conn_msg_parm);
+    rc = net_blk_pool_create(&g_ctrl_tr_mq_mp,    &net_tr_mq_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_ctrl_net_msg_mp,  &net_msg_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_ctrl_watcher_mp,  &net_watcher_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_ctrl_conn_mp,     &net_conn_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_ctrl_conn_msg_mp, &net_conn_msg_parm);
 
     return rc;
 }
@@ -1838,16 +1836,16 @@ ctrl_net_task_init(void)
 UINT32 
 ctrl_net_ev_init(void)
 {
-    pthread_t tid;
+    pthread_t      tid;
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)ctrl_net_work_main, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)ctrl_net_work_main, NULL))
     {
-        printf("%s %s %d errorno %d\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf("%s %s %d error %d %s\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return APP_ZK_RC_TASK_CREATE;
     }
     
@@ -1885,6 +1883,8 @@ ctrl_net_asyn_req_work_process(NET_MSG *pmsg)
   
     //通知其他进程tf启动完毕
     //使能控制板cli
+
+    printf("ctrl recv work form fk \r\n");
 
     return 0;  
 }

@@ -13,8 +13,7 @@
 #include <sys/msg.h>
 #include <errno.h>
 
-#include "types.h"
-
+#include "adaptor_types.h"
 
 /**************************************************************
  * º¯ÊýÃû³Æ: str_2_id_array

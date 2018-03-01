@@ -13,7 +13,6 @@
 #include <sys/msg.h>
 #include <errno.h>
 
-#include "types.h"
 #include "queue.h"
 
 #include <stdio.h>

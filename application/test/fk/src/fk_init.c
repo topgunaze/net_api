@@ -54,8 +54,7 @@ main(int argc, char ** argv)
     }
     
     //模拟设备正常工作
-    //fk_net_state_set(FK_DEVICE_STATE_STANDBY);
-    //1 TODO: 不建议2个状态存储在一起!!!尽量降低耦合
+    fk_net_state_set(FK_DEVICE_STATE_STANDBY);
     while(!fk_net_state_prepare_work())
     {
         sleep(1);

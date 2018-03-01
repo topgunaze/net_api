@@ -264,14 +264,14 @@ typedef struct NET_CONN_MSG
 
 typedef struct 
 {
-    char                  name[30];            /*name */
-    uint8_t               slot_id;             /*slot index */
-    NET_CONN_MSG       *msg_array;          /*Pre-allocated array*/
-    uint16_t              msg_num;             /*Number of outstanding requests */
-    NET_MUTUX          mutex;               /*Mutex protecting the transport structure */
-    net_conn_list      msg_list;            /*Message list head */
-    net_conn_list      free_req_list;       /*Free request block list */
-    uint8_t               connected;           /*Transport state */
+    char           name[30];            /*name */
+    uint8_t        slot_id;             /*slot index */
+    NET_CONN_MSG   *msg_array;          /*Pre-allocated array*/
+    uint16_t       msg_num;             /*Number of outstanding requests */
+    NET_MUTUX      mutex;               /*Mutex protecting the transport structure */
+    net_conn_list  msg_list;            /*Message list head */
+    net_conn_list  free_req_list;       /*Free request block list */
+    uint8_t        connected;           /*Transport state */
 }NET_CONN;
 
 //同步并发数目需要评估

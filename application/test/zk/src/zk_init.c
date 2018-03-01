@@ -8,7 +8,6 @@
  * <修改者>   <时间>    <版本 >   <描述>
 **************************************************************/
 
-//#include "gtfDevInit.h"
 #include "zk_net.h"
 
 #define GCONFIG_FILENAME    "test.conf"
@@ -37,27 +36,26 @@
 int
 main(void)
 {
-
-        //启动网络任务
+    //启动网络任务
 #ifdef NET_USE_MP
-        if (ctrl_net_mempool_init())
-        {
-            exit(1);
-        }
+    if (ctrl_net_mempool_init())
+    {
+        exit(1);
+    }
 #endif
     
-        ctrl_net_state_init();
-        ctrl_net_map_init();
+    ctrl_net_state_init();
+    ctrl_net_map_init();
     
-        if (ctrl_net_task_init() || ctrl_net_ev_init())
-        {
-            exit(1);
-        }
+    if (ctrl_net_task_init() || ctrl_net_ev_init())
+    {
+        exit(1);
+    }
 
-        while(1)
-        {
-            sleep(1);
-        }
+    while(1)
+    {
+        sleep(1);
+    }
 
         return 0;
 

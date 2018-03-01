@@ -961,7 +961,7 @@ again:
                     }
                     else 
                     if (ret < 0)
-                        return -1;
+                        goto end;
                     else 
                     if (ret == 1)
                     {
@@ -970,7 +970,8 @@ again:
 
                         if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &socklen) == -1)
                         {
-                            return -1;
+                            ret = errno;
+                            goto end;
                         }
                         
                         if (err == 0)
@@ -990,7 +991,8 @@ again:
                 break;
         }
     }
-    
+
+end:    
     if (wait_seconds > 0)
     {
         net_setblock(fd, NET_FD_SET_BLOCK);
@@ -1116,16 +1118,16 @@ fk_net_work_main(void)
 static unsigned int 
 fk_net_work_init(void)
 {
-    pthread_t tid;
+    pthread_t      tid;
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)fk_net_work_main, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)fk_net_work_main, NULL))
     {
-        printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
+        printf( "%s %s %d error %d %s\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return FK_ZK_RC_TASK_CREATE;
     }
 
@@ -1175,13 +1177,13 @@ fk_net_mempool_init(void)
                                                  (sizeof(NET_CONN_MSG)*FK_NET_CONN_MSG_NUM),
                                                  CTRL_SUPPORT_MAX_SLOT};
                                                 
-    unsigned int rc = 0;
+    unsigned int rc;
     
-    rc |= net_blk_pool_create(&g_fk_tr_mq_mp, &net_mq_parm);
-    rc |= net_blk_pool_create(&g_fk_net_msg_mp, &net_msg_parm);
-    rc |= net_blk_pool_create(&g_fk_watcher_mp, &net_watcher_parm);
-    rc |= net_blk_pool_create(&g_fk_conn_mp,     &net_conn_parm);
-    rc |= net_blk_pool_create(&g_fk_conn_msg_mp, &net_conn_msg_parm);
+    rc = net_blk_pool_create(&g_fk_tr_mq_mp, &net_mq_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_fk_net_msg_mp, &net_msg_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_fk_watcher_mp, &net_watcher_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_fk_conn_mp,     &net_conn_parm);
+    rc = rc ? rc : net_blk_pool_create(&g_fk_conn_msg_mp, &net_conn_msg_parm);
 
     return rc;
 }
@@ -1196,7 +1198,7 @@ fk_net_ev_init(void)
     //网络内存池初始化
     if ((rc = fk_net_mempool_init()))
     {     
-        printf( "fk_net_mempool_init fail!!!\r\n");
+        printf("fk_net_mempool_init fail!!!\r\n");
         return rc;
     }
 #endif
@@ -1381,9 +1383,9 @@ fk_net_rx_syn_req_task_init(void)
             return FK_ZK_RC_MSG_QUEUE_CREATE;
         }
 
-        if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_req_task, (void*)idx) < 0)
+        if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_req_task, (void*)idx))
         {
-            printf( "drv create rx syn req task error %d idx %d!!! \r\n", errno, idx);
+            printf( "fk create rx syn req task error %d %s idx %d!!! \r\n", errno, strerror(errno), idx);
             return FK_ZK_RC_TASK_CREATE;
         }
     }
@@ -1410,9 +1412,9 @@ fk_net_rx_syn_ack_task_init(void)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_ack_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)fk_net_rx_syn_ack_task, NULL))
     {
-        printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf( "%s %s %d error %d %s!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return FK_ZK_RC_TASK_CREATE;
     }
 
@@ -1438,9 +1440,9 @@ fk_net_rx_asyn_req_task_init(void)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)fk_net_rx_asyn_req_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)fk_net_rx_asyn_req_task, NULL))
     {
-        printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf( "%s %s %d error %d %s!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return FK_ZK_RC_TASK_CREATE;
     }
 
@@ -1466,9 +1468,9 @@ fk_net_rx_asyn_ack_task_init(void)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)fk_net_rx_asyn_ack_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)fk_net_rx_asyn_ack_task, NULL))
     {
-        printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf( "%s %s %d error %d %s!!!\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return FK_ZK_RC_TASK_CREATE;
     }
 
@@ -1527,9 +1529,9 @@ fk_net_tx_task_init(void)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
     
-    if (pthread_create(&tid, &attr, (void *)fk_net_tx_task, NULL) < 0)
+    if (pthread_create(&tid, &attr, (void *)fk_net_tx_task, NULL))
     {
-        printf( "%s %s %d error %d!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno);
+        printf( "%s %s %d error %d %s!!!\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
         return FK_ZK_RC_TASK_CREATE;
     }
 
@@ -1914,6 +1916,8 @@ fk_net_asyn_ack_work_process(NET_MSG *p_msg)
     //1.业务板开工
     fk_net_state_set(FK_NET_WORK_SYNCHRONOUS);
     fk_net_state_clear(FK_NET_STATE_WORK_WAITED);
+
+    printf("fk recv work form ctrl \r\n");
     //2.使能业务板的sn发现处理逻辑
 
     return 0;

@@ -12,8 +12,7 @@
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
-#include <types.h>
-
+#include "adaptor_types.h"
 
 #define SYS_QUEUE_NO_WAIT                   (0)
 #define SYS_QUEUE_WAIT_FOREVER              (-1)

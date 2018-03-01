@@ -10,7 +10,7 @@
 #ifndef __ALARM_H__
 #define __ALARM_H__
 
-#include "types.h"
+#include "adaptor_types.h"
 
 #define MAX_EVENT_LOG_TABLE_ENTRY_NUM   256
 #define MAX_ALARM_ACTIVE_TABLE_ENTRY_NUM   4096

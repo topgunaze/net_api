@@ -21,7 +21,7 @@ MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 INCLUDE_DIRS         := $(APP_INC_DIR) \
 						$(MODULE_DIR)/include \
 						$(COM_DIR)/include \
-						$(PLATFORM_DIR)/include \
+						$(PRJ_INC_DIR) \
 						$(SQLITE_DIR)/include \
 						$(LIBEV_DIR)/include \
 						$(ZLIB_DIR)/include

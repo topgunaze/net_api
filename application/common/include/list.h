@@ -13,7 +13,7 @@ extern "C"
 {
 #endif 
 
-#include <types.h>
+#include "adaptor_types.h"
 
 typedef struct node_t
 {

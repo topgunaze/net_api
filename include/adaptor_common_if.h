@@ -442,16 +442,16 @@ typedef struct NET_OS_MSG NET_OS_MSG;
 
 struct NET_OS_MSG
 {
-    STAILQ_ENTRY(NET_OS_MSG)    next;   
-    void                            *data;  /**< Message data pointer */
-    unsigned int                    size;   /**< Message data size */
+    STAILQ_ENTRY(NET_OS_MSG) next;   
+    void                     *data;  /**< Message data pointer */
+    unsigned int             size;   /**< Message data size */
 };
 
 typedef STAILQ_HEAD(, NET_OS_MSG) NET_OS_MSG_LIST;
 
 typedef struct NET_ZC_MQ_ST
 {
-    unsigned int        msg_in;      /* num of msg in the queue */
+    unsigned int    msg_in;      /* num of msg in the queue */
     NET_MUTUX       lock;        /* Queue protection lock */
     NET_OS_MSG_LIST msgl;        /* Message list */
 

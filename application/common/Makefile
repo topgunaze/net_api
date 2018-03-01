@@ -23,7 +23,7 @@ COMMON_DEPS          := $(COMMON_OBJS:src%=$(COMMON_OBJ_DIR)%)
 INCLUDE_DIRS         := $(PRJ_ROOT_DIR)/include ./include $(APP_DIR)/include
 INCLUDE_LIBS         := 
 
-CFLAGS               += $(addprefix -I,$(INCLUDE_DIRS)) -D$(CDT_PRODUCT)
+CFLAGS               += $(addprefix -I,$(INCLUDE_DIRS)) #-D$(CDT_PRODUCT)
 LIBS_FLAGS           := -Wl,--start-group $(INCLUDE_LIBS) -Wl,--end-group
 
 #  Pattern matching rules: 

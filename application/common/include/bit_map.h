@@ -11,7 +11,7 @@
 #ifndef __BIT_MAP_H__
 #define __BIT_MAP_H__
 
-#include "types.h"
+#include "adaptor_types.h"
 
 /*****************************************************************************
 *
