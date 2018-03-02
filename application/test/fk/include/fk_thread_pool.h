@@ -28,6 +28,8 @@
 #define MAX_WORKER_GROUP                (1)
 #define MAX_WORKER_NUM                  (MAX_WORKER_GROUP*MAX_NODE_EACH_PORT)
 #define WORKER_THREAD_LIMIT_UPGRADE     14
+#define MAX_NODE_PER_WORKER             128
+
 
 #define KEY_PHYUINT2KEY(phy_uint)       do{if(phy_uint == INVALID_PHY_UINT)phy_uint = INVALID_PHYUINT_CONVERSION_KEY;}while(0)
 #define KEY2PHYUINT_KEY(key)            do{if(key == INVALID_PHYUINT_CONVERSION_KEY)key = INVALID_PHY_UINT;}while(0)
@@ -78,7 +80,7 @@ typedef struct
     uint16_t                max_thread_num;
     pthread_t               *p_thread_id_queue;
     uint32_t                *p_processing_key_queue;
-    THREAD_WORKER_TYPE_INFO type_info[MAX_WORKER_TYPE_NUM];
+    THREAD_WORKER_TYPE_INFO type_info[WORKER_TYPE_NUM_OF];
     uint8_t                 worker_bitmap[MAX_WORKER_GROUP][MAX_NODE_EACH_PORT/8];
 
     uint8_t                 shutdown_flag;
@@ -117,7 +119,7 @@ thread_pool_destory(
                 THREAD_POOL *p_thread_pool);
 
 void
-fk_thread_pool_init (
+thread_pool_init (
                 THREAD_POOL     *p_thread_pool,
                 const uint16_t  max_thread_num);
 

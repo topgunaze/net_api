@@ -8,6 +8,7 @@
 **************************************************************/
 
 #include "fk_thread_pool.h"
+#include "adaptor_common_if.h"
 
 int
 thread_pool_worker_type_set_release_cb (
@@ -44,7 +45,7 @@ thread_pool_worker_type_set_limit (
         return 1;
     }
 
-    if(worker_type >= MAX_WORKER_TYPE_NUM)
+    if(worker_type >= WORKER_TYPE_NUM_OF)
     {
         printf("set worker type limit failed due to invalid worker type.\r\n");
         return -1;
@@ -71,6 +72,7 @@ thread_pool_add_worker (
 {
     NODE_WORKER *p_new_worker;
 
+#if 0
     //无效onu物理ID转换任务链节点ID
     KEY_PHYUINT2KEY(key);
 
@@ -79,8 +81,15 @@ thread_pool_add_worker (
         printf("Add worker failed due to invalid key.\r\n");
         return -1;
     }
+#endif
 
-    if(worker_type >= MAX_WORKER_TYPE_NUM)
+    if(key >= MAX_WORKER_NUM)
+    {
+        printf("Add worker failed due to invalid key.\r\n");
+        return -1;
+    }
+
+    if(worker_type >= WORKER_TYPE_NUM_OF)
     {
         printf("Add worker failed due to invalid worker type.\r\n");
         return -1;
@@ -135,7 +144,7 @@ thread_pool_clear_worker (
         return -1;
     }
 
-    if(worker_type >= MAX_WORKER_TYPE_NUM)
+    if(worker_type >= WORKER_TYPE_NUM_OF)
     {
         printf("Clear worker failed due to invalid worker type.\r\n");
         return -1;
@@ -183,8 +192,8 @@ thread_pool_node_worker_is_busy(THREAD_POOL *p_thread_pool, uint32_t key)
 //节点设备的任务类型是否超过该类型任务最大占用线程
 static int
 thread_pool_node_worker_thread_is_busy(
-                                                THREAD_POOL      *p_thread_pool, 
-                                                NODE_WORKER  *p_worker)
+                    THREAD_POOL  *p_thread_pool, 
+                    NODE_WORKER  *p_worker)
 {
     THREAD_WORKER_TYPE_INFO *p_type_info;
 
@@ -204,7 +213,7 @@ thread_pool_node_worker_get(
                                     THREAD_POOL   *p_thread_pool, 
                                     uint32_t      *p_key)
 {
-    int32_t                 port_idx, byte_idx, bit_idx;
+    int32_t             port_idx, byte_idx, bit_idx;
     NODE_WORKER         *p_worker;
 
     for(port_idx = 0; port_idx < MAX_WORKER_GROUP; port_idx++)
@@ -319,7 +328,7 @@ thread_pool_thread_routine (
                 void *arg)
 {
     THREAD_POOL             *p_thread_pool = (THREAD_POOL *)arg;
-    NODE_WORKER         *p_worker;
+    NODE_WORKER             *p_worker;
     const pthread_t         self_thread_id = pthread_self();
     uint16_t                self_idx;
     uint16_t                idx;
@@ -353,11 +362,13 @@ thread_pool_thread_routine (
     
         if(!p_worker)
         {
-            //printf("%s:%d pid %3d ----------- sleep.\r\n", __FUNCTION__, __LINE__, self_idx);
+            printf("%s:%d pid %d lwp %d ----------- sleep.\r\n", __FUNCTION__, __LINE__, self_idx, net_tid_get());
             pthread_cond_wait(&(p_thread_pool->worker_list_cond), &(p_thread_pool->worker_list_lock));
-            //printf("%s:%d pid %3d ----------- wake up.\r\n", __FUNCTION__, __LINE__, self_idx);
+            printf("%s:%d pid %d lwp %d ----------- wake up.\r\n", __FUNCTION__, __LINE__, self_idx, net_tid_get());
             continue;
         }
+
+        //printf("%s:%d pid %d lwp %d ----------- .\r\n", __FUNCTION__, __LINE__, self_idx, net_tid_get());
 
         p_type_info = &p_thread_pool->type_info[p_worker->worker_type];
         p_thread_pool->p_processing_key_queue[self_idx] = key;
@@ -368,9 +379,9 @@ thread_pool_thread_routine (
         if(!p_worker->remove_flag)
         {
             //任务链节点ID还原无效onu物理ID
-            KEY2PHYUINT_KEY(key);
+            //KEY2PHYUINT_KEY(key);
             
-            printf("%s:%d pid %3d ----------- process key:%d type:%d arg:%d\r\n", __FUNCTION__, __LINE__, self_idx, key, p_worker->worker_type, p_worker->arg1);
+            printf("%s:%d pid %3d lwp %d ----------- process key:%d type:%d arg:%d\r\n", __FUNCTION__, __LINE__, self_idx, net_tid_get(), key, p_worker->worker_type, p_worker->arg1);
             (*(p_worker->handler))(key, p_worker->arg1);
         }
 
@@ -379,6 +390,7 @@ thread_pool_thread_routine (
         p_thread_pool->p_processing_key_queue[self_idx] = INVALID_KEY;
         p_type_info->thread_cnt -= 1;
         p_type_info->worker_cnt -= 1;
+        
         if(!p_type_info->worker_cnt && p_type_info->release_cb)
             p_type_info->release_cb();
 
@@ -451,7 +463,7 @@ thread_pool_destory(THREAD_POOL *p_thread_pool)
 
     free(p_thread_pool->p_node_worker_list);
     
-    for (idx = 0; idx < MAX_WORKER_TYPE_NUM; idx++)
+    for (idx = 0; idx < WORKER_TYPE_NUM_OF; idx++)
         if (p_thread_pool->type_info[idx].release_cb)
             p_thread_pool->type_info[idx].release_cb();
 
@@ -477,7 +489,6 @@ thread_pool_init (
         return;
     }
     
-    //预留无效phy_id 增加一个虚拟tf口
     p_thread_pool->p_node_worker_list = (NODE_WORKER_LIST*)malloc(sizeof(NODE_WORKER_LIST) * MAX_WORKER_NUM);
     if (!p_thread_pool->p_node_worker_list)
     {
@@ -486,7 +497,7 @@ thread_pool_init (
     }
     
     for (idx = 0; idx < MAX_WORKER_NUM; idx++)
-    STAILQ_INIT(&p_thread_pool->p_node_worker_list[idx]);
+        STAILQ_INIT(&p_thread_pool->p_node_worker_list[idx]);
 
     pthread_mutex_init(&p_thread_pool->worker_list_lock, NULL);
     pthread_cond_init(&p_thread_pool->worker_list_cond, NULL);
@@ -505,8 +516,14 @@ thread_pool_init (
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
     for (idx = 0; idx < max_thread_num; idx++)
-        pthread_create(&(p_thread_pool->p_thread_id_queue[idx]), &attr, thread_pool_thread_routine, (void*)p_thread_pool);
-
+    {
+        if (pthread_create(&p_thread_pool->p_thread_id_queue[idx], &attr, thread_pool_thread_routine, (void*)p_thread_pool))
+        {
+            perror("pthread_create:");
+            break;
+        }
+    }
+       
     return;
 }
 

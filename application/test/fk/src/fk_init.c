@@ -38,6 +38,17 @@ typedef struct msgbuf {
     char mtext[1024];    /* message data */
 }msgbuf;
 
+void test_release_cb(void)
+{
+    printf("exec test_release_cb\r\n");
+}
+
+void worker_handler(const uint32_t key, const uint32_t arg1)
+{
+    printf("key %d, arg1 %d\r\n", key, arg1);
+    sleep(1);
+}
+
 int
 main(int argc, char ** argv)
 {
@@ -79,6 +90,7 @@ main(int argc, char ** argv)
         return -1;
     }
 
+#if 0
     //for system v msgq
     int tx_msgq_id;
     //int rx_msgq_id;
@@ -127,9 +139,29 @@ main(int argc, char ** argv)
             i = 1;
         }
     }
+#endif
 
+    THREAD_POOL pt_pool;
+
+    bzero(&pt_pool, sizeof(THREAD_POOL));
     
+    thread_pool_init(&pt_pool, 2);
+    thread_pool_worker_type_set_limit(&pt_pool, 0, 2);
+    thread_pool_worker_type_set_release_cb(&pt_pool, 0, test_release_cb);
 
+    int worker_id, worker_node;
+
+    printf("add woker \r\n");
+    for (worker_id = 0; worker_id < MAX_WORKER_NUM; ++worker_id)
+    {
+        for (worker_node = 0; worker_node < MAX_NODE_PER_WORKER; ++worker_node)
+        {
+            thread_pool_add_worker(&pt_pool, worker_handler, WORKER_TYPE_COMMON, worker_id, worker_node);
+        }
+    }
+
+    printf("add woker over\r\n");
+    
     while(1)
     {
         sleep(1);
