@@ -34,7 +34,7 @@
 #define INOUT
 
 //控制板最大支持业务板数
-#define NET_MANAGE_MAX_SLOT        1
+#define NET_MANAGE_MAX_SLOT        4
 #define DEFAULT_DEV_ID             0
 #define MAX_SLOT_ID                NET_MANAGE_MAX_SLOT
 #define SYS_MAX_EXIST_PORT_NUM        8
@@ -414,26 +414,26 @@ typedef struct NET_MEMBLK
 
 #define SYS_V_MQ_MSG_SIZE                  (NET_BUFFER_LEN*NET_MSG_MAX_COUNT)//(1024*8192)
 
-#define SYS_V_MQ_NO_WAIT                   (0)
-#define SYS_V_MQ_WAIT_FOREVER              (-1)
-#define SYS_V_MQ_MSG_ANY                   0
+#define NO_WAIT                   (0)
+#define WAIT_FOREVER              (-1)
+#define MSG_ANY                   0
 
 typedef enum
 {
-    SYS_V_MQ_CTRL_RX_SYN_REQ_MSG,
-    SYS_V_MQ_CTRL_RX_SYN_ACK_MSG,
-    SYS_V_MQ_CTRL_RX_ASYN_REQ_MSG,
-    SYS_V_MQ_CTRL_RX_ASYN_ACK_MSG,
-    SYS_V_MQ_CTRL_TX_MSG,
+    MQ_CTRL_RX_SYN_REQ_MSG,
+    MQ_CTRL_RX_SYN_ACK_MSG,
+    MQ_CTRL_RX_ASYN_REQ_MSG,
+    MQ_CTRL_RX_ASYN_ACK_MSG,
+    MQ_CTRL_TX_MSG,
 
-    SYS_V_MQ_FK_RX_SYN_REQ_MSG,
-    SYS_V_MQ_FK_RX_SYN_ACK_MSG,
-    SYS_V_MQ_FK_RX_ASYN_REQ_MSG,
-    SYS_V_MQ_FK_RX_ASYN_ACK_MSG,
-    SYS_V_MQ_FK_TX_MSG,
+    MQ_FK_RX_SYN_REQ_MSG,
+    MQ_FK_RX_SYN_ACK_MSG,
+    MQ_FK_RX_ASYN_REQ_MSG,
+    MQ_FK_RX_ASYN_ACK_MSG,
+    MQ_FK_TX_MSG,
 
-    SYS_V_MQ_MAX_NUM,
-}SYS_V_MQ_ID_E;
+    MQ_MAX_NUM,
+}MQ_ID_E;
 
 #define NET_ZC_MSG_QUEUE_DELETED    0
 #define NET_ZC_MSG_QUEUE_VALID      1
@@ -625,20 +625,29 @@ net_data_uncompress(
 unsigned int 
 net_systemv_mq_create (
                 int             *p_queue_id, 
-                SYS_V_MQ_ID_E   sub_key, 
+                MQ_ID_E         sub_key, 
                 unsigned int    queue_size);
 
 unsigned int
-net_systemv_mq_get (
+net_systemv_mq_out (
                 int             queue_id, 
                 long            type, 
                 void            *p_data, 
                 unsigned int    size, 
                 int             timeout, /* ms  */
                 unsigned int    *p_size_copied);
+
+unsigned int
+net_systemv_mq_out_timeout (
+                int             q_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             timeout, /* ms  */
+                unsigned int    *p_copied);
                 
 unsigned int
-net_systemv_mq_put (
+net_systemv_mq_in (
                 int             queue_id, 
                 void            *p_data, 
                 unsigned int    size, 

@@ -8,7 +8,6 @@
 **************************************************************/
 
 #include "fk_thread_pool.h"
-#include "fk_common.h"
 
 int
 thread_pool_worker_type_set_release_cb (
@@ -22,7 +21,7 @@ thread_pool_worker_type_set_release_cb (
         return -1;
     }
 
-    if(worker_type >= MAX_WORKER_TYPE_NUM)
+    if(worker_type >= WORKER_TYPE_NUM_OF)
     {
         printf("set worker type limit failed due to invalid worker type.\r\n");
         return -1;

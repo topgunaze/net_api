@@ -1,12 +1,13 @@
 #  Name         : Makefile
-#  Version      : V2.01
-#  Author       : keith.gong (kizerg@163.com)
-#  Time         : 2016.12.19
-#  Description  : Makefile for SQLite
+#  Version      : 
+#  Author       : 
+#  Time         : 
+#  Description  : 
 #                 Copyright (c) 2009-2016 CDATA Co.,Ltd.
 #                 All Rights Reserved.
-#  Modification : 2016.12.19, keith.gong, created
+#  Modification : 
 #
+
 
 MODULE_DIR           := $(shell pwd)
 MODULE_NAME          := $(notdir $(MODULE_DIR))

@@ -33,6 +33,11 @@ fk_secondary_init(void)
 //extern uint8_t              g_fk_packet_test;
 //extern FK_STATE    g_fk_state;
 
+typedef struct msgbuf {
+    long mtype;       /* message type, must be > 0 */
+    char mtext[1024];    /* message data */
+}msgbuf;
+
 int
 main(int argc, char ** argv)
 {
@@ -73,6 +78,57 @@ main(int argc, char ** argv)
         printf("tfdrv secondary init failed, rc: %d.\r\n", rc);
         return -1;
     }
+
+    //for system v msgq
+    int tx_msgq_id;
+    //int rx_msgq_id;
+
+//#if 0
+    if (net_systemv_mq_create(&tx_msgq_id, MQ_CTRL_TX_MSG, 1024*10))
+    {
+        printf("MQ_FK_TX_MSG msg queue error\r\n");
+    }
+//#endif    
+    
+#if 0
+    if (net_systemv_mq_create(&rx_msgq_id, MQ_CTRL_RX_SYN_REQ_MSG, 1024*10))
+    {
+        printf("MQ_FK_TX_MSG msg queue error\r\n");
+    }
+#endif
+
+    //msgbuf       tx_buf;
+    msgbuf       rc_buf;
+    unsigned int size;
+    int          i = 1;
+    
+    while(1)
+    {
+#if 0
+        bzero(&tx_buf, sizeof(msgbuf));
+        tx_buf.mtype = i;
+
+        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is zk time %ld\r\n", tx_buf.mtype);
+
+        net_systemv_mq_in(tx_msgq_id, &tx_buf, sizeof(msgbuf), NO_WAIT);//WAIT_FOREVER
+#endif
+        bzero(&rc_buf, sizeof(msgbuf));
+        rc_buf.mtype = i;
+
+        sleep(1);
+        net_systemv_mq_out(tx_msgq_id, rc_buf.mtype, &rc_buf, sizeof(rc_buf), WAIT_FOREVER, &size);//NO_WAIT
+
+        printf("rec type %ld text %s, size %d\r\n", rc_buf.mtype, rc_buf.mtext, size);
+
+        ++i;
+        i %= 5;
+        if (i == 0)
+        {
+            i = 1;
+        }
+    }
+
+    
 
     while(1)
     {

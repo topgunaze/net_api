@@ -1,11 +1,12 @@
 #  Name         : Makefile
-#  Version      : V2.00
-#  Author       : keith.gong (kizerg@163.com)
-#  Time         : 2015.01.23
-#  Description  : Makefile for FD1508GS Common
-#                 Copyright (c) 2009-2015 C-Data Co.,Ltd.
+#  Version      : 
+#  Author       : 
+#  Time         : 
+#  Description  : 
+#                 Copyright (c) 2009-2016 CDATA Co.,Ltd.
 #                 All Rights Reserved.
-#  Modification : 2015.01.23, keith.gong, created
+#  Modification : 
+#
 
 COMMON_DIR           ?= $(shell pwd)
 PRJ_ROOT_DIR         ?= $(shell cd ../..; pwd)

@@ -744,168 +744,172 @@ net_data_uncompress(
 
 #if DEFUNC("消息队列接口")
 
-/* 记录每个消息占用情况，0:未被使用1:已经被使用 */
-static unsigned char systemv_mq_used_flag[SYS_V_MQ_MAX_NUM];
-
 unsigned int 
 net_systemv_mq_create (
-                int             *p_queue_id, 
-                SYS_V_MQ_ID_E   sub_key, 
+                int             *p_q_id, 
+                MQ_ID_E         sub_key, 
                 unsigned int    queue_size)
 {
-
-    //IPC_PRIVATE IPC_CREATE IPC_EXCL
-    
-    int             tmp_skt;
-    key_t           q_key;
+    int             msg_id;
+    key_t           mq_key;
     struct msqid_ds msg_ds;
 
-    if(!p_queue_id || !queue_size) 
+    if(!p_q_id || !queue_size) 
     {
         printf("Create queue failed cause some parameter is invalid.\r\n");
         return -1;
     }
 
-    if(sub_key >= SYS_V_MQ_MAX_NUM || systemv_mq_used_flag[sub_key])
+    if(sub_key >= MQ_MAX_NUM)
     {
         printf("Create queue with sub key %d failed cause wrong key or recreating. \r\n", sub_key);
         return -1;
     }
     
-    systemv_mq_used_flag[sub_key] = 1;
-
-    /* Set the possible task Id to not free so that  no other task can try to use it */
-    q_key = ftok("/etc/", sub_key);
-    if((tmp_skt = msgget(q_key, IPC_CREAT)) < 0)
+    mq_key = ftok("/etc/", sub_key);
+    if (-1 == mq_key)
     {
-        printf("Create msgget failed.\r\n");
+        perror("create msgqueue ftok");
         return -1;
     }
 
-    //
-    if(msgctl(tmp_skt, IPC_RMID, NULL) < 0)
+    printf("key =[%x]\n", mq_key);
+
+    msg_id = msgget(mq_key, IPC_CREAT |IPC_EXCL|0666); //通过文件目录对应
+    if(-1 == msg_id)
     {
-        printf("Delete queue failed.\r\n");
-        return -1;
+		if (errno == EEXIST)
+		{
+			perror("msgget");
+            mq_key = ftok("/etc/", sub_key);
+			msg_id = msgget(mq_key, IPC_CREAT|0666); //通过文件目录对应
+		}
+		else
+		{
+		 	perror("msgget error");
+			return -1;
+		}
     }
 
-    if((tmp_skt = msgget(q_key, IPC_CREAT)) < 0)
-    {
-        printf("Create msgget failed.\r\n");
-        return -1;
-    }
+    printf("msgid:%d \n", msg_id);
 
     /*Set msg queue max bytes*/
-    msgctl(tmp_skt, IPC_STAT, &msg_ds);
+    if (msgctl(msg_id, IPC_STAT, &msg_ds) == -1)
+    {
+        perror("msgctl error");
+        return -1;
+    }
+    
     msg_ds.msg_qbytes = queue_size;
 
-    if(msgctl(tmp_skt, IPC_SET, &msg_ds) < 0)
+    if(msgctl(msg_id, IPC_SET, &msg_ds) ==  -1)
     {
-        printf("Set msgq size failed.\r\n");
+        perror("msgctl error");
         return -1;
     }
 
-    *p_queue_id = tmp_skt;
+    *p_q_id = msg_id;
 
     return 0;
 }
 
 unsigned int
-net_systemv_mq_get (
-                int             queue_id, 
+net_systemv_mq_out (
+                int             q_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             block_flag,
+                unsigned int    *p_copied)
+{
+    int size_copied;
+    int msg_flag = (block_flag == WAIT_FOREVER) ? 0 : IPC_NOWAIT;
+
+    /* Check Parameters */
+    if( (!p_data) || (!p_copied)) 
+    {
+        printf("Get msg failed cause some parameter is NULL.\r\n");
+        return -1;
+    }
+
+    do
+    {
+        size_copied = msgrcv(q_id, p_data, size, type, msg_flag);
+    }while(size_copied == -1 && errno == EINTR);
+    
+    if (size_copied == -1)
+    {
+        *p_copied = 0;
+        return -1;
+    }
+    else 
+    {
+        *p_copied = size_copied;
+    }
+
+    return 0;
+}
+
+unsigned int
+net_systemv_mq_out_timeout (
+                int             q_id, 
                 long            type, 
                 void            *p_data, 
                 unsigned int    size, 
                 int             timeout, /* ms  */
-                unsigned int    *p_size_copied)
+                unsigned int    *p_copied)
 {
     int size_copied;
 
     /* Check Parameters */
-    if( (!p_data) || (!p_size_copied)) 
+    if( (!p_data) || (!p_copied)) 
     {
         printf("Get msg failed cause some parameter is NULL.\r\n");
         return -1;
     }
 
     /* Read the socket for data */
-    if (timeout == SYS_V_MQ_WAIT_FOREVER)
-    {
-        //size not have long int 
-        //type 
-        size_copied = msgrcv(queue_id, p_data, size, type, 0);
-
-        if (size_copied <= 0)
-        {
-            *p_size_copied = 0;
-            return -1;
-        }
-        else if(size_copied <= size )
-        {
-            *p_size_copied = size_copied;
-            return 0;
-        }
-        else            
-            return -1;
-    }
-    else if (timeout == SYS_V_MQ_NO_WAIT)
-    {
-        size_copied = msgrcv(queue_id, p_data, size, type, IPC_NOWAIT);
-        if (size_copied <= 0)
-        {
-            *p_size_copied = 0;
-            return -1;
-        }
-        else if(size_copied <= size )
-        {
-            *p_size_copied = size_copied;
-            return 0;
-        }
-        else            
-            return -1;
-    }
-    else /* timeout */
+    if (timeout)
     {
         int timeloop;
-        /*
-        ** This "timeout" will check the socket for data every 100 milliseconds
-        ** up until the timeout value. Although this works fine for a desktop environment,
-        ** it should be written more efficiently for a flight system.
-        ** The proper way will be to use select or poll with a timeout
-        */
+        
         for ( timeloop = timeout; timeloop > 0; timeloop = timeloop - 100 )
         {
-            size_copied = msgrcv(queue_id, p_data, size, type, IPC_NOWAIT);
-
-            if (size_copied <= 0)
+            size_copied = net_systemv_mq_out(q_id, type, p_data, size, NO_WAIT, p_copied);
+            if (size_copied == -1 && errno == EAGAIN)
             {
-                /* Sleep for 100 milliseconds */
                 usleep(100 * 1000);
             }
-            else if ( size_copied <= size)
+            else if (size_copied == -1)
             {
-                *p_size_copied = size_copied;
-                return 0;
+               *p_copied = 0;
+               return -1;
             }
             else
-            return -1;
+            {
+               *p_copied = size_copied;
+               return 0;
+            }
         }
 
+        *p_copied = 0;
+
         return -1;
+    }
 
-    } /* END timeout */
-
-    /* Should never really get here. */
-    return 0;
+    return net_systemv_mq_out(q_id, type, p_data, size, WAIT_FOREVER, p_copied);
 }
 
 unsigned int
-net_systemv_mq_put (
-                int             queue_id, 
+net_systemv_mq_in (
+                int             q_id, 
                 void            *p_data, 
                 unsigned int    size, 
-                int             timeout)
+                int             block_flag)
 {
+    int size_send;
+    int msg_flag = (NO_WAIT == block_flag) ? IPC_NOWAIT : 0;
+    
     /* Check Parameters */
     if (!p_data) 
     {
@@ -913,10 +917,14 @@ net_systemv_mq_put (
         return -1;
     }
     
-    //size not have long int 
-    if(msgsnd(queue_id, p_data, size, (SYS_V_MQ_NO_WAIT == timeout) ? IPC_NOWAIT : 0) < 0)
+    do
     {
-        printf("Send msg failed.\r\n");
+        size_send = msgsnd(q_id, p_data, size, msg_flag);
+    }while(size_send == -1 && errno == EINTR);
+    
+    if(size_send == -1)
+    {
+        perror("msgsnd");
         return -1;
     }
 

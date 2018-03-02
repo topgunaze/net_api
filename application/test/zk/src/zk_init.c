@@ -33,6 +33,11 @@
  * Æä           Ëü:
 **************************************************************/
 
+typedef struct msgbuf {
+    long mtype;       /* message type, must be > 0 */
+    char mtext[1024];    /* message data */
+}msgbuf;
+
 int
 main(void)
 {
@@ -52,12 +57,47 @@ main(void)
         exit(1);
     }
 
-    while(1)
+    //for system v msgq
+    int tx_msgq_id;
+    int rx_msgq_id;
+    
+    if (net_systemv_mq_create(&tx_msgq_id, MQ_CTRL_TX_MSG, 1024*10))
     {
-        sleep(1);
+        printf("MQ_FK_TX_MSG msg queue error\r\n");
+    }
+    
+    if (net_systemv_mq_create(&rx_msgq_id, MQ_CTRL_RX_SYN_REQ_MSG, 1024*10))
+    {
+        printf("MQ_FK_TX_MSG msg queue error\r\n");
     }
 
-        return 0;
+    msgbuf       tx_buf;
+    msgbuf       rc_buf = {0};
+    //unsigned int size;
+    int          i = 1;
+    
+    while(1)
+    {
+        bzero(&tx_buf, sizeof(msgbuf));
+        tx_buf.mtype = i;
+
+        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is zk time %ld\r\n", tx_buf.mtype);
+
+        net_systemv_mq_in(tx_msgq_id, &tx_buf, sizeof(msgbuf), WAIT_FOREVER);//NO_WAIT
+        sleep(1);
+        net_systemv_mq_out(rx_msgq_id, tx_buf.mtype, &rc_buf, sizeof(rc_buf), NO_WAIT, &size);//WAIT_FOREVER
+
+        //printf("rec type %ld text %s, size %d\r\n", rc_buf.mtype, rc_buf.mtext, size);
+
+        ++i;
+        i %= 5;
+        if (i == 0)
+        {
+            i = 1;
+        }
+    }
+
+    return 0;
 
 #if 0        
 
