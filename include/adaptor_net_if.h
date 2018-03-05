@@ -276,7 +276,7 @@ typedef struct
 
 //同步并发数目需要评估
 #define CTRL_NET_CONN_MSG_NUM     (1024)
-#define FK_NET_CONN_MSG_NUM      (1024)
+#define NODE_NET_CONN_MSG_NUM      (1024)
 
 #define NET_CFG_ITEM_NUM          512
 

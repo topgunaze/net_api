@@ -17,102 +17,102 @@
 
 typedef enum
 {
-    FK_SDK_RC_OK                                 = 0,   /**< OK */
-    FK_SDK_RC_IN_PROGRESS                        = 1,   /**< Operation is in progress */
-    FK_SDK_RC_PARM                               = 2,   /**< Error in parameters */
-    FK_SDK_RC_NOMEM                              = 3,   /**< No memory */
-    FK_SDK_RC_NORES                              = 4,   /**< No resources */
-    FK_SDK_RC_INTERNAL                           = 5,   /**< Internal error */
-    FK_SDK_RC_NOENT                              = 6,   /**< Entry doesn't exist */
-    FK_SDK_RC_NODEV                              = 7,   /**< Device doesn't exist */
-    FK_SDK_RC_ALREADY                            = 8,   /**< Entry already exists */
-    FK_SDK_RC_RANGE                              = 9,   /**< Out of range */
-    FK_SDK_RC_PERM                               = 10,  /**< No permission to perform an operation */
-    FK_SDK_RC_NOT_SUPPORTED                      = 11,  /**< Operation is not supported */
-    FK_SDK_RC_PARSE                              = 12,  /**< Parsing error */
-    FK_SDK_RC_INVALID_OP                         = 13,  /**< Invalid operation */
-    FK_SDK_RC_IO                                 = 14,  /**< I/O error */
-    FK_SDK_RC_STATE                              = 15,  /**< Object is in bad state */
-    FK_SDK_RC_DELETED                            = 16,  /**< Object is deleted */
-    FK_SDK_RC_TOO_MANY                           = 17,  /**< Too many objects */
-    FK_SDK_RC_NO_MORE                            = 18,  /**< No more entries */
-    FK_SDK_RC_OVERFLOW                           = 19,  /**< Buffer overflow */
-    FK_SDK_RC_COMM_FAIL                          = 20,  /**< Communication failure */
-    FK_SDK_RC_NOT_CONNECTED                      = 21,  /**< No connection with the target system */
-    FK_SDK_RC_SYSCALL_ERR                        = 22,  /**< System call returned error */
-    FK_SDK_RC_MSG_ERROR                          = 23,  /**< Received message is insane */
-    FK_SDK_RC_TOO_MANY_REQS                      = 24,  /**< Too many outstanding requests */
-    FK_SDK_RC_TIMEOUT                            = 25,  /**< Operation timed out */
-    FK_SDK_RC_TOO_MANY_FRAGS                     = 26,  /**< Too many fragments */
-    FK_SDK_RC_NULL                               = 27,  /**< Got NULL pointer */
-    FK_SDK_RC_READ_ONLY                          = 28,  /**< Attempt to set read-only parameter */
-    FK_SDK_RC_ONU_ERR_RESP                       = 29,  /**< ONU returned an error restfse */
-    FK_SDK_RC_MANDATORY_PARM_IS_MISSING          = 30,  /**< Mandatory parameter is missing */
-    FK_SDK_RC_KEY_RANGE                          = 31,  /**< Key field was out of range */
-    FK_SDK_RC_QUEUE_EMPTY                        = 32,  /**< Rx PCIe queue empty */
-    FK_SDK_RC_QUEUE_FULL                         = 33,  /**< Tx PCIe queue full */
-    FK_SDK_RC_TOO_LONG                           = 34,  /**< Processing is taking too long, but will finish eventually */
-    FK_SDK_RC_INSUFFICIENT_LIST_MEM              = 35,  /**< Not enough memory was provided for variable-length lists */
-    FK_SDK_RC_OUT_OF_SYNC                        = 36,  /**< Sequence number or operation step was out of sync. */
-    FK_SDK_RC_CHECKSUM                           = 37,  /**< Checksum error */
-    FK_SDK_RC_IMAGE_TYPE                         = 38,  /**< Unsupported file/image type */
-    FK_SDK_RC_INCOMPLETE_TERMINATION             = 39,  /**< Incomplete premature termination */
-} fk_sdk_errno;
+    NODE_SDK_RC_OK                                 = 0,   /**< OK */
+    NODE_SDK_RC_IN_PROGRESS                        = 1,   /**< Operation is in progress */
+    NODE_SDK_RC_PARM                               = 2,   /**< Error in parameters */
+    NODE_SDK_RC_NOMEM                              = 3,   /**< No memory */
+    NODE_SDK_RC_NORES                              = 4,   /**< No resources */
+    NODE_SDK_RC_INTERNAL                           = 5,   /**< Internal error */
+    NODE_SDK_RC_NOENT                              = 6,   /**< Entry doesn't exist */
+    NODE_SDK_RC_NODEV                              = 7,   /**< Device doesn't exist */
+    NODE_SDK_RC_ALREADY                            = 8,   /**< Entry already exists */
+    NODE_SDK_RC_RANGE                              = 9,   /**< Out of range */
+    NODE_SDK_RC_PERM                               = 10,  /**< No permission to perform an operation */
+    NODE_SDK_RC_NOT_SUPPORTED                      = 11,  /**< Operation is not supported */
+    NODE_SDK_RC_PARSE                              = 12,  /**< Parsing error */
+    NODE_SDK_RC_INVALID_OP                         = 13,  /**< Invalid operation */
+    NODE_SDK_RC_IO                                 = 14,  /**< I/O error */
+    NODE_SDK_RC_STATE                              = 15,  /**< Object is in bad state */
+    NODE_SDK_RC_DELETED                            = 16,  /**< Object is deleted */
+    NODE_SDK_RC_TOO_MANY                           = 17,  /**< Too many objects */
+    NODE_SDK_RC_NO_MORE                            = 18,  /**< No more entries */
+    NODE_SDK_RC_OVERFLOW                           = 19,  /**< Buffer overflow */
+    NODE_SDK_RC_COMM_FAIL                          = 20,  /**< Communication failure */
+    NODE_SDK_RC_NOT_CONNECTED                      = 21,  /**< No connection with the target system */
+    NODE_SDK_RC_SYSCALL_ERR                        = 22,  /**< System call returned error */
+    NODE_SDK_RC_MSG_ERROR                          = 23,  /**< Received message is insane */
+    NODE_SDK_RC_TOO_MANY_REQS                      = 24,  /**< Too many outstanding requests */
+    NODE_SDK_RC_TIMEOUT                            = 25,  /**< Operation timed out */
+    NODE_SDK_RC_TOO_MANY_FRAGS                     = 26,  /**< Too many fragments */
+    NODE_SDK_RC_NULL                               = 27,  /**< Got NULL pointer */
+    NODE_SDK_RC_READ_ONLY                          = 28,  /**< Attempt to set read-only parameter */
+    NODE_SDK_RC_ONU_ERR_RESP                       = 29,  /**< ONU returned an error restfse */
+    NODE_SDK_RC_MANDATORY_PARM_IS_MISSING          = 30,  /**< Mandatory parameter is missing */
+    NODE_SDK_RC_KEY_RANGE                          = 31,  /**< Key field was out of range */
+    NODE_SDK_RC_QUEUE_EMPTY                        = 32,  /**< Rx PCIe queue empty */
+    NODE_SDK_RC_QUEUE_FULL                         = 33,  /**< Tx PCIe queue full */
+    NODE_SDK_RC_TOO_LONG                           = 34,  /**< Processing is taking too long, but will finish eventually */
+    NODE_SDK_RC_INSUFFICIENT_LIST_MEM              = 35,  /**< Not enough memory was provided for variable-length lists */
+    NODE_SDK_RC_OUT_OF_SYNC                        = 36,  /**< Sequence number or operation step was out of sync. */
+    NODE_SDK_RC_CHECKSUM                           = 37,  /**< Checksum error */
+    NODE_SDK_RC_IMAGE_TYPE                         = 38,  /**< Unsupported file/image type */
+    NODE_SDK_RC_INCOMPLETE_TERMINATION             = 39,  /**< Incomplete premature termination */
+} node_sdk_errno;
 
 typedef enum
 {
-    FK_ZK_RC_OK = 0,
+    NODE_ZK_RC_OK = 0,
 
-    FK_ZK_RC_NET_INIT,
-    FK_ZK_RC_NET_NOT_CONNECT,
-    FK_ZK_RC_NET_NOT_WORK,
-    FK_ZK_RC_TASK_CREATE,
-    FK_ZK_RC_MODULE_INIT,
-    FK_ZK_RC_OMCI_FUNC_REG,
+    NODE_ZK_RC_NET_INIT,
+    NODE_ZK_RC_NET_NOT_CONNECT,
+    NODE_ZK_RC_NET_NOT_WORK,
+    NODE_ZK_RC_TASK_CREATE,
+    NODE_ZK_RC_MODULE_INIT,
+    NODE_ZK_RC_OMCI_FUNC_REG,
 
-    FK_ZK_RC_MSG_SYN_VARIFY,
-    FK_ZK_RC_PARAM_GET,
-    FK_ZK_RC_MSG_SYN_WAITE,
+    NODE_ZK_RC_MSG_SYN_VARIFY,
+    NODE_ZK_RC_PARAM_GET,
+    NODE_ZK_RC_MSG_SYN_WAITE,
 
-    FK_ZK_RC_PORT_CFG_AND_ACTIVE,//10
-    FK_ZK_RC_AUTO_INDICATION_OUT_OF_RANGE,
-    FK_ZK_RC_PROXY_INDICATION_OUT_OF_RANGE,
+    NODE_ZK_RC_PORT_CFG_AND_ACTIVE,//10
+    NODE_ZK_RC_AUTO_INDICATION_OUT_OF_RANGE,
+    NODE_ZK_RC_PROXY_INDICATION_OUT_OF_RANGE,
 
-    FK_ZK_RC_MEM_ALLOCATION,
-    FK_ZK_RC_PARAM_NULL,
-    FK_ZK_RC_PARAM_OUT_OF_RANGE,
+    NODE_ZK_RC_MEM_ALLOCATION,
+    NODE_ZK_RC_PARAM_NULL,
+    NODE_ZK_RC_PARAM_OUT_OF_RANGE,
     
-    FK_ZK_RC_MSG_QUEUE_CREATE,
-    FK_ZK_RC_MSG_QUEQUE_PUT,
-    FK_ZK_RC_MSG_PACK,
-    FK_ZK_RC_MSG_CMD_UNKNOWN,
+    NODE_ZK_RC_MSG_QUEUE_CREATE,
+    NODE_ZK_RC_MSG_QUEQUE_PUT,
+    NODE_ZK_RC_MSG_PACK,
+    NODE_ZK_RC_MSG_CMD_UNKNOWN,
 
-    FK_ZK_RC_NET_BIND,
-    FK_ZK_RC_NET_CONNCET,
+    NODE_ZK_RC_NET_BIND,
+    NODE_ZK_RC_NET_CONNCET,
 
-    FK_ZK_RC_OPERATION_BUSY,
-    FK_ZK_RC_OPERATION_TIMEOUT,
-    FK_ZK_RC_OPERATION_UNREASONABLE,
+    NODE_ZK_RC_OPERATION_BUSY,
+    NODE_ZK_RC_OPERATION_TIMEOUT,
+    NODE_ZK_RC_OPERATION_UNREASONABLE,
 
-    FK_ZK_RC_SQL_DB_INIT,
-    FK_ZK_RC_SQL_DB_NOT_FOUND,
+    NODE_ZK_RC_SQL_DB_INIT,
+    NODE_ZK_RC_SQL_DB_NOT_FOUND,
     
-}fk_zk_errno;
+}node_zk_errno;
 
 typedef enum
 {
-    FK_FK_RC_OK = 0, 
+    NODE_NODE_RC_OK = 0, 
 
-    FK_FK_RC_PARAM_NULL,
-    FK_FK_RC_PARAM_OUT_OF_RANGE,
+    NODE_NODE_RC_PARAM_NULL,
+    NODE_NODE_RC_PARAM_OUT_OF_RANGE,
 
-    FK_FK_RC_TASK_CREATE,
+    NODE_NODE_RC_TASK_CREATE,
 
-    FK_FK_RC_OPERATION_BUSY,
-    FK_FK_RC_OPERATION_TIMEOUT,
-    FK_FK_RC_OPERATION_UNREASONABLE,
+    NODE_NODE_RC_OPERATION_BUSY,
+    NODE_NODE_RC_OPERATION_TIMEOUT,
+    NODE_NODE_RC_OPERATION_UNREASONABLE,
     
-}fk_fk_errno;
+}node_node_errno;
 
 typedef enum
 {

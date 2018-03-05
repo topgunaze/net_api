@@ -15,22 +15,19 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include "stdio.h"
 #include "malloc.h"
 #include "stdlib.h" 
-
 #include <fcntl.h>
-//#include "tfMacCryptExpo.h"
 
 
 IPC_IF_MODULE_INFO   gIfCtl;
 /*因为在模块中都是多线程,这里提供对收发包的计数上锁*/
 static pthread_mutex_t gSnMutex= PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t gSendSynMutex= PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
-#define LOCK(mutex) pthread_mutex_lock(&mutex) 
-#define UNLOCK(mutex) pthread_mutex_unlock(&mutex) 
 
 /*modInit提供初始化标志,gModInitMutex提供对初始化标志的上锁*/
 pthread_mutex_t gModInitMutex ;
 int modInit = 0;/*进程内部多线程间的同步*/
 static pthread_t proc_thread_id = 0;
+
 pthread_mutex_t gSdkInitMutex ;
 int sdkInited = 0;/*bcm.user和各子模块间的进程同步*/
 

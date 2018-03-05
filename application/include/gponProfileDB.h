@@ -14,8 +14,8 @@
 #define __GPROFILE_DB_H__
 
 
-#include "types.h"
-#include "sys_common.h"
+#include "adaptor_types.h"
+//#include "sys_common.h"
 
 #pragma pack(1)
 

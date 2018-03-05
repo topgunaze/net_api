@@ -25,10 +25,10 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "log.h"
 #include "sockunion.h"
 
-#include "sys_common.h"
-#include "common.h"
-#include "gtfProfileDB.h"
-#include "loadExpo.h"
+//#include "sys_common.h"
+//#include "common.h"
+//#include "gponProfileDB.h"
+//#include "loadExpo.h"
 #include "vtyCommon.h"
 
 #define VTY_BUFSIZ 512
@@ -144,7 +144,8 @@ typedef struct model_user_t{
         short vlanif_id;
         int aclId;
     }env;
-    union
+    
+    /*union
     {
         DBA_DATA_T  dba;
         LINE_DATA_T lineprofile;
@@ -154,7 +155,7 @@ typedef struct model_user_t{
         DIGITMAP_DATA_T digitmap_profile;
         SIPRIGHT_DATA_T sipright_profile;
         IPC_LOAD_FILE_TRANSMIT_T load;
-    }data;
+    }data;*/
 }model_user;
 
 #define VTY_USER_MAX_LEN 16

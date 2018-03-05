@@ -32,7 +32,7 @@
 #include "linklist.h"
 #include "thread.h"
 #include "buffer.h"
-#include <version.h>
+//#include <version.h>
 #include "command.h"
 #include "sockunion.h"
 #include "memory.h"
@@ -52,9 +52,9 @@
 #include "readline/history.h"
 #include "vty_user.h"
 #include "log.h"
-#include "tfNvramParam.h"
+//#include "tfNvramParam.h"
 #include "vtyCommon.h"
-#include "tfSysCtrlPub.h"
+//#include "tfSysCtrlPub.h"
 #include "ipc_if.h"
 
 static void vty_event (enum event, int, struct vty *);
@@ -374,27 +374,7 @@ vty_prompt (struct vty *vty)
     case TEST_NODE:
         snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, "test");
         break;
-	case ACL_BASIC_NODE:
-    case ACL_ADV_NODE:
-    case ACL6_BASIC_NODE:
-    case ACL6_ADV_NODE:
-    case ACL_LINK_NODE:
-    case ACL_USER_NODE:
-    case ACL_NODE:
-        snprin(buf, sizeof buf, cmd_prompt (vty->node),hostname, vty->user.env.aclId);
-		break;
-    case INTERFACE_GNODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, VTY_CURRENT_SLOT_ID);
-        break;
-    case DBA_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.dbaprofile_id);
-        break;
-    case LINE_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.lineprofile_id);
-        break;
-    case SRV_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.srvprofile_id);
-        break;
+  /*
     case SLA_PROFILE_NODE:
         snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.slaprofile_id);
         break;
@@ -423,6 +403,7 @@ vty_prompt (struct vty *vty)
     case CONFIG_REBOOT_INTERACTION_NODE:
         snprin(buf, sizeof (buf), cmd_prompt (vty->node));
         break;
+        */
     default:
         snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname);
     }
@@ -1528,15 +1509,6 @@ vty_end_config (struct vty *vty)
     case VIEW_NODE:
     case RESTRICTED_NODE:
         /* Nothing to do. */
-        break;
-	case ACL_BASIC_NODE:
-    case ACL_ADV_NODE:
-    case ACL_LINK_NODE:
-    case ACL_USER_NODE:
-    case ACL_NODE:
-    case ACL6_BASIC_NODE:
-    case ACL6_ADV_NODE:
-        vty->node = ENABLE_NODE;
         break;
     default:
         vty_config_unlock (vty);

@@ -34,29 +34,29 @@
 #define INOUT
 
 //控制板最大支持业务板数
-#define NET_MANAGE_MAX_SLOT        4
-#define DEFAULT_DEV_ID             0
-#define MAX_SLOT_ID                NET_MANAGE_MAX_SLOT
-#define SYS_MAX_EXIST_PORT_NUM        8
+#define NET_MANAGE_MAX_SLOT         4
+#define DEFAULT_DEV_ID              0
+#define MAX_SLOT_ID                 NET_MANAGE_MAX_SLOT
+#define SYS_MAX_EXIST_PORT_NUM      8
 //控制板容灾最大数目
-#define CTRL_SUPPORT_MAX_SLOT      2
+#define CTRL_SUPPORT_MAX_SLOT       2
 
-#define MAX_NODE_EACH_FK               128
-#define MAX_FK_EACH_SLOT               16
+#define MAX_TERM_EACH_NODE          128
+#define MAX_NODE_EACH_SLOT          16
 
-#define PHY_ID_2_PHY_UINT(fk_id, phy_id)   ((fk_id) * MAX_NODE_EACH_FK + (phy_id))
-#define PHY_UINT_2_FK_ID(phy_uint)         ((phy_uint) / MAX_NODE_EACH_FK)
-#define PHY_UINT_2_PHY_ID(phy_uint)        ((phy_uint) % MAX_NODE_EACH_FK)
-#define MAX_PHY_UINT                       (PHY_ID_2_PHY_UINT(MAX_FK_EACH_SLOT-1, MAX_NODE_EACH_FK-1))
+#define PHY_ID_2_PHY_UINT(node_id, phy_id)   ((node_id) * MAX_TERM_EACH_NODE + (phy_id))
+#define PHY_UINT_2_NODE_ID(phy_uint)         ((phy_uint) / MAX_TERM_EACH_NODE)
+#define PHY_UINT_2_PHY_ID(phy_uint)        ((phy_uint) % MAX_TERM_EACH_NODE)
+#define MAX_PHY_UINT                       (PHY_ID_2_PHY_UINT(MAX_NODE_EACH_SLOT-1, MAX_TERM_EACH_NODE-1))
 #define INVALID_PHY_UINT                     0xFFFFU
 #define VALID_PHY_UINT(phy_uint)            ((phy_uint) <= MAX_PHY_UINT)
 
-#define NODE_ID_2_NODE_UINT(fk_id, onu_id)   ((fk_id) * MAX_NODE_EACH_FK + (onu_id))
-#define NODE_UINT_2_FK_ID(node_uint)         ((node_uint) / MAX_NODE_EACH_FK)
-#define NODE_UINT_2_NODE_ID(node_uint)       ((node_uint) % MAX_NODE_EACH_FK)
-#define MAX_NODE_UINT                        (NODE_ID_2_NODE_UINT(MAX_FK_EACH_SLOT-1, MAX_NODE_EACH_FK-1))
-#define INVALID_NODE_UINT                     0xFFFFU
-#define VALID_NODE_UINT(node_uint)           ((node_uint) <= MAX_NODE_UINT)
+#define TERM_ID_2_TERM_UINT(node_id, term_id)   ((node_id) * MAX_TERM_EACH_NODE + (term_id))
+#define TERM_UINT_2_NODE_ID(term_uint)         ((term_uint) / MAX_TERM_EACH_NODE)
+#define TERM_UINT_2_TERM_ID(term_uint)       ((term_uint) % MAX_TERM_EACH_NODE)
+#define MAX_TERM_UINT                        (TERM_ID_2_TERM_UINT(MAX_NODE_EACH_SLOT-1, MAX_TERM_EACH_NODE-1))
+#define INVALID_TERM_UINT                     0xFFFFU
+#define VALID_TERM_UINT(term_uint)           ((term_uint) <= MAX_TERM_UINT)
 
 
 //内存池使用开关
@@ -79,12 +79,12 @@
 
 typedef enum
 {
-    FK_STATE_INACTIVE        = 0,        /**< Inactive. */
-    FK_STATE_PROCESSING      = 1,        /**< Processing. */
-    FK_STATE_ACTIVE_WORKING  = 2,        /**< Active Working. */
-    FK_STATE_ACTIVE_STANDBY  = 3,        /**< Active Standby. */
-    FK_STATE_NUM_OF    /**< Number of enum entries, not an entry itself. */
-} FK_STATE;
+    NODE_STATE_INACTIVE        = 0,        /**< Inactive. */
+    NODE_STATE_PROCESSING      = 1,        /**< Processing. */
+    NODE_STATE_ACTIVE_WORKING  = 2,        /**< Active Working. */
+    NODE_STATE_ACTIVE_STANDBY  = 3,        /**< Active Standby. */
+    NODE_STATE_NUM_OF    /**< Number of enum entries, not an entry itself. */
+} NODE_STATE;
 
 #if DEFUNC("队列宏")
 
@@ -426,17 +426,25 @@ typedef enum
     MQ_CTRL_RX_ASYN_ACK_MSG,
     MQ_CTRL_TX_MSG,
 
-    MQ_FK_RX_SYN_REQ_MSG,
-    MQ_FK_RX_SYN_ACK_MSG,
-    MQ_FK_RX_ASYN_REQ_MSG,
-    MQ_FK_RX_ASYN_ACK_MSG,
-    MQ_FK_TX_MSG,
+    MQ_NODE_RX_SYN_REQ_MSG,
+    MQ_NODE_RX_SYN_ACK_MSG,
+    MQ_NODE_RX_ASYN_REQ_MSG,
+    MQ_NODE_RX_ASYN_ACK_MSG,
+    MQ_NODE_TX_MSG,
 
-    MQ_MAX_NUM,
+    MQ_CTRL_TX_NODE_RX_MSG,
+    MQ_CTRL_RX_NODE_TX_MSG,
+
+    MQ_MAX_NUM_OF,
 }MQ_ID_E;
 
 #define NET_ZC_MSG_QUEUE_DELETED    0
 #define NET_ZC_MSG_QUEUE_VALID      1
+
+typedef struct msgbuf {
+    long mtype;       /* message type, must be > 0 */
+    char mtext[1024];    /* message data */
+}msgbuf;
 
 typedef struct NET_OS_MSG NET_OS_MSG;
 

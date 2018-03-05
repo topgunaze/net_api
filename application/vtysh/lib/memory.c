@@ -33,7 +33,7 @@ static void alloc_inc (int);
 static void alloc_dec (int);
 static void log_memstats(int log_priority);
 
-static const struct message mstr [] =
+/*static const struct message mstr [] =
 {
   { MTYPE_THREAD, "thread" },
   { MTYPE_THREAD_MASTER, "thread_master" },
@@ -41,14 +41,14 @@ static const struct message mstr [] =
   { MTYPE_VECTOR_INDEX, "vector_index" },
   { MTYPE_IF, "interface" },
   { 0, NULL },
-};
+};*/
 
 /* Fatal memory allocation error occured. */
 static void __attribute__ ((noreturn))
 zerror (const char *fname, int type, size_t size)
 {
-  zlog_err ("%s : can't allocate memory for `%s' size %d: %s\n", 
-	    fname, lookup (mstr, type), (int) size, safe_strerror(errno));
+  /*zlog_err ("%s : can't allocate memory for `%s' size %d: %s\n", 
+	    fname, lookup (mstr, type), (int) size, safe_strerror(errno));*/
   log_memstats(LOG_WARNING);
   /* N.B. It might be preferable to call zlog_backtrace_sigsafe here, since
      that function should definitely be safe in an OOM condition.  But
@@ -168,7 +168,7 @@ static struct
 static void
 mtype_log (char *func, void *memory, const char *file, int line, int type)
 {
-  zlog_debug ("%s: %s %p %s %d", func, lookup (mstr, type), memory, file, line);
+  //zlog_debug ("%s: %s %p %s %d", func, lookup (mstr, type), memory, file, line);
 }
 
 void *

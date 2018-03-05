@@ -23,7 +23,7 @@
 #include <zebra.h>
 #include <fcntl.h>
 #include <log.h>
-#include "version.h"
+//#include "version.h"
 
 #define PIDFILE_MASK 0644
 #ifndef HAVE_FCNTL

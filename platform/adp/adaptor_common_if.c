@@ -760,7 +760,7 @@ net_systemv_mq_create (
         return -1;
     }
 
-    if(sub_key >= MQ_MAX_NUM)
+    if(sub_key >= MQ_MAX_NUM_OF)
     {
         printf("Create queue with sub key %d failed cause wrong key or recreating. \r\n", sub_key);
         return -1;

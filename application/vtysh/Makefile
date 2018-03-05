@@ -14,18 +14,10 @@ PRJ_ROOT_DIR         ?= $(shell cd ../..; pwd)
 include $(PRJ_ROOT_DIR)/make/Make.config
 
 EXTRACT_TOOL         := extract.pl
-VTYSH_CMD_FILES      := $(wildcard $(GPON_DIR)/*/src/*Vty*.c) \
-			$(SWAPP_DIR)/layer2/src/switchVtyMac.c  \
-			$(SWAPP_DIR)/layer2/src/switchVtyPort.c  \
-			$(SWAPP_DIR)/layer2/src/switchVtyVlan.c  \
-			$(SWAPP_DIR)/rstp/src/switchVtyRstp.c   \
-			$(SWAPP_DIR)/igmpsn/src/switchVtyIgmp.c \
-			$(SWAPP_DIR)/dhcpsn/src/switchVtyDhcp.c \
-			$(SWAPP_DIR)/lacp/src/lacpVty.c \
-			$(SWAPP_DIR)/hal/src/switchVtyTrunk.c \
-			$(SWAPP_DIR)/qosacl/src/switchVtyQosAcl.c\
-			$(SYSTEM_DIR)/sysctrl/src/sysCtrlVty.c \
-			$(wildcard $(SNMP_DIR)/src/*Vty*.c)
+VTYSH_CMD_FILES      := $(wildcard $(CTRL_DIR)/src/*Vty*.c) \
+			#$(wildcard $(CTRL_DIR)/*/src/*Vty*.c) \
+			#$(SWAPP_DIR)/layer2/src/switchVtyMac.c  \
+			#$(wildcard $(SNMP_DIR)/src/*Vty*.c)
 
 
 #  Create some dependency directory
@@ -33,11 +25,11 @@ MODULE_OBJ_DIR       := $(PRJ_OBJ_DIR)/$(MODULE_NAME)
 MODULE_LIB_DIR       := $(PRJ_LIB_DIR)/$(MODULE_NAME)
 $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 
-INCLUDE_DIRS         := $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include $(SYSTEM_DIR)/include  $(GPON_SUB_INC_DIRS) ./include #$(GPON_PONCFG_DIR)/include $(GPON_PROFILE_DIR)/include $(GPON_ONURA_DIR)/include ./include
+INCLUDE_DIRS         := $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include ./include
 INCLUDE_LIBS         := $(wildcard $(PRJ_LIB_DIR)/*.a) $(wildcard $(PRJ_LIB_DIR)/*/*.a)
 CC_LIBS              := -lrt -lpthread -L$(MODULE_LIB_DIR) -l$(MODULE_NAME)
 
-CFLAGS               += -Wall -DHAVE_CONFIG_H $(addprefix -I,$(INCLUDE_DIRS)) -D$(CDT_PRODUCT)
+CFLAGS               += -Wall -DHAVE_CONFIG_H $(addprefix -I,$(INCLUDE_DIRS)) #-D$(CDT_PRODUCT)
 ifeq ($(CC),gcc)
 CFLAGS               += -Wno-unused-but-set-variable
 endif
@@ -51,10 +43,7 @@ MODULE_APP_DEPS      := $(MODULE_APP_OBJS:src%=$(MODULE_OBJ_DIR)%)
 MODULE_LIB_OBJS      := $(subst .c,.o, $(wildcard lib/*.c))
 MODULE_LIB_DEPS      := $(MODULE_LIB_OBJS:lib%=$(MODULE_OBJ_DIR)%)
 
-#APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a $(PRJ_LIB_DIR)/sysctrl/libsysMacCrypt.a $(PRJ_LIB_DIR)/flash/libflash.a $(PRJ_LIB_DIR)/ipc/libipc_if.a
-#MODULE_DEP_LIBS      := $(PRJ_LIB_DIR)/common/libcommon.a $(PRJ_LIB_DIR)/sysctrl/libsysMacCrypt.a $(PRJ_LIB_DIR)/flash/libflash.a
-
-APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a  $(PRJ_LIB_DIR)/ipc/libipc_if.a
+APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a  #$(PRJ_LIB_DIR)/ipc/libipc_if.a
 MODULE_DEP_LIBS      := $(PRJ_LIB_DIR)/common/libcommon.a 
 
 #  Pattern matching rules:
@@ -64,7 +53,7 @@ $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/src/%.c
 $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/lib/%.c
 	$(CC) -fPIC -c $(CFLAGS) -o $@ $<
 
-$(shell $(MKDIR) $(PRJ_LIB_DIR)/sysctrl; $(CP) $(SYSTEM_DIR)/libs/libMacCrypt.a $(PRJ_LIB_DIR)/sysctrl/libsysMacCrypt.a)
+#$(shell $(MKDIR) $(PRJ_LIB_DIR)/sysctrl; $(CP) $(SYSTEM_DIR)/libs/libMacCrypt.a $(PRJ_LIB_DIR)/sysctrl/libsysMacCrypt.a)
 
 .PHONY: all lib clean extract
 all: lib $(FW_ROOTFS_USR_BIN_DIR)/$(MODULE_NAME)

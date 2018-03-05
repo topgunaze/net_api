@@ -3693,27 +3693,6 @@ DEFUN (config_exit,
         break;
     case INTERFACE_NODE:
     case TEST_NODE:
-    
-    case DBA_PROFILE_NODE:
-    case LINE_PROFILE_NODE:
-    case SRV_PROFILE_NODE:
-    case SLA_PROFILE_NODE:
-    case CLASSIFICATION_PROFILE_NODE:      
-    case INTERFACE_GE_NODE:
-    case INTERFACE_XGE_NODE:
-    case INTERFACE_SA_NODE:
-    case INTERFACE_MVLAN_NODE:
-	case INTERFACE_BTV_NODE:
-    case INTERFACE_GNODE:
-    case INTERFACE_MGMT_NODE:
-    case INTERFACE_VLANIF_NODE:
-	case ACL_BASIC_NODE:
-    case ACL_ADV_NODE:
-    case ACL6_BASIC_NODE:
-    case ACL6_ADV_NODE:
-    case ACL_LINK_NODE:
-    case ACL_USER_NODE:
-    case ACL_NODE:
         vty->node = CONFIG_NODE;
         break;
     default:

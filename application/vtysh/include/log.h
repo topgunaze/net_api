@@ -153,7 +153,7 @@ extern int zlog_rotate (struct zlog *);
 #define LOOKUP_DEF(x, y, def) mes_lookup(x, x ## _max, y, def, #x)
 #define LOOKUP(x, y) LOOKUP_DEF(x, y, "(no item found)")
 
-extern const char *lookup (const struct message *, int);
+//extern const char *lookup (const struct message *, int);
 extern const char *mes_lookup (const struct message *meslist, 
                                int max, int index,
                                const char *no_item, const char *mesname);
