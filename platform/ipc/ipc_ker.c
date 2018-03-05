@@ -34,6 +34,7 @@ ULONG ipc_ker_insert_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *p
         *pHead=pNew;
         return IPC_SUCCESS;
     }
+    
     pCur=*pHead;
     
     for(;;)
@@ -58,11 +59,13 @@ void ipc_ker_del_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *pDel)
     {
         return;
     }
+    
     if((pDel->pPre==NULL)&&(pDel->pNext==NULL))
     {
         *pHead=NULL;
         return;
     }
+    
     if(pDel->pPre==NULL)
     {
         pNext=pDel->pNext;
@@ -70,12 +73,14 @@ void ipc_ker_del_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *pDel)
         *pHead=pNext;
         return;
     }
+    
     if(pDel->pNext==NULL)
     {
         pPre=pDel->pPre;
         pPre->pNext=NULL;
         return;
     }
+    
     pPre=pDel->pPre;
     pNext=pDel->pNext;
     
@@ -126,7 +131,7 @@ void ipc_ker_init(void)
     bind(gIpcKerCtl.KerSockFd,(void*)&gIpcKerCtl.KerSoAddr,sizeof(gIpcKerCtl.KerSoAddr));
 }
 
-ULONG ipc_ker_prepare_ackhead(char * pRecMsg, char *pSendMsg,UCHAR ucType,USHORT usRet)
+ULONG ipc_ker_prepare_ackhead(char *pRecMsg, char *pSendMsg,UCHAR ucType,USHORT usRet)
 {
     IPC_HEAD  *pIpcRecHead,*pIpcSendHead;
 
@@ -656,16 +661,21 @@ int main(int argc,char **argv)
             timout.tv_sec=IPC_SYN_SELECT_TIMEOUT_SEC;
         timout.tv_usec=0;
 
-        Ret=select(gIpcKerCtl.KerSockFd + 1, &fds, NULL, NULL, &timout); 
-        if(Ret<0)
+        do
+        {
+            Ret = select(gIpcKerCtl.KerSockFd + 1, &fds, NULL, NULL, &timout); 
+        }while(Ret == -1 && errno == EINTR);
+        
+        if(Ret < 0)
         {
             ipc_debug_printf("IPC kernel select error.\r\n");
             continue;
         }
+        
         if(Ret==0)
         {
             ipc_debug_printf("IPC kernel select timeout.\r\n");
-            if (gIpcKerCtl.blockmsgcount>0)
+            if (gIpcKerCtl.blockmsgcount > 0)
             {
                 ipc_ker_resend_blockmsg();
                 gettimeofday(&last_time, NULL);
@@ -678,9 +688,10 @@ int main(int argc,char **argv)
 *的消息,则先把之前被阻塞的消息发送                              *  
 *2、如果没有被阻塞的消息则处理当前发生的事件   *
 ************************************************************************/
-        if (gIpcKerCtl.blockmsgcount>0)
+        if (gIpcKerCtl.blockmsgcount > 0)
         {
             int elapse;
+            
             gettimeofday(&now_time, NULL);
             elapse = (now_time.tv_sec - last_time.tv_sec)*1000 + (now_time.tv_usec - last_time.tv_usec) / 1000;
             if (elapse > 500)
@@ -690,7 +701,7 @@ int main(int argc,char **argv)
             }
         }
 
-        RecLen=recvfrom(gIpcKerCtl.KerSockFd,gIpcKerCtl.RecDataBuf,
+        RecLen=recvfrom(gIpcKerCtl.KerSockFd, gIpcKerCtl.RecDataBuf,
             IPC_KER_MSG_MAX_LENGTH,0,(void*)&(CliAddr),(socklen_t *)&AddrLen);
         if(RecLen<=sizeof(IPC_HEAD))
         {
@@ -701,6 +712,7 @@ int main(int argc,char **argv)
         pIpc = (IPC_HEAD*)gIpcKerCtl.RecDataBuf;
         pRecData = gIpcKerCtl.RecDataBuf+sizeof(IPC_HEAD);
         pSendData = gIpcKerCtl.SndDataBuf+sizeof(IPC_HEAD);
+        
         switch (pIpc->ucMsgType)
         {
             case IPC_MSG_REG_M:/*模块注册*/
@@ -711,13 +723,16 @@ int main(int argc,char **argv)
                     ipc_debug_printf("IPC Kernel process module register FAIL.\r\n");
                     break;
                 }
+                
                 if(IPC_SUCCESS!=ipc_ker_prepare_ackhead(pRecData,pSendData,IPC_MSG_REG_M_ACK,ulRet))
                 {
                     ipc_debug_printf("IPC Kernel prepair IPC head of register ACK FAIL.\r\n");
                     break;
                 }
+                
                 usActuSendLen=ipc_ker_send_data(((IPC_REG_MODULE_MSG_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
                          usSendLen+sizeof(IPC_HEAD),&CliAddr);
+                         
                 if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))
                 {
                     if (usActuSendLen != 0)
@@ -734,11 +749,13 @@ int main(int argc,char **argv)
                     ipc_debug_printf("IPC Kernel process module disregister FAIL.\r\n");
                     break;
                 }
+                
                 if(IPC_SUCCESS!=ipc_ker_prepare_ackhead(pRecData,pSendData,IPC_MSG_DISREG_M_ACK,ulRet))
                 {
                     ipc_debug_printf("IPC Kernel prepair IPC head of register ACK FAIL.\r\n");
                     break;
                 }
+                
                 usActuSendLen=ipc_ker_send_data(((IPC_DIS_REG_MODULE_MSG_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
                          usSendLen+sizeof(IPC_HEAD),&CliAddr);
                 if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))
@@ -766,12 +783,14 @@ int main(int argc,char **argv)
                 {
                     ipc_debug_printf("IPC Kernel process event engage FAIL ,code=%lu .\r\n",ulRet);                    
                 }
+                
                 if(IPC_SUCCESS!=ipc_ker_prepare_ackhead(pRecData,pSendData,
                         IPC_EVENT_ENGAGE_ACK,ulRet))
                 {
                     ipc_debug_printf("IPC Kernel prepair IPC head of event engage ACK FAIL.\r\n");
                     break;
-                }                
+                }
+                
                 usActuSendLen=ipc_ker_send_data(((IPC_EVENT_CMD_MSG_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
                          usSendLen+sizeof(IPC_HEAD),&CliAddr);
                 if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))

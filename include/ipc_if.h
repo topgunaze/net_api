@@ -70,8 +70,8 @@ typedef struct
 
 typedef struct 
 {
-    int signum;
-    char module_name[32];
+    int       signum;
+    char      module_name[32];
     siginfo_t info;
     ucontext_t ucontext;
 }module_killed_info;
@@ -79,7 +79,7 @@ typedef struct
 #define IPC_MSG_MAX_LENGTH (IPC_APP_MSG_MAX_LENGTH+sizeof(IPC_HEAD))
 
 /*定义回调函数格式*/
-typedef ULONG (*IPC_MSG_CALLBACK) (char *pMsgOut,ULONG ulMsgLen,UCHAR ucMsgType,UCHAR ucSrcMo);
+typedef ULONG (*IPC_MSG_CALLBACK) (char *pMsgOut, ULONG ulMsgLen, UCHAR ucMsgType, UCHAR ucSrcMo);
 
 //定义接口层使用的全局数据信息
 typedef struct
@@ -99,9 +99,9 @@ typedef struct
     int    CmdSockFd; 
 
     //接收同步响应的缓冲
-    char AckRecDataBuf[IPC_MSG_MAX_LENGTH];
+    char* AckRecDataBuf;
     //接收命令消息的缓冲
-    char CmdRecDataBuf[IPC_MSG_MAX_LENGTH];
+    char* CmdRecDataBuf;
 
     USHORT  usMsgSn;//发送消息的序列序列号
     IPC_MSG_CALLBACK    pIfCallBack;

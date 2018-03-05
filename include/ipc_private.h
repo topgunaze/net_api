@@ -35,9 +35,9 @@
 #define  IPC_IF_CMD_SO_PATH_PRE  "/tmp/IpcCmd"
 #define  IPC_IF_ACK_SO_PATH_PRE  "/tmp/IpcAck"
 
-#define IPC_APP_MEM_LEN_TO_ACT_LEN(l)    (sizeof(IPC_HEAD)+l)
-#define IPC_APP_MEM_OFFSET(addr)  (((char*)addr)+sizeof(IPC_HEAD))
-#define IPC_APP_MEM_TO_IPC(addr)  (((char*)addr)-sizeof(IPC_HEAD))
+#define IPC_APP_MEM_LEN_TO_ACT_LEN(l)   (sizeof(IPC_HEAD)+l)
+#define IPC_APP_MEM_OFFSET(addr)        (((char*)addr)+sizeof(IPC_HEAD))
+#define IPC_APP_MEM_TO_IPC(addr)        (((char*)addr)-sizeof(IPC_HEAD))
 
 #define    IPC_SYN_SELECT_TIMEOUT_SEC    60    
 
@@ -70,10 +70,10 @@ typedef struct
     UCHAR    ucSrcMo;   
     UCHAR    ucRes0;    
     USHORT   usRes1;
-    ULONG     ulRes2;
-    char         NameMo[IPC_MODULE_NAME_MAX_LENGTH+1];
-    char        SoAckPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
-    char        SoCmdPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
+    ULONG    ulRes2;
+    char     NameMo[IPC_MODULE_NAME_MAX_LENGTH+1];
+    char     SoAckPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
+    char     SoCmdPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
 }IPC_REG_MODULE_MSG_INFO;
 
 //定义注销模块的消息格式
@@ -82,7 +82,7 @@ typedef struct
     UCHAR    ucSrcMo;   
     UCHAR    ucRes0;    
     USHORT   usRes1;
-    ULONG     ulRes2;
+    ULONG    ulRes2;
 }IPC_DIS_REG_MODULE_MSG_INFO;
 
 //订阅/取消订阅事件的消息格式
@@ -91,7 +91,7 @@ typedef struct
     UCHAR    ucSrcMo;   
     UCHAR    ucEventId;    
     USHORT   usRes0;
-    ULONG     ulRes1;
+    ULONG    ulRes1;
 }IPC_EVENT_CMD_MSG_INFO;
 
 //定义通用响应消息格式
@@ -99,7 +99,7 @@ typedef struct
 {
     UCHAR    ucSrcMo;   
     UCHAR    ucRetCode; 
-    USHORT  usRes0;
+    USHORT   usRes0;
     ULONG    ulRes1;
 }IPC_COMMON_REG_ACK_INFO;
 
