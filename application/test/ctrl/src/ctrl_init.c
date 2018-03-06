@@ -16,7 +16,6 @@
 
 //1. vty命令行 与 配置保存
 //2. snmp
-//3. 板间通信
 //4. 本地通信
 //5. log
 
@@ -53,9 +52,9 @@ main(void)
         exit(1);
     }
 
-    key_t key = ipc_key_get("/etc", 20);
+    //key_t key = ipc_key_get("/etc", 20);
 
-//#if 0
+#if 0
     int     msgq_id;
     msgbuf  tx_buf;
     int     i = 1;
@@ -89,7 +88,7 @@ main(void)
             i = 1;
         }
     }
-//#endif
+#endif
 
 #if 0
 	int semid;
@@ -146,6 +145,21 @@ main(void)
     
     return 0;
 
+    
+    ipc_if_init();
+
+    /* 向IPC 注册*/
+    ipc_if_reg_module(MODULE_CTRL, "GTRL", (IPC_MSG_CALLBACK)process_msg_task);
+
+    /* 关注事件*/
+    ipc_if_engage_event(IPC_EVENT_CLI_START);
+    ipc_if_engage_event(IPC_EVENT_PORT_UP_DOWN);
+    ipc_if_engage_event(IPC_EVENT_SNMP_AGENT_SWITCH);
+    ipc_if_engage_event(IPC_EVENT_SNMP_PORT_SWITCH);
+
+        /* 发布初始化完成消息*/
+    ipc_if_release_event(IPC_EVENT_INITED, NULL, 0);
+
 #if 0        
 
     struct thread_master *master;
@@ -153,17 +167,6 @@ main(void)
 
     UINT8 module;
 
-    /* GTF 模块IPC 初始化*/
-    ipc_if_init();
-
-    /* 向IPC 注册*/
-    ipc_if_reg_module(MODULE_GTF, "GTF", (IPC_MSG_CALLBACK)process_gcmd_task);
-
-    /* 关注事件*/
-    ipc_if_engage_event(IPC_EVENT_CLI_START);
-    ipc_if_engage_event(IPC_EVENT_PORT_UP_DOWN);
-    //ipc_if_engage_event(IPC_EVENT_SNMP_AGENT_SWITCH);
-    //ipc_if_engage_event(IPC_EVENT_SNMP_PORT_SWITCH);
 
     /* 1.Prepare master thread. */
     master = thread_master_create ();
@@ -196,9 +199,6 @@ main(void)
 #endif
 
     vty_set_config_write(gdistributed_config_write);
-
-    /* 发布初始化完成消息*/
-    ipc_if_release_event(IPC_EVENT_INITED, NULL, 0);
 
     TELL_MONITOR("tfdevctrl");
 

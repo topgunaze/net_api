@@ -41,7 +41,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #define MODULE_TRUNK  15
 #define MODULE_QOS  16
 #define MODULE_OLT    17
-#define MODULE_GTF   18
+#define MODULE_CTRL   18
 #define MODULE_MONITOR 19
 #define MODULE_SYSCTRL 20
 #define MODULE_LACP     21

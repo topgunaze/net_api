@@ -17,7 +17,6 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include "stdlib.h" 
 #include <fcntl.h>
 
-
 IPC_IF_MODULE_INFO   gIfCtl;
 /*因为在模块中都是多线程,这里提供对收发包的计数上锁*/
 static pthread_mutex_t gSnMutex= PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -788,7 +787,7 @@ static ULONG  ipc_if_cmdsock_thread()
 
 ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
 {
-    IPC_REG_MODULE_MSG_INFO *pRegInfo;
+    IPC_REG_MODULE_INFO *pRegInfo;
     IPC_COMMON_REG_ACK_INFO *pRegAck;
     char                    *pMsgRec;
     USHORT                  usMsgRecLen;
@@ -810,7 +809,7 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
         return IPC_SRC_MO_NAME_INVALID;
     }
 
-    pRegInfo = (IPC_REG_MODULE_MSG_INFO*)ipc_if_alloc(sizeof(IPC_REG_MODULE_MSG_INFO));
+    pRegInfo = (IPC_REG_MODULE_INFO*)ipc_if_alloc(sizeof(IPC_REG_MODULE_INFO));
     if(pRegInfo == NULL)
         return IPC_MEM_LACK;
         
@@ -842,7 +841,7 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
     
     for(;;)
     {
-        Ret=ipc_if_send_synmsg(MODULE_IPC, (char*)pRegInfo, sizeof(IPC_REG_MODULE_MSG_INFO),
+        Ret=ipc_if_send_synmsg(MODULE_IPC, (char*)pRegInfo, sizeof(IPC_REG_MODULE_INFO),
             IPC_MSG_REG_M,&pMsgRec,&usMsgRecLen);
         if(IPC_SOCKET_SENDTO_FAIL==Ret)
         {

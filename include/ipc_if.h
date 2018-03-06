@@ -90,7 +90,7 @@ typedef struct
 #define IPC_MSG_MAX_LENGTH (IPC_APP_MSG_MAX_LENGTH+sizeof(IPC_HEAD))
 
 /*定义回调函数格式*/
-typedef ULONG (*IPC_MSG_CALLBACK) (char *pMsgOut, ULONG ulMsgLen, UCHAR ucMsgType, UCHAR ucSrcMo);
+typedef ULONG (*IPC_MSG_CALLBACK) (char *pMsgIn, ULONG ulMsgLen, UCHAR ucMsgType, UCHAR ucSrcMo);
 
 //定义接口层使用的全局数据信息
 typedef struct
