@@ -74,7 +74,7 @@ typedef struct
     char     NameMo[IPC_MODULE_NAME_MAX_LENGTH+1];
     char     SoAckPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
     char     SoCmdPath[IPC_SOCKET_PATH_MAX_LENGTH+1];
-}IPC_REG_MODULE_MSG_INFO;
+}IPC_REG_MODULE_INFO;
 
 //定义注销模块的消息格式
 typedef struct

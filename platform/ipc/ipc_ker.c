@@ -262,7 +262,7 @@ static void clear_snd_resource(UCHAR  ucMo)
     }
 }
 
-ULONG ipc_ker_regmod_proc(IPC_REG_MODULE_MSG_INFO *pRegInfo,char *pAck, USHORT  *pAckLen)
+ULONG ipc_ker_regmod_proc(IPC_REG_MODULE_INFO *pRegInfo,char *pAck, USHORT  *pAckLen)
 {
     UCHAR  ucMo;
     IPC_COMMON_REG_ACK_INFO *pRegAck;
@@ -717,7 +717,7 @@ int main(int argc,char **argv)
         {
             case IPC_MSG_REG_M:/*Ä£¿é×¢²á*/
                 ipc_debug_printf("IPC kernel rec module register msg.\r\n");
-                ulRet=ipc_ker_regmod_proc((IPC_REG_MODULE_MSG_INFO*)pRecData,pSendData,&usSendLen);
+                ulRet=ipc_ker_regmod_proc((IPC_REG_MODULE_INFO*)pRecData,pSendData,&usSendLen);
                 if(IPC_SUCCESS!=ulRet)
                 {
                     ipc_debug_printf("IPC Kernel process module register FAIL.\r\n");
@@ -730,7 +730,7 @@ int main(int argc,char **argv)
                     break;
                 }
                 
-                usActuSendLen=ipc_ker_send_data(((IPC_REG_MODULE_MSG_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
+                usActuSendLen=ipc_ker_send_data(((IPC_REG_MODULE_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
                          usSendLen+sizeof(IPC_HEAD),&CliAddr);
                          
                 if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))
