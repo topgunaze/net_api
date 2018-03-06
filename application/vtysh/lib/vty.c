@@ -853,7 +853,7 @@ vty_command (struct vty *vty, char *buf)
         }
 
         ret = cmd_execute_command (vline, vty, NULL, 0);
-        /*fprinftf(stderr, "ret=%d\r\n", ret);  //stephen.liu*/
+        /*fprintf(stderr, "ret=%d\r\n", ret);  //stephen.liu*/
 
         /* Get the name of the protocol if any */
         if (zlog_default)
@@ -2546,7 +2546,7 @@ vty_read (struct thread *thread)
 
         buffer_reset (vty->obuf);
         vty->status = VTY_CLOSE;
-        fprinftf(stderr, "%d\r\n", __LINE__);
+        fprintf(stderr, "%d\r\n", __LINE__);
     }
 
     for (i = 0; i < nbytes; i++) {
@@ -2797,7 +2797,7 @@ vty_flush (struct thread *thread)
 
     vty->t_write = NULL;
 
-    /*fprinftf(stderr, "thread=0x%p iswrite=%d\r\n", thread, FD_ISSET(vty->fd, &thread->master->writefd));*/
+    /*fprintf(stderr, "thread=0x%p iswrite=%d\r\n", thread, FD_ISSET(vty->fd, &thread->master->writefd));*/
 
     /* Tempolary disable read thread. */
     if ((vty->lines == 0) && vty->t_read) {
@@ -2963,7 +2963,7 @@ alarm_to_vty (char *str)
 
     for (i = 0; i < vector_active (vtyvec); i++)
         if (((vty = vector_slot (vtyvec, i)) != NULL)) {
-            //fprinftf(stderr, "vty:%d\n", vty->fd);
+            //fprintf(stderr, "vty:%d\n", vty->fd);
             if (vty->type == VTY_SHELL_SERV)
             {
                 vtysh_info = (vtysh_client_info *) vty->vtysh_info;
@@ -3817,7 +3817,7 @@ static int msg_print(char *msg, int state)
                 retry = 3;
                 while(writev(vty->fd, iov, 2) < 0 && ERRNO_IO_RETRY (errno) && retry > 0)
                 {
-                    fprinftf(stderr, "%s call writev error: %s\r\n", __func__, safe_strerror(errno));
+                    fprintf(stderr, "%s call writev error: %s\r\n", __func__, safe_strerror(errno));
                     usleep(10);
                     retry--;
                 }
@@ -4094,7 +4094,7 @@ static int alarm_log_print(void)
         truncate = TRUE;
     }
 
-    /*fprinftf(stderr, "log_start=%08x  log_end=%08x\n", log_start, log_end);*/
+    /*fprintf(stderr, "log_start=%08x  log_end=%08x\n", log_start, log_end);*/
     if ((log_start & (~LOG_BUF_MASK)) != (log_end & (~LOG_BUF_MASK)))
     {
         c = LOG_BUF(__LOG_BUF_LEN - 1);
@@ -4212,7 +4212,7 @@ thread_process_alarm_recv (void)
     bufvec = vector_init(0);
     if (bufvec == NULL)
     {
-        fprinftf(stderr, "Message buffer allocation failure\n");
+        fprintf(stderr, "Message buffer allocation failure\n");
         return;
     }
 
@@ -4269,7 +4269,7 @@ thread_process_alarm_recv (void)
                     /* receive data */
                     nbytes = read (i, buf + offset, MAX_SIZE - offset);
                     buf[MAX_SIZE] = '\0';/* Make sure that there is no overflow */
-                    //fprinftf(stderr, "start read data.====nbytes=%d offset=%d\n", nbytes, offset);
+                    //fprintf(stderr, "start read data.====nbytes=%d offset=%d\n", nbytes, offset);
 
                     /* end of the file */
                     if (nbytes == 0) {
@@ -4343,10 +4343,10 @@ thread_process_alarm_recv (void)
                                 msgstart = buf + offset;
                                 break;
                             case 0xFF:
-                                /*fprinftf(stderr, "offset=%d nbytes=%d\r\n", offset, nbytes);*/
+                                /*fprintf(stderr, "offset=%d nbytes=%d\r\n", offset, nbytes);*/
                                 if ((offset + 2) <= nbytes && (unsigned char)buf[offset+1] == 0x55 && (unsigned char)buf[offset+2] == 0xFF)
                                 {
-                                    /*fprinftf(stderr, "%s:%d\r\n", __FUNCTION__, __LINE__);*/
+                                    /*fprintf(stderr, "%s:%d\r\n", __FUNCTION__, __LINE__);*/
                                     g_daemon_send_fd = i;
                                     g_daemon_send_flag = TRUE;
                                     offset += 3;
@@ -4559,7 +4559,7 @@ vtysh_accept (struct thread *thread)
     {
         vty->daemon_num = 1;
         alarm_info_refs++;
-        /*fprinftf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
+        /*fprintf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
     }
     //stephen.liu add, for unix socket access. used for simulation vty
     if ((g_vtysh_flag) && (!alarm_info)){
@@ -4568,7 +4568,7 @@ vtysh_accept (struct thread *thread)
         init_vty_all_daemon (vty);
     }
 
-    //fprinftf(stderr, "[%d]%d sock=%d\r\n", getpid(), __LINE__, sock);//stephen.liu 20160815
+    //fprintf(stderr, "[%d]%d sock=%d\r\n", getpid(), __LINE__, sock);//stephen.liu 20160815
     vty_event (VTYSH_READ, sock, vty);
 
     return 0;
@@ -4641,7 +4641,7 @@ vtysh_read (struct thread *thread)
         int len = sizeof(buf) - sizeof(VTYSH_CMD_USER_ENV_GET);
 
         len = sizeof(vty->user.env) > len ? len : sizeof(vty->user.env);
-        /*fprinftf(stderr, "pid[%d] command enter\r\n", getpid());*/
+        /*fprintf(stderr, "pid[%d] command enter\r\n", getpid());*/
         memcpy(&buf[sizeof(VTYSH_CMD_USER_ENV_GET)], &vty->user.env, len);
         if (vty->t_write) {
             thread_cancel (vty->t_write);
@@ -4649,7 +4649,7 @@ vtysh_read (struct thread *thread)
         }
         buffer_put (vty->obuf, buf, len + sizeof(VTYSH_CMD_USER_ENV_GET));
         vtysh_flush(vty);
-        /*fprinftf(stderr, "pid[%d] command complete\r\n", getpid());*/
+        /*fprintf(stderr, "pid[%d] command complete\r\n", getpid());*/
     }
     else
     {
@@ -4938,7 +4938,7 @@ int vtysh_user_env_get(struct vty *vty, vtysh_client_info * vclient, char *buf, 
 
                 if (nbytes < sizeof(cmd) || memcmp(cmdRsp, cmd, sizeof(cmd)) != 0)
                 {
-                    /*fprinftf(stderr, "pid[%d] error restfse\r\n", getpid());*/
+                    /*fprintf(stderr, "pid[%d] error restfse\r\n", getpid());*/
                     wait_num++;
                     continue;
                 }
@@ -5111,7 +5111,7 @@ vty_close (struct vty *vty)
             if (vtysh_info == alarm_info)
             {
                 alarm_info_refs--;
-                /*fprinftf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
+                /*fprintf(stderr, "pid[%d] alarm fd=%d refs=%d\n", getpid(), alarm_info->fd, alarm_info_refs);*/
                 if (alarm_info_refs == 0)
                 {
                     close (alarm_info->fd);
@@ -5161,7 +5161,7 @@ vty_timeout (struct thread *thread)
     /* Clear buffer */
     buffer_reset (vty->obuf);
     vty_out (vty, "%sconnection is timed out.%s", VTY_NEWLINE, VTY_NEWLINE);
-    fprinftf(stderr, "connection is timed out.\r\n");
+    fprintf(stderr, "connection is timed out.\r\n");
 
     /* Close connection. */
     vty->status = VTY_CLOSE;
@@ -5560,7 +5560,7 @@ void vty_command_read_data_thread(void)
             timeout.tv_sec = 0;
             timeout.tv_usec = 100000;/* 100ms */
 
-            /*fprinftf(stderr, "PID[%d] %s:%d\r\n", getpid(), __FUNCTION__, __LINE__);*/
+            /*fprintf(stderr, "PID[%d] %s:%d\r\n", getpid(), __FUNCTION__, __LINE__);*/
 
             ret = select(g_active.fd + 1, &readset, NULL, NULL, &timeout);
             if (ret <= 0)
@@ -5594,7 +5594,7 @@ void vty_command_read_data_thread(void)
             g_active.size = rBytes;
             #endif
             g_active.buffer[g_active.size%DEFALUT_BUFFER_SIZE] = '\0';
-            /*fprinftf(stderr, "pid[%d] recive get  input data.fd=%d,buf[0]=%s,rbytes=%d\r\n"
+            /*fprintf(stderr, "pid[%d] recive get  input data.fd=%d,buf[0]=%s,rbytes=%d\r\n"
                 , getpid(), g_active.fd, g_active.buffer, rBytes);*/
             //must check if vtysh process
             #if 1

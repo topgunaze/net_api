@@ -391,7 +391,7 @@ int vtysh_config_header(struct vty *vty, FILE *fp)
     do
     {
         snprintf(cmd, sizeof(cmd), "#Saving user: %.*s", sizeof(vty->sign_user.name), vty->sign_user.name);
-        fprinftf(fp, "%s\r\n", cmd);
+        fprintf(fp, "%s\r\n", cmd);
         time(&curTime);
         ptm = localtime(&curTime);
         if (ptm == NULL)
@@ -405,11 +405,11 @@ int vtysh_config_header(struct vty *vty, FILE *fp)
             break;
         }
         cmdLen = snprintf(cmd, sizeof(cmd), "#Saving time: %s", tStr);
-        fprinftf(fp, "%s\r\n", cmd);
+        fprintf(fp, "%s\r\n", cmd);
 
         /* vtysh version */
         cmdLen = snprintf(cmd, sizeof(cmd), "#Version: %s", VTY_VERSION);
-        fprinftf(fp, "%s\r\n", cmd);
+        fprintf(fp, "%s\r\n", cmd);
 
         #if 0
         /* device type */
@@ -755,7 +755,7 @@ int vtysh_config_file_check(char *config_file)
         ret = cfg_header_check(fp, &cfgHdr);
         if (ret < 0)
         {
-            fprinftf(stderr, "%s: %s file header is invalid!\r\n", __func__, config_file);
+            fprintf(stderr, "%s: %s file header is invalid!\r\n", __func__, config_file);
             ret = 0;
             break;
         }
@@ -763,7 +763,7 @@ int vtysh_config_file_check(char *config_file)
         /* 老版本配置不带end */
         if ('\0' == cfgHdr.ver[0])
         {
-            fprinftf(stderr, "%s: %s is old version\r\n", __func__, config_file);
+            fprintf(stderr, "%s: %s is old version\r\n", __func__, config_file);
             ret = 1;
             break;
         }
@@ -777,7 +777,7 @@ int vtysh_config_file_check(char *config_file)
 
         if (fread(lineBuf, readLen, 1, fp) && ferror(fp))
         {
-            fprinftf(stderr, "Read file failed!\n");
+            fprintf(stderr, "Read file failed!\n");
             break;
         }
 

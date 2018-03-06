@@ -53,41 +53,33 @@ main(void)
         exit(1);
     }
 
-#if 0
-    int ct_nr_msgq_id;
-    int cr_nt_msgq_id;
-    
-    if (net_systemv_mq_create(&ct_nr_msgq_id, MQ_CTRL_TX_NODE_RX_MSG, 1024*10))
+    key_t key = ipc_key_get("/etc", 20);
+
+//#if 0
+    int     msgq_id;
+    msgbuf  tx_buf;
+    int     i = 1;
+
+    msgq_id = ipc_mq_create(key);
+    if (msgq_id == -1)
     {
-        printf("MQ_CTRL_TX_NODE_RX_MSG msg queue error\r\n");
+        msgq_id = ipc_mq_open(key);
+        if (msgq_id == -1)
+        {
+            return msgq_id;
+        }
     }
-    
-    if (net_systemv_mq_create(&cr_nt_msgq_id, MQ_CTRL_RX_NODE_TX_MSG, 1024*10))
+    else
     {
-        printf("MQ_CTRL_RX_NODE_TX_MSG msg queue error\r\n");
+        ipc_mq_size_set(msgq_id, 1024 * 10);
     }
 
-    msgbuf       tx_buf;
-    msgbuf       rc_buf = {0};
-    unsigned int size;
-    int          i = 1;
-    
     while(1)
     {
         bzero(&tx_buf, sizeof(msgbuf));
         tx_buf.mtype = i;
-
-        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is ctrl type %ld\r\n", tx_buf.mtype);
-
-        //net_systemv_mq_in(ct_nr_msgq_id, &tx_buf, sizeof(tx_buf.mtext), WAIT_FOREVER);//NO_WAIT
-        net_systemv_mq_in(ct_nr_msgq_id, &tx_buf, sizeof(tx_buf), WAIT_FOREVER);//NO_WAIT
-  
-        bzero(&rc_buf, sizeof(msgbuf));
-        rc_buf.mtype = i;
-        //net_systemv_mq_out(cr_nt_msgq_id, rc_buf.mtype, &rc_buf.mtext, sizeof(rc_buf.mtext), WAIT_FOREVER, &size);//WAIT_FOREVER
-        net_systemv_mq_out(cr_nt_msgq_id, rc_buf.mtype, &rc_buf, sizeof(rc_buf), WAIT_FOREVER, &size);//WAIT_FOREVER
-
-        printf("rec type %ld text %s, size %d\r\n", rc_buf.mtype, rc_buf.mtext, size);
+        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is ctrl msg type %ld", tx_buf.mtype);
+        ipc_mq_in(msgq_id, &tx_buf, sizeof(msgbuf), WAIT_FOREVER);
         sleep(1);
 
         ++i;
@@ -97,18 +89,61 @@ main(void)
             i = 1;
         }
     }
+//#endif
+
+#if 0
+	int semid;
+
+    semid = ipc_sem_create(key);
+    if (semid == -1)
+    {
+        semid = ipc_sem_open(key);
+        if (semid == -1)
+        {
+            return semid;
+        }
+    }
+
+    ipc_sem_setval(semid, 1);
+
+    while(1)
+    {
+        ipc_sem_p(semid);
+        printf("this is ctrl\r\n");
+        //sleep(1);
+        ipc_sem_v(semid);
+        sleep(0);
+    }
+
+    ipc_sem_del(semid); 
 #endif
 
-	int semid;
-	//semid = sem_create(0x3234);
-	semid = sem_open(0x3234);
-	printf("semid:%d \n", semid);
-	sleep(5);
-	sem_d(semid);
+#if 0
+    int shm_id;
+    
+    shm_id = ipc_shm_create(key, sizeof(shm_struct));
+    if (shm_id == -1)
+    {
+        shm_id = ipc_shm_open(key);
+        if (shm_id == -1)
+        {
+            return shm_id;
+        }
+    }
 
-	key_t key = ipc_key_get("/etc", 20);
-	
+    shm_struct *p_text; 
 
+    p_text = ipc_shm_map(shm_id);
+
+    printf("ctrl read : %s\r\n", p_text->buf);
+
+    sleep(10);
+
+    ipc_shm_unmap((void*)p_text);
+
+    ipc_shm_del(shm_id);
+#endif
+    
     return 0;
 
 #if 0        

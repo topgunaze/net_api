@@ -32,7 +32,7 @@ LIBS_PATH         :=	$(SQLITE_DIR)/install/lib \
 						$(ADP_LIB_DIR)\
 						$(IPC_LIB_DIR)
 
-CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ladp -ipc_if.a
+CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ladp -lipc_if
 
 CFLAGS               += -Wall -Werror -g $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
 LIBS_FLAGS           := -Wl,--start-group $(addprefix -L,$(LIBS_PATH)) $(CC_LIBS) -Wl,--end-group

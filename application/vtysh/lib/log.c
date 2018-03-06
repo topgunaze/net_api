@@ -143,7 +143,7 @@ time_print(FILE *fp, struct timestamp_control *ctl)
       ctl->len = quagga_timestamp(ctl->precision, ctl->buf, sizeof(ctl->buf));
       ctl->already_rendered = 1;
     }
-  fprinftf(fp, "%s ", ctl->buf);
+  fprintf(fp, "%s ", ctl->buf);
 }
   
 

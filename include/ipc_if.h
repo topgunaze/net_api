@@ -127,6 +127,11 @@ union semun
                             (Linux-specific) */
 };
 
+typedef struct shm_struct
+{
+    char buf[1024];
+}shm_struct; 
+
 //IPC返回值定义
 typedef enum
 {
@@ -199,17 +204,16 @@ ULONG ipc_if_release_event(UCHAR EventId,char *pDataSend,USHORT usLenSend);
 
 void *ipc_if_alloc(ULONG ulLenth);
 ULONG ipc_if_free(void* pToFree);
-ULONG ipc_if_preack(char * pRecMsg, char *pSendMsg);
 
 UCHAR ipc_if_get_thismoid();
 
 int ipc_if_get_cmd_result(
                 unsigned short dstModuleID,
                 short          MsgID,
-                char           *rcvbuf,
-                int            buflen,
                 char           *cmd,
                 int            cmdlen,
+                char           *rcvbuf,
+                int            buflen,
                 short          *retCode);
 
 int ipc_if_exe_cmd(unsigned short dstModuleID, short MsgID, char *cmddata, int cmdlen, short *retCode);
@@ -219,14 +223,14 @@ int ipc_sem_create(key_t key);
 int ipc_sem_open(key_t key);
 int ipc_sem_setval(int semid, int val);
 int ipc_sem_getval(int semid, int val);
-int ipc_sem_d(int semid);
+int ipc_sem_del(int semid);
 int ipc_sem_p(int semid);
 int ipc_sem_v(int semid);
 int ipc_shm_create(key_t key, size_t size);
 int ipc_shm_open(key_t key);
 void* ipc_shm_map(int shmid);
 int ipc_shm_unmap(void *p_addr);
-int ipc_shm_delete(int shmid);
+int ipc_shm_del(int shmid);
 
 typedef enum
 {
@@ -246,39 +250,30 @@ typedef enum
     MQ_CTRL_RX_NODE_TX_MSG,
 
     MQ_MAX_NUM_OF,
-}MQ_ID_E;
+}MQ_SUB_KEY_E;
 
-unsigned int 
-net_systemv_mq_create (
-                int             *p_queue_id, 
-                MQ_ID_E         sub_key, 
-                unsigned int    queue_size);
-
-unsigned int
-net_systemv_mq_out (
-                int             queue_id, 
+int ipc_mq_create (key_t key);
+int ipc_mq_open(key_t key);
+int ipc_mq_size_set(int msg_id, unsigned int size);
+int ipc_mq_out (
+            int             mq_id, 
+            long            type, 
+            void            *p_data, 
+            unsigned int    size, 
+            int             block_flag,
+            unsigned int    *p_copied);
+int ipc_mq_out_timeout (
+                int             mq_id, 
                 long            type, 
                 void            *p_data, 
                 unsigned int    size, 
-                int             timeout, /* ms  */
-                unsigned int    *p_size_copied);
-
-unsigned int
-net_systemv_mq_out_timeout (
-                int             q_id, 
-                long            type, 
-                void            *p_data, 
-                unsigned int    size, 
-                int             timeout, /* ms  */
+                unsigned int    timeout, /* ms  */
                 unsigned int    *p_copied);
-                
-unsigned int
-net_systemv_mq_in (
-                int             queue_id, 
-                void            *p_data, 
-                unsigned int    size, 
-                int             timeout);
-
+int ipc_mq_in (
+            int           mq_id, 
+            void          *p_data, 
+            unsigned int  size, 
+            int           block_flag);
 
 #ifdef DEBUG
       #define debuginfo(fmt, args...)	 printf(fmt, ## args)

@@ -19,6 +19,10 @@ $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 MODULE_OBJS          := $(subst .c,.o,$(wildcard *.c)) 
 MODULE_DEPS          := $(MODULE_OBJS: %=$(MODULE_OBJ_DIR)%)
 
+#利用warning函数打印消息  
+$(warning "the value of MODULE_OBJS is $(MODULE_OBJS)")
+$(warning "the value of MODULE_DEPS is $(MODULE_DEPS)")
+
 INCLUDE_DIRS         := $(PRJ_INC_DIR) \
 						$(PLATFORM_DIR)/sqlite/include \
 						$(PLATFORM_DIR)/libev/include \

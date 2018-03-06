@@ -94,7 +94,7 @@ vclient_close (struct vtysh_client *vclient)
 {
   if (vclient->fd >= 0)
     {
-      /*fprinftf(stderr,
+      /*fprintf(stderr,
 	      "Warning: closing connection to %s because of an I/O error!\n",
 	      vclient->name);*/
       close (vclient->fd);
@@ -152,7 +152,7 @@ vtysh_client_config (struct vtysh_client *vclient, char *line)
             if (errno == EINTR)
                 continue;
 
-            /*fprinftf(stderr, ERR_WHERE_STRING "(%u)", errno);*/
+            /*fprintf(stderr, ERR_WHERE_STRING "(%u)", errno);*/
             perror("");
 
             if (errno == EAGAIN || errno == EIO)
@@ -1946,7 +1946,7 @@ DEFUN (vtysh_default_interface,
     char *cmd_line = NULL;
 
     cmd_line = (char *)vty->buf;
-    fprinftf(stdout,"\r\ncmd_str: %s %s %s %s %s\r\n",
+    fprintf(stdout,"\r\ncmd_str: %s %s %s %s %s\r\n",
             GE_CMD_STR, XGE_CMD_STR, ECMD_STR, SA_CMD_STR, LACP_CMD_STR);
 
     if (vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH)
@@ -2013,7 +2013,7 @@ write_config_integrated(void)
       return CMD_WARNING;
     }
 
-  fprinftf(stdout,"Integrated configuration saved to %s\n",integrate_default);
+  fprintf(stdout,"Integrated configuration saved to %s\n",integrate_default);
 
   fprintf(stdout,"[OK]\n");
 
@@ -2116,10 +2116,10 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
     clock_gettime(CLOCK_MONOTONIC, &tsp[i++]);
 
     clock_getres(CLOCK_MONOTONIC, &res);
-    fprinftf(stderr, "CLOCK_MONOTONIC resolution: %d.%ld\n", (int)res.tv_sec, res.tv_nsec);
+    fprintf(stderr, "CLOCK_MONOTONIC resolution: %d.%ld\n", (int)res.tv_sec, res.tv_nsec);
     for(i = 0; i < vty->daemon_num + 3; i++)
     {
-        fprinftf(stderr, "idx[%d] timespec=%d.%ld\n", i, (int)tsp[i].tv_sec, tsp[i].tv_nsec);
+        fprintf(stderr, "idx[%d] timespec=%d.%ld\n", i, (int)tsp[i].tv_sec, tsp[i].tv_nsec);
     }
 
     if (tsp != NULL)
@@ -2137,7 +2137,7 @@ write_config_integrated_vtysh(struct vty* vty, char *line)
         return CMD_WARNING;
     }
 
-    fprinftf(stdout,"Integrated configuration saved to %s\r\n",integrate_default);
+    fprintf(stdout,"Integrated configuration saved to %s\r\n",integrate_default);
 
     fprintf(stdout,"[OK]\r\n");
 
@@ -2262,7 +2262,7 @@ DEFUN (vtysh_write_memory,
     u_int j;
     char *cmd_line = NULL;
 
-    /*fprinftf(stdout, "start.cmdstr:%s\r\n", self->string);*/
+    /*fprintf(stdout, "start.cmdstr:%s\r\n", self->string);*/
     cmd_line = (char *)self->string;
 
     /* If integrated Quagga.conf explicitely set. */

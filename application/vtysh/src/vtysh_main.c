@@ -190,7 +190,7 @@ static void log_it(const char *line)
 
   strftime(tod, sizeof tod, "%Y%m%d-%H:%M.%S", tmp);
   
-  fprinftf(logfile, "%s:%s %s\n", tod, user, line);
+  fprintf(logfile, "%s:%s %s\n", tod, user, line);
 }
 #endif
 
@@ -330,7 +330,7 @@ extern bool g_vty_init_alarm;
 #ifdef SIG_HANDLER
 static void sig_handler(int sig)
 {
-    fprinftf(stderr, "PID[%d] signo=%d\r\n", getpid(), sig);
+    fprintf(stderr, "PID[%d] signo=%d\r\n", getpid(), sig);
 }
 
 char arm_reg[][10]={
@@ -353,22 +353,22 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     stderr = fopen("/dev/console","w");
     count = readlink( "/proc/self/exe", buf, 256 );
     buf[ count ] = '\0';
-    fprinftf(stderr, "path:%s\r\n",buf);
-    fprinftf(stderr, "\nSegmentation Fault!\r\n");
-    fprinftf(stderr, "info.si_signo = %d\r\n", signum);
-    fprinftf(stderr, "info.si_errno = %d\r\n", info->si_errno);
-    fprinftf(stderr, "info.si_code = %d (%s)\r\n", info->si_code, si_codes[info->si_code]);
-    fprinftf(stderr, "info.si_addr = %p\r\n", info->si_addr);
+    fprintf(stderr, "path:%s\r\n",buf);
+    fprintf(stderr, "\nSegmentation Fault!\r\n");
+    fprintf(stderr, "info.si_signo = %d\r\n", signum);
+    fprintf(stderr, "info.si_errno = %d\r\n", info->si_errno);
+    fprintf(stderr, "info.si_code = %d (%s)\r\n", info->si_code, si_codes[info->si_code]);
+    fprintf(stderr, "info.si_addr = %p\r\n", info->si_addr);
 
-    fprinftf(stderr, "EPC=0x%08lx\r\n",ucontext->uc_mcontext.arm_pc);
-    fprinftf(stderr, "RA=0x%08lx\r\n",ucontext->uc_mcontext.arm_lr);
+    fprintf(stderr, "EPC=0x%08lx\r\n",ucontext->uc_mcontext.arm_pc);
+    fprintf(stderr, "RA=0x%08lx\r\n",ucontext->uc_mcontext.arm_lr);
     arm_r = &ucontext->uc_mcontext;
     for (i = 0; i < NGREG; i++){
           if (i%2 == 0)
-          fprinftf(stderr, "\r\n");
-          fprinftf(stderr, "%s = 0x%08lx          ", arm_reg[i], *(arm_r++));
+          fprintf(stderr, "\r\n");
+          fprintf(stderr, "%s = 0x%08lx          ", arm_reg[i], *(arm_r++));
     }
-    fprinftf(stderr,"\r\n");
+    fprintf(stderr,"\r\n");
     
     exit((0-signum));
 }

@@ -20,6 +20,10 @@ $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 MODULE_OBJS := $(subst .c,.o,$(wildcard src/*.c)) 
 MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 
+#利用warning函数打印消息  
+$(warning "the value of MODULE_OBJS is $(MODULE_OBJS)")
+$(warning "the value of MODULE_DEPS is $(MODULE_DEPS)")
+
 INCLUDE_DIRS := $(PRJ_INC_DIR) $(APP_INC_DIR) $(COM_DIR)/include \
 				./include \
 				$(LIBEV_DIR)/include $(ZLIB_DIR)/include

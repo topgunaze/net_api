@@ -84,9 +84,9 @@ typedef struct
 //用户层消息包头(IPC消息类型是:命令IPC_MSG_CMD 或异步消息IPC_MSG_NOTIFY)
 typedef struct
 {
-    short    MsgID;
-    USHORT  DataLen;
-    USHORT  SeqNo;
+    short  MsgID;
+    USHORT DataLen;
+    USHORT SeqNo;
     short  RetCode;
     int    res0;
 }IPC_APP_MSG_HEAD;
