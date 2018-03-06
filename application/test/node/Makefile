@@ -16,7 +16,7 @@ MODULE_LIB_DIR       := $(PRJ_LIB_DIR)/node
 $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 
 MODULE_OBJS          := $(subst .c,.o,$(wildcard src/*.c))
-MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
+MODULE_DEPS 		 := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 
 INCLUDE_DIRS         := $(APP_INC_DIR) \
 						$(MODULE_DIR)/include \
@@ -29,9 +29,10 @@ INCLUDE_DIRS         := $(APP_INC_DIR) \
 LIBS_PATH         :=	$(SQLITE_DIR)/install/lib \
 						$(LIBEV_DIR)/install/lib \
 						$(ZLIB_DIR)/install/lib \
-						$(ADP_DIR)
+						$(ADP_LIB_DIR)\
+						$(IPC_LIB_DIR)
 
-CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ladp
+CC_LIBS              := -lm -lrt -lpthread -lsqlite3 -lev -lz -ladp -ipc_if.a
 
 CFLAGS               += -Wall -Werror -g $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
 LIBS_FLAGS           := -Wl,--start-group $(addprefix -L,$(LIBS_PATH)) $(CC_LIBS) -Wl,--end-group
@@ -40,7 +41,7 @@ LIBS_FLAGS           := -Wl,--start-group $(addprefix -L,$(LIBS_PATH)) $(CC_LIBS
 $(MODULE_OBJ_DIR)/%.o: $(MODULE_DIR)/src/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-.PHONY: all lib clean 
+.PHONY: all clean 
 all: $(MODULE_OBJ_DIR)/node
 
 $(MODULE_OBJ_DIR)/node : $(MODULE_DEPS)
@@ -51,7 +52,7 @@ $(MODULE_OBJ_DIR)/node : $(MODULE_DEPS)
 clean: 
 	$(RM) $(MODULE_OBJ_DIR)/*
 	$(RM) $(MODULE_LIB_DIR)/*
-	$(RM) $(MODULE_OBJ_DIR)/node
+	#$(RM) $(MODULE_OBJ_DIR)/node
 	
 test:
 	@$(ECHO) $(MODULE_OBJS)

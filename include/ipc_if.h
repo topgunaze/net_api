@@ -25,7 +25,18 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include <signal.h>
 #include <ucontext.h>
 #include <dlfcn.h>
+#include <sys/msg.h>
 
+
+
+#ifndef DEFUNC
+#define DEFUNC(x) 1
+#endif
+
+#define ERR_EXIT(str) perror(str);
+
+#define NO_WAIT                   (0)
+#define WAIT_FOREVER              (-1)
 
 #ifdef DEBUG
 #define ipc_debug_printf(format, ...) \
@@ -107,6 +118,15 @@ typedef struct
     IPC_MSG_CALLBACK    pIfCallBack;
 }IPC_IF_MODULE_INFO;
 
+union semun 
+{
+    int              val;    /* Value for SETVAL */
+    struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+    unsigned short  *array;  /* Array for GETALL, SETALL */
+    struct seminfo  *__buf;  /* Buffer for IPC_INFO
+                            (Linux-specific) */
+};
+
 //IPC返回值定义
 typedef enum
 {
@@ -163,7 +183,7 @@ typedef enum
 #define UNLOCK(mutex) pthread_mutex_unlock(&mutex) 
 
 /*申明对外的接口函数*/
-void  ipc_if_init();
+int  ipc_if_init(void);
 
 ULONG ipc_if_reg_module(UCHAR srcMo,char *pNameMo,IPC_MSG_CALLBACK pCallBack);
 ULONG ipc_if_disreg_module();
@@ -194,14 +214,70 @@ int ipc_if_get_cmd_result(
 
 int ipc_if_exe_cmd(unsigned short dstModuleID, short MsgID, char *cmddata, int cmdlen, short *retCode);
 
-void* ipc_init_shmem(char *path, int size,int flag, int *shmemid);
-int    ipc_del_shmem(void * addr);
-int    ipc_init_sem(char *path,int flag,int *semid);
-void   ipc_sem_down(int semid);
-void   ipc_sem_up(int semid);
-int ipc_rm_shmem(int shmid);
-int ipc_rmv_sem(int semid);
-pthread_t  ipc_pthread_proc_id();
+int ipc_key_get(char *path, int sub_key);
+int ipc_sem_create(key_t key);
+int ipc_sem_open(key_t key);
+int ipc_sem_setval(int semid, int val);
+int ipc_sem_getval(int semid, int val);
+int ipc_sem_d(int semid);
+int ipc_sem_p(int semid);
+int ipc_sem_v(int semid);
+int ipc_shm_create(key_t key, size_t size);
+int ipc_shm_open(key_t key);
+void* ipc_shm_map(int shmid);
+int ipc_shm_unmap(void *p_addr);
+int ipc_shm_delete(int shmid);
+
+typedef enum
+{
+    MQ_CTRL_RX_SYN_REQ_MSG,
+    MQ_CTRL_RX_SYN_ACK_MSG,
+    MQ_CTRL_RX_ASYN_REQ_MSG,
+    MQ_CTRL_RX_ASYN_ACK_MSG,
+    MQ_CTRL_TX_MSG,
+
+    MQ_NODE_RX_SYN_REQ_MSG,
+    MQ_NODE_RX_SYN_ACK_MSG,
+    MQ_NODE_RX_ASYN_REQ_MSG,
+    MQ_NODE_RX_ASYN_ACK_MSG,
+    MQ_NODE_TX_MSG,
+
+    MQ_CTRL_TX_NODE_RX_MSG,
+    MQ_CTRL_RX_NODE_TX_MSG,
+
+    MQ_MAX_NUM_OF,
+}MQ_ID_E;
+
+unsigned int 
+net_systemv_mq_create (
+                int             *p_queue_id, 
+                MQ_ID_E         sub_key, 
+                unsigned int    queue_size);
+
+unsigned int
+net_systemv_mq_out (
+                int             queue_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             timeout, /* ms  */
+                unsigned int    *p_size_copied);
+
+unsigned int
+net_systemv_mq_out_timeout (
+                int             q_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             timeout, /* ms  */
+                unsigned int    *p_copied);
+                
+unsigned int
+net_systemv_mq_in (
+                int             queue_id, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             timeout);
 
 
 #ifdef DEBUG

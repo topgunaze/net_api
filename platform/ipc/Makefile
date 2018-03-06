@@ -18,14 +18,16 @@ CFLAGS += -D_GNU_SOURCE -I$(PRJ_INC_DIR) -I$(COM_DIR)/include
 all:ipc_ker libipc_if.a
 
 ipc_ker:ipc_ker.o
-	$(CC) -o ipc_ker $(CFLAGS) ipc_ker.c 
-	$(CP) ipc_ker $(MODULE_OBJ_DIR)
+	$(CC) -o ipc_ker $(CFLAGS) ipc_ker.c
+	$(MV) ipc_ker.o $(MODULE_OBJ_DIR)
+	$(MV) ipc_ker $(MODULE_OBJ_DIR)
 	
 libipc_if.a:ipc_if.o
 	$(AR) $(ARFLAGS) libipc_if.a ipc_if.o
-	$(CP) libipc_if.a $(MODULE_LIB_DIR)
+	$(MV) ipc_if.o $(MODULE_OBJ_DIR)
+	$(MV) libipc_if.a $(MODULE_LIB_DIR)
 
 clean:
-	-rm -f *.o ipc_ker libipc_if.a
+	#-rm -f *.o ipc_ker libipc_if.a
 	$(RM) $(MODULE_OBJ_DIR)/*
 	$(RM) $(MODULE_LIB_DIR)/*

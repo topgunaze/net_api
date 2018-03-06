@@ -8,6 +8,7 @@
 
 #include "node_init.h"
 #include "node_net.h"
+#include "ipc_if.h"
 
 THREAD_POOL phy_proc_thread_pool;
 
@@ -112,11 +113,13 @@ main(int argc, char ** argv)
 
         snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is node type %ld\r\n", tx_buf.mtype);
 
-        net_systemv_mq_in(cr_nt_msgq_id, &tx_buf, sizeof(msgbuf), WAIT_FOREVER);//WAIT_FOREVER
+        //net_systemv_mq_in(cr_nt_msgq_id, &tx_buf, sizeof(tx_buf.mtext), WAIT_FOREVER);//WAIT_FOREVER
+        net_systemv_mq_in(cr_nt_msgq_id, &tx_buf, sizeof(tx_buf), WAIT_FOREVER);//WAIT_FOREVER
 
         bzero(&rc_buf, sizeof(msgbuf));
         rc_buf.mtype = i;
 
+        //net_systemv_mq_out(ct_nr_msgq_id, rc_buf.mtype, &rc_buf.mtext, sizeof(rc_buf.mtext), WAIT_FOREVER, &size);//NO_WAIT
         net_systemv_mq_out(ct_nr_msgq_id, rc_buf.mtype, &rc_buf, sizeof(rc_buf), WAIT_FOREVER, &size);//NO_WAIT
 
         printf("rec type %ld text %s, size %d\r\n", rc_buf.mtype, rc_buf.mtext, size);

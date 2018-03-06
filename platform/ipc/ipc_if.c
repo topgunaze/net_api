@@ -30,10 +30,6 @@ int modInit = 0;/*进程内部多线程间的同步*/
 pthread_mutex_t gSdkInitMutex ;
 int sdkInited = 0;/*bcm.user和各子模块间的进程同步*/
 
-//static int semid = -1;
-struct sembuf op_down[1]={{0,-1,0}};
-struct sembuf op_up[1]={{0,1,0}};
-
 char mips_reg[][10]={
     "0  ($ 0)","AT ($ 1)","v0 ($ 2)","v1 ($ 3)",
     "a0 ($ 4)","a1 ($ 5)","a2 ($ 6)","a3 ($ 7)",
@@ -937,82 +933,464 @@ int ipc_if_exe_cmd(
     return 0;
 }
 
-void* ipc_init_shmem(char *path, int size, int flag, int *shmid)
-{
-    key_t key;
-    void *pshare = NULL;
-    
-    if ((key = ftok(path, 1)) < 0) 
-    {
-        printf("ftok error:%s\n", strerror(errno));
-        return NULL;
-    }
-    
-    if((*shmid = shmget(key, size, flag)) < 0)
-    {
-        printf("shmget error:%s\n", strerror(errno));
-        return NULL;
-    }
-    
-    if((pshare = (void*)shmat(*shmid, 0, 0)) == (void*)-1)
-    {
-        printf("shmat error:%s\n", strerror(errno));
-        return NULL;
-    }
-    
-    return pshare;
-}
+#if DEFUNC("信号量")
 
-int ipc_del_shmem(void *addr)
-{
-    return shmdt(addr);
-}
-
-int ipc_rm_shmem(int shmid)
-{
-    return shmctl(shmid,IPC_RMID,0);
-}
-
-int ipc_init_sem(char *path, int flag, int *semid)
+int ipc_key_get(char *path, int sub_key)
 {
     key_t key;
     
-    if ((key = ftok(path, 1)) < 0) 
+    if ((key = ftok(path, sub_key)) < 0) 
     {
-        printf("ftok error:%s\n", strerror(errno));
+        perror("ftok");
         return -1;
     }
-    
-    *semid = semget(key, 1, flag);
-    if (*semid < 0) 
-    {
-        printf("couldn't create semaphore\n");
-        return -1;
-    }
-    
-    semctl(*semid, 0, SETVAL, 1);
-    
+
+    return key;
+}
+
+//创建信号量
+int ipc_sem_create(key_t key)
+{
+    int semid = semget(key, 1, 0666 | IPC_CREAT | IPC_EXCL);
+    if (semid == -1)
+        ERR_EXIT("semget");
+
+    return semid;
+}
+
+int ipc_sem_open(key_t key)
+{
+    int semid = semget(key, 0, 0);
+    if (semid == -1)
+    	ERR_EXIT("semget");
+    	
+    return semid;
+}
+
+int ipc_sem_setval(int semid, int val)
+{
+    union semun su;
+    int         ret;
+
+    su.val = val;
+    ret = semctl(semid, 0, SETVAL, su);
+    if (ret == -1)
+    	ERR_EXIT("sem_setval");
+
     return 0;
 }
 
-int ipc_rmv_sem(int semid)
+int ipc_sem_getval(int semid, int val)
 {
-    if(semctl(semid, 0, IPC_RMID)<0)
-    {
-        perror("semctl\n");
-        return -1;
-    }
-    
+    union semun su;
+    int ret;
+
+    su.val = val;
+    ret = semctl(semid, 0, GETVAL, su);
+    if (ret == -1)
+    	ERR_EXIT("sem_setval");
+
     return 0;
 }
 
-void ipc_sem_down(int semid)
+int ipc_sem_d(int semid)
 {
-    semop(semid, &op_down[0], 1);
+    int ret;
+    ret = semctl(semid, 0, IPC_RMID, 0);
+    if (ret == -1)
+    	ERR_EXIT("semctl");
+
+    return 0;
 }
 
-void ipc_sem_up(int semid)
+/*
+struct sembuf {
+    short sem_num; 
+    short sem_op; 
+    short sem_flg; 
+};
+*/
+
+int ipc_sem_p(int semid)
 {
-    semop(semid, &op_up[0], 1);
+    int	       ret;
+    struct sembuf sp = {0, -1, 0};
+
+    ret =  semop(semid, &sp, 1); //第三个参数是信号量的参数
+    if (ret == -1)
+        ERR_EXIT("semctl");
+
+    return ret;
 }
+
+int ipc_sem_v(int semid)
+{
+    struct sembuf sp = {0, 1, 0};
+    int ret = semop(semid, &sp, 1); //第三个参数是信号量的参数
+    if (ret == -1)
+        ERR_EXIT("semctl");
+        
+    return ret;
+}
+       
+#endif
+
+#if DEFUNC("共享内存")
+/*
+key        shmid      owner     perms      bytes      nattch     status      
+0x00002234 131073     wbm01     666        68         0    
+*/
+int ipc_shm_create(key_t key, size_t size)
+{  
+    int shmid = shmget(key, size, IPC_CREAT | IPC_EXCL | 0666); 
+    if (shmid == -1)
+    {
+        //相当于打开文件，文件不存
+        perror("shmget");
+    }
+
+    return shmid;
+}
+    
+int ipc_shm_open(key_t key)
+{
+    int shmid = shmget(key, 0, 0);
+    if (shmid == -1)
+        ERR_EXIT("shmget");
+        
+    return shmid;
+}
+
+void* ipc_shm_map(int shmid)
+{
+    void *p = shmat(shmid, NULL, 0);//SHM_RND和SHM_RDONLY
+    if (p == (void *)-1)
+    {
+        perror("shmget");
+        return NULL;
+    }
+
+    return p;
+}
+
+int ipc_shm_unmap(void *p_addr)
+{
+    int ret = shmdt(p_addr);
+    
+    if (ret == -1)
+    {
+        perror("shmdt");
+        ret = errno;
+    }
+
+    return ret;
+}
+
+int ipc_shm_delete(int shmid)
+{
+    int ret = shmctl(shmid, IPC_RMID, NULL);
+    if (ret < 0)
+    {
+        perror("shmctl delete");
+        ret = errno;
+    }
+
+    return ret;
+}
+
+#if 0
+int main(int argc, char *argv[])
+{
+    int ret = 0;
+    int shmid;
+    //相当于打开文件，文件不存
+    shmid = shmget(0x2234, sizeof(Teacher), IPC_CREAT | IPC_EXCL | 0666); 
+    if (shmid == -1)
+    {
+        perror("shmget err");
+        return errno;
+    }
+    
+    printf("shmid:%d \n", shmid);
+    Teacher *p = NULL;
+
+    p = shmat(shmid, NULL, 0);
+    if (p == (void *)-1 )
+    {
+        perror("shmget err");
+        return errno;
+    }
+    
+    strcpy(p->name, "aaaa");
+    p->age = 33;
+    
+    shmdt(p);
+        
+    printf("键入1 删除共享内存，其他不删除\n");
+    
+    int num;
+    scanf("%d", &num);
+    if (num == 1)
+    {
+        ret = shmctl(shmid, IPC_RMID, NULL);
+        if (ret < 0)
+        {
+            perror("rm errr\n");
+        }
+    }                 
+
+    return 0;   
+}
+
+int main(int argc, char *argv[])
+{
+	int ret = 0;
+	int 	shmid;
+	//相当于打开文件，文件不存
+	//shmid = shmget(0x2234, sizeof(Teacher), IPC_CREAT |IPC_EXCL | 0666); 
+	shmid = shmget(0x2234, 0, 0); 
+	if (shmid == -1)
+	{
+		perror("shmget err");
+		return errno;
+	}
+	printf("shmid:%d \n", shmid);
+	Teacher *p = NULL;
+
+	p = shmat(shmid, NULL, 0);
+	if (p == (void *)-1 )
+	{
+		perror("shmget err");
+		return errno;
+	}
+	
+	printf("name:%s\n", p->name);
+	printf("age:%d \n", p->age);
+	shmdt(p);
+	
+	//
+	//key        shmid      owner      perms      bytes      nattch     status      
+	//0x00002234 131073     wbm01     666        68         0    
+	//  
+	
+	printf("键入1 程序暂停，其他退出\n");
+	
+	int num;
+	scanf("%d", &num);
+	if (num == 1)
+	{
+		pause();
+	}                
+	
+	return 0;
+}
+#endif
+
+#endif
+
+#if DEFUNC("消息队列")
+
+unsigned int 
+net_systemv_mq_create (
+                int             *p_q_id, 
+                MQ_ID_E         sub_key, 
+                unsigned int    queue_size)
+{
+    int             msg_id;
+    key_t           mq_key;
+    struct msqid_ds msg_ds;
+
+    if(!p_q_id || !queue_size) 
+    {
+        printf("Create queue failed cause some parameter is invalid.\r\n");
+        return -1;
+    }
+
+    if(sub_key >= MQ_MAX_NUM_OF)
+    {
+        printf("Create queue with sub key %d failed cause wrong key or recreating. \r\n", sub_key);
+        return -1;
+    }
+    
+    mq_key = ftok("/etc/", sub_key);
+    if (-1 == mq_key)
+    {
+        perror("create msgqueue ftok");
+        return -1;
+    }
+
+    printf("key =[%x]\n", mq_key);
+
+    msg_id = msgget(mq_key, IPC_CREAT |IPC_EXCL|0666); //通过文件目录对应 421 rwx
+    //msg_id = msgget(IPC_PRIVATE, IPC_CREAT |IPC_EXCL|0666); //通过文件目录对应 421 rwx
+    if(-1 == msg_id)
+    {
+		if (errno == EEXIST)
+		{
+			perror("msgget");
+            mq_key = ftok("/etc/", sub_key);
+			msg_id = msgget(mq_key, IPC_CREAT|0666); //通过文件目录对应
+			//msg_id = msgget(IPC_PRIVATE, IPC_CREAT|0666); //通过文件目录对应
+		}
+		else
+		{
+		 	perror("msgget error");
+			return -1;
+		}
+    }
+
+    printf("msgid:%d \n", msg_id);
+
+    /*Set msg queue max bytes*/
+    if (msgctl(msg_id, IPC_STAT, &msg_ds) == -1)
+    {
+        perror("msgctl error");
+        return -1;
+    }
+    
+    msg_ds.msg_qbytes = queue_size;
+
+    if(msgctl(msg_id, IPC_SET, &msg_ds) ==  -1)
+    {
+        perror("msgctl error");
+        return -1;
+    }
+
+    *p_q_id = msg_id;
+
+    return 0;
+}
+
+unsigned int
+net_systemv_mq_out (
+                int             q_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             block_flag,
+                unsigned int    *p_copied)
+{
+    int size_copied;
+    int msg_flag = (block_flag == WAIT_FOREVER) ? 0 : IPC_NOWAIT;
+
+    /* Check Parameters */
+    if( (!p_data) || (!p_copied)) 
+    {
+        printf("Get msg failed cause some parameter is NULL.\r\n");
+        return -1;
+    }
+
+    do
+    {
+        size_copied = msgrcv(q_id, p_data, size, type, msg_flag);
+    }while(size_copied == -1 && errno == EINTR);
+    
+    if (size_copied == -1)
+    {
+        perror("msgrcv");
+        *p_copied = 0;
+        
+        if (errno == ENOMSG)
+        {
+            return errno;
+        }
+        
+        return -1;
+    }
+    else 
+    {
+        *p_copied = size_copied;
+    }
+
+    return 0;
+}
+
+unsigned int
+net_systemv_mq_out_timeout (
+                int             q_id, 
+                long            type, 
+                void            *p_data, 
+                unsigned int    size, 
+                int             timeout, /* ms  */
+                unsigned int    *p_copied)
+{
+    int size_copied;
+
+    /* Check Parameters */
+    if( (!p_data) || (!p_copied)) 
+    {
+        printf("Get msg failed cause some parameter is NULL.\r\n");
+        return -1;
+    }
+
+    /* Read the socket for data */
+    if (timeout)
+    {
+        int timeloop;
+        
+        for ( timeloop = timeout; timeloop > 0; timeloop = timeloop - 100 )
+        {
+            size_copied = net_systemv_mq_out(q_id, type, p_data, size, NO_WAIT, p_copied);
+            if (size_copied == -1 && errno == EAGAIN)
+            {
+                usleep(100 * 1000);
+            }
+            else if (size_copied == -1)
+            {
+               *p_copied = 0;
+               return -1;
+            }
+            else
+            {
+               *p_copied = size_copied;
+               return 0;
+            }
+        }
+
+        *p_copied = 0;
+
+        return -1;
+    }
+
+    return net_systemv_mq_out(q_id, type, p_data, size, WAIT_FOREVER, p_copied);
+}
+
+unsigned int
+net_systemv_mq_in (
+                int           q_id, 
+                void          *p_data, 
+                unsigned int  size, 
+                int           block_flag)
+{
+    int size_send;
+    int msg_flag = (NO_WAIT == block_flag) ? IPC_NOWAIT : 0;
+    
+    /* Check Parameters */
+    if (!p_data) 
+    {
+        printf("Can not put NULL msg into the queue. \r\n");
+        return -1;
+    }
+    
+    do
+    {
+        size_send = msgsnd(q_id, p_data, size, msg_flag);
+    }while(size_send == -1 && errno == EINTR);
+    
+    if(size_send == -1)
+    {
+        perror("msgsnd");
+        
+        if (errno == EAGAIN)
+        {
+            return errno;
+        }
+          
+        return -1;
+    }
+
+    return 0;
+}
+
+#endif
 

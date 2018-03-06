@@ -116,7 +116,7 @@ typedef struct
 #define IPC_EVENT_SDK_INITED IPC_EVENT_MSG(12)
 #define IPC_EVENT_INITED IPC_EVENT_MSG(13)
 #define IPC_EVENT_CLI_START  IPC_EVENT_MSG(14)
-#define IPC_EVENT_PORT_UP_DOWN IPC_EVENT_MSG(15) /* port plug/unplug */
+#define IPC_EVENT_PORT_UP_DOWN2 IPC_EVENT_MSG(15) /* port plug/unplug */
 #define IPC_EVENT_PORT_LINK_UP_DOWN IPC_EVENT_MSG(16) /* port link up/down */
 #define IPC_EVENT_ALARM_NOTIFY IPC_EVENT_MSG(17) /* alarm notify */
 #define IPC_EVENT_GE_SFP_PORT_UP_DOWN IPC_EVENT_MSG(18) /* ge port plug/unplug */
@@ -594,7 +594,7 @@ typedef enum
 #define IPC_SWITCH_DOT1X_L2_MAC_FLUSH           IPC_DOT1X_MSG(7)
 #define IPC_SWITCH_PPPOEPLUS_ENABLE_RECV        IPC_DOT1X_MSG(8)
 
-#define IPC_MSG_BASE  (IPC_MSG_BASE+1600)/*1700*/
+#define IPC_MSG_BASE1  (IPC_MSG_BASE+1600)/*1700*/
 #define IPC_MSG(i) (IPC_MSG_BASE+i)
 
 #define IPC_EONU_ONLINE_FLAG_AND_PORT_NUM_GET IPC_MSG(1)

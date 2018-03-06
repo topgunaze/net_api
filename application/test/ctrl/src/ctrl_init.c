@@ -9,6 +9,7 @@
 **************************************************************/
 
 #include "ctrl_net.h"
+#include "ipc_if.h"
 
 #define GCONFIG_FILENAME    "test.conf"
 #define GCONFIG_DIR         "/mnt"
@@ -52,6 +53,7 @@ main(void)
         exit(1);
     }
 
+#if 0
     int ct_nr_msgq_id;
     int cr_nt_msgq_id;
     
@@ -77,10 +79,12 @@ main(void)
 
         snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is ctrl type %ld\r\n", tx_buf.mtype);
 
-        net_systemv_mq_in(ct_nr_msgq_id, &tx_buf, sizeof(msgbuf), WAIT_FOREVER);//NO_WAIT
+        //net_systemv_mq_in(ct_nr_msgq_id, &tx_buf, sizeof(tx_buf.mtext), WAIT_FOREVER);//NO_WAIT
+        net_systemv_mq_in(ct_nr_msgq_id, &tx_buf, sizeof(tx_buf), WAIT_FOREVER);//NO_WAIT
   
         bzero(&rc_buf, sizeof(msgbuf));
         rc_buf.mtype = i;
+        //net_systemv_mq_out(cr_nt_msgq_id, rc_buf.mtype, &rc_buf.mtext, sizeof(rc_buf.mtext), WAIT_FOREVER, &size);//WAIT_FOREVER
         net_systemv_mq_out(cr_nt_msgq_id, rc_buf.mtype, &rc_buf, sizeof(rc_buf), WAIT_FOREVER, &size);//WAIT_FOREVER
 
         printf("rec type %ld text %s, size %d\r\n", rc_buf.mtype, rc_buf.mtext, size);
@@ -93,6 +97,17 @@ main(void)
             i = 1;
         }
     }
+#endif
+
+	int semid;
+	//semid = sem_create(0x3234);
+	semid = sem_open(0x3234);
+	printf("semid:%d \n", semid);
+	sleep(5);
+	sem_d(semid);
+
+	key_t key = ipc_key_get("/etc", 20);
+	
 
     return 0;
 

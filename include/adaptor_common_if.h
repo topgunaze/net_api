@@ -21,8 +21,6 @@
 #include <pthread.h>
 #include <malloc.h>
 
-#include <sys/msg.h>
-
 
 #ifndef DEFUNC
 #define DEFUNC(x) 1
@@ -414,30 +412,6 @@ typedef struct NET_MEMBLK
 
 #define SYS_V_MQ_MSG_SIZE                  (NET_BUFFER_LEN*NET_MSG_MAX_COUNT)//(1024*8192)
 
-#define NO_WAIT                   (0)
-#define WAIT_FOREVER              (-1)
-#define MSG_ANY                   0
-
-typedef enum
-{
-    MQ_CTRL_RX_SYN_REQ_MSG,
-    MQ_CTRL_RX_SYN_ACK_MSG,
-    MQ_CTRL_RX_ASYN_REQ_MSG,
-    MQ_CTRL_RX_ASYN_ACK_MSG,
-    MQ_CTRL_TX_MSG,
-
-    MQ_NODE_RX_SYN_REQ_MSG,
-    MQ_NODE_RX_SYN_ACK_MSG,
-    MQ_NODE_RX_ASYN_REQ_MSG,
-    MQ_NODE_RX_ASYN_ACK_MSG,
-    MQ_NODE_TX_MSG,
-
-    MQ_CTRL_TX_NODE_RX_MSG,
-    MQ_CTRL_RX_NODE_TX_MSG,
-
-    MQ_MAX_NUM_OF,
-}MQ_ID_E;
-
 #define NET_ZC_MSG_QUEUE_DELETED    0
 #define NET_ZC_MSG_QUEUE_VALID      1
 
@@ -629,37 +603,6 @@ net_data_uncompress(
                             unsigned long   in_len, 
                             void*           p_out, 
                             unsigned long*  p_out_len);
-
-unsigned int 
-net_systemv_mq_create (
-                int             *p_queue_id, 
-                MQ_ID_E         sub_key, 
-                unsigned int    queue_size);
-
-unsigned int
-net_systemv_mq_out (
-                int             queue_id, 
-                long            type, 
-                void            *p_data, 
-                unsigned int    size, 
-                int             timeout, /* ms  */
-                unsigned int    *p_size_copied);
-
-unsigned int
-net_systemv_mq_out_timeout (
-                int             q_id, 
-                long            type, 
-                void            *p_data, 
-                unsigned int    size, 
-                int             timeout, /* ms  */
-                unsigned int    *p_copied);
-                
-unsigned int
-net_systemv_mq_in (
-                int             queue_id, 
-                void            *p_data, 
-                unsigned int    size, 
-                int             timeout);
 
 void 
 net_zc_mq_os_msg_free(NET_OS_MSG *p_msg);
