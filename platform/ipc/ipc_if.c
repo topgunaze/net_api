@@ -206,21 +206,23 @@ ULONG ipc_if_free(void* pToFree)
 *程的回调函数,而回调函数中不限制对此函数的 *
 *调用,从而此两个线程有并发的可能.                           *
 *******************************************************************/
-ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
-           ,UCHAR ucMsgType,char **pMsgRec, USHORT *pLenRec)
+ULONG ipc_if_send_synmsg(
+                USHORT  usDstMo,
+                char    *pAppMsgSend,
+                USHORT  usLenSend,
+                UCHAR   ucMsgType,
+                char    **pMsgRec, 
+                USHORT  *pLenRec)
 {
-    IPC_HEAD  *pIpcHead;
-    IPC_HEAD  *pRecIpcHead;
-    int Ret;
-    int RecLen;
-    char *pRecMsg;
-    fd_set  fds;
+    IPC_HEAD       *pIpcHead, *pRecIpcHead;
+    int            Ret, RecLen, i;
+    char           *pRecMsg;
+    fd_set         fds;
     struct timeval timout;
-    int i;
-    UCHAR *pData;
-    USHORT usSn;
+    UCHAR          *pData;
+    USHORT         usSn;
     
-    if((pAppMsgSend==NULL)||(pLenRec==NULL))
+    if((pAppMsgSend == NULL) || (pLenRec == NULL) || (pMsgRec == NULL))
     {
         return IPC_NULL_PTR;
     }
@@ -228,9 +230,9 @@ ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
     *pMsgRec=NULL;
     *pLenRec=0;
 
-    pIpcHead=(IPC_HEAD  *)IPC_APP_MEM_TO_IPC(pAppMsgSend);
+    pIpcHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pAppMsgSend);
 
-    if(pIpcHead->usMagic!=IPC_HEAD_MAGIC)
+    if(pIpcHead->usMagic != IPC_HEAD_MAGIC)
     {
         return IPC_INVALID_HEAD;
     }
@@ -238,16 +240,22 @@ ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
     LOCK(gSendSynMutex);
 
     usSn = ipc_get_seqNo();
-    pIpcHead->usSn=usSn;
-    pIpcHead->ucMsgType=ucMsgType;
+    
+    pIpcHead->usSn      = usSn;
+    pIpcHead->ucMsgType = ucMsgType;
     //pIpcHead->ucSrcMo=gIfCtl.ucSrcMo;
-    pIpcHead->ucDstMo=usDstMo;
+    pIpcHead->ucDstMo   = usDstMo;
     pIpcHead->usDataLen = usLenSend;
-    pIpcHead->SynFlag=IPC_SYN_MSG;
-    pIpcHead->RCode=IPC_SUCCESS;
+    pIpcHead->SynFlag   = IPC_SYN_MSG;
+    pIpcHead->RCode     = IPC_SUCCESS;
 
-    if (sendto(gIfCtl.AckSockFd, pIpcHead, (sizeof(IPC_HEAD)+usLenSend),
-        0, (void*)&gIfCtl.IpcSoAddr, sizeof(struct sockaddr_un)) < 0)
+    do
+    {
+        Ret = sendto(gIfCtl.AckSockFd, pIpcHead, (sizeof(IPC_HEAD) + usLenSend),
+                     0, (struct sockaddr*)&gIfCtl.IpcSoAddr, sizeof(struct sockaddr));
+    }while(Ret == -1 && errno == EINTR);
+    
+    if (Ret < 0)
     {
         perror("sendto Syn msg FAIL");
         UNLOCK(gSendSynMutex); 
@@ -258,12 +266,12 @@ ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
     {
         FD_ZERO(&fds);
         FD_SET(gIfCtl.AckSockFd, &fds);
-        timout.tv_sec=IPC_SYN_SELECT_TIMEOUT_SEC;
-        timout.tv_usec=0;
+        timout.tv_sec  = IPC_SYN_SELECT_TIMEOUT_SEC;
+        timout.tv_usec = 0;
 
         do 
         {
-            Ret=select(gIfCtl.AckSockFd + 1, &fds, NULL, NULL, &timout);
+            Ret = select(gIfCtl.AckSockFd + 1, &fds, NULL, NULL, &timout);
         }while(Ret == -1 && errno == EINTR);
 
         if(Ret < 0)
@@ -274,55 +282,68 @@ ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
         
         if(Ret == 0)
         {
-            printf("ipc if :waiting ACK time out  while send syn msg at line :%d.src=%d dst=%d\n", __LINE__, gIfCtl.ucSrcMo, usDstMo);
+            printf("ipc if :waiting ACK time out  while send syn msg at line :%d.src=%d dst=%d\n",
+                    __LINE__, gIfCtl.ucSrcMo, usDstMo);
             UNLOCK(gSendSynMutex);
             return IPC_TIMEOUT;
         }
 
-        RecLen = recvfrom(gIfCtl.AckSockFd,gIfCtl.AckRecDataBuf, IPC_MSG_MAX_LENGTH,0,NULL,NULL);
+        do
+        {
+            RecLen = recvfrom(gIfCtl.AckSockFd, gIfCtl.AckRecDataBuf, IPC_MSG_MAX_LENGTH, 
+                              0, NULL, NULL);
+        }while(RecLen == -1 && errno == EINTR);
+
+        if (RecLen == -1)
+        {
+            perror("IPC if : recvfrom");
+            continue;  
+        }
+
         if(FALSE == ipc_if_snValid(usSn, gIfCtl.AckRecDataBuf))
         {
             printf("IPC if : Invalid ACK while send syn msg at line :%d.\n", __LINE__);
             continue;
         }
+        
         break;        
     }
     
-    if(RecLen<sizeof(IPC_HEAD))
+    if(RecLen < sizeof(IPC_HEAD))
     {
-        printf("IPC if :Receive shortly ACK msg while send syn msg at line :%d.\n",__LINE__);
+        printf("IPC if :Receive shortly ACK msg while send syn msg at line :%d.\n", __LINE__);
         UNLOCK(gSendSynMutex);
         return IPC_REC_INVALID_MSG;
     }
     
-    pRecIpcHead=(IPC_HEAD*)gIfCtl.AckRecDataBuf;
-    if(pRecIpcHead->usMagic!=IPC_HEAD_MAGIC)
+    pRecIpcHead = (IPC_HEAD*)gIfCtl.AckRecDataBuf;
+    if(pRecIpcHead->usMagic != IPC_HEAD_MAGIC)
     {
-        printf("IPC if:Syn sending :Rec Ack with Invalid IPC Head at line:%d\r\n",__LINE__);
+        printf("IPC if:Syn sending :Rec Ack with Invalid IPC Head at line:%d\r\n", __LINE__);
         UNLOCK(gSendSynMutex); 
         return IPC_REC_MSG_IPC_HEAD;
     }
-    if(pRecIpcHead->RCode!=IPC_SUCCESS)
+    
+    if(pRecIpcHead->RCode != IPC_SUCCESS)
     {
         printf("IPC if:Syn sending :Rec IPC layer FAIL at line:%d, code=%d .src=%d dst=%d\r\n",__LINE__,pRecIpcHead->RCode,gIfCtl.ucSrcMo,usDstMo);
         UNLOCK(gSendSynMutex); 
         return pRecIpcHead->RCode;
     }
 
-    pRecMsg=(char*)malloc(RecLen);
-    if(pRecMsg==NULL)
+    pRecMsg = (char*)malloc(RecLen);
+    if(pRecMsg == NULL)
     {
         UNLOCK(gSendSynMutex);
         return IPC_MEM_LACK;
     }
     
-    memcpy(pRecMsg,gIfCtl.AckRecDataBuf,RecLen);
-    *pMsgRec=IPC_APP_MEM_OFFSET(pRecMsg);
-    *pLenRec=RecLen-sizeof(IPC_HEAD);
+    memcpy(pRecMsg, gIfCtl.AckRecDataBuf, RecLen);
+    *pMsgRec = IPC_APP_MEM_OFFSET(pRecMsg);
+    *pLenRec = RecLen - sizeof(IPC_HEAD);
 
     UNLOCK(gSendSynMutex); 
     return IPC_SUCCESS;
-    
 }
 
 int ipc_if_get_cmd_result(
@@ -452,31 +473,32 @@ int ipc_if_exe_cmd(
 
 ULONG ipc_if_engage_event(UCHAR EventId)
 {
-    IPC_EVENT_CMD_MSG_INFO *pEngageEvent;
-    IPC_COMMON_REG_ACK_INFO    *pAck;
-    char *pMsgRec;
-    USHORT usMsgRecLen;    
-    int Ret;
-    UCHAR srcMo = gIfCtl.ucSrcMo;
+    IPC_EVENT_CMD_MSG_INFO    *pEngageEvent;
+    IPC_COMMON_REG_ACK_INFO   *pAck;
+    char                      *pMsgRec;
+    USHORT                    usMsgRecLen;    
+    int                       Ret;
+    UCHAR                     srcMo = gIfCtl.ucSrcMo;
 
-    pEngageEvent=(IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
-    if(pEngageEvent==NULL)
+    pEngageEvent = (IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
+    if(pEngageEvent == NULL)
         return IPC_MEM_LACK;
         
-    pEngageEvent->ucSrcMo=srcMo;
-    pEngageEvent->ucEventId=EventId;
+    pEngageEvent->ucSrcMo   = srcMo;
+    pEngageEvent->ucEventId = EventId;
     
-    Ret=ipc_if_send_synmsg(MODULE_IPC,(char*)pEngageEvent,sizeof(IPC_EVENT_CMD_MSG_INFO),
-        IPC_EVENT_ENGAGE,&pMsgRec,&usMsgRecLen);
-    if(Ret!=IPC_SUCCESS)
+    Ret=ipc_if_send_synmsg(MODULE_IPC, 
+                           (char*)pEngageEvent, sizeof(IPC_EVENT_CMD_MSG_INFO), IPC_EVENT_ENGAGE, 
+                           &pMsgRec, &usMsgRecLen);
+    if(Ret != IPC_SUCCESS)
     {
         ipc_if_free(pEngageEvent);
         return Ret;
     }    
     
-    pAck=(IPC_COMMON_REG_ACK_INFO*)pMsgRec;
+    pAck = (IPC_COMMON_REG_ACK_INFO*)pMsgRec;
 
-    if((pAck->ucSrcMo!=srcMo)||(pAck->ucRetCode !=IPC_ENGAGE_EVENT_ACK))
+    if((pAck->ucSrcMo != srcMo) || (pAck->ucRetCode != IPC_ENGAGE_EVENT_ACK))
     {
         ipc_if_free(pEngageEvent);
         ipc_if_free(pMsgRec);
@@ -532,47 +554,55 @@ ULONG ipc_if_disengage_event(UCHAR EventId)
 
 #if DEFUNC("异步消息")
 
-ULONG ipc_if_send_asynmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend
-           ,UCHAR ucMsgType)
+ULONG ipc_if_send_asynmsg(
+                USHORT usDstMo, 
+                char   *pAppMsgSend,
+                USHORT usLenSend,
+                UCHAR  ucMsgType)
 {
     IPC_HEAD  *pIpcHead;
-    int AddrLen;
-    int Ret;
-    USHORT usSn;
+    int       AddrLen, Ret;
+    USHORT    usSn;
 
-    if(pAppMsgSend==NULL)
+    if(pAppMsgSend == NULL)
     {
         return IPC_NULL_PTR;
     }
     
-    pIpcHead=(IPC_HEAD *)IPC_APP_MEM_TO_IPC(pAppMsgSend);
-    if(pIpcHead->usMagic!=IPC_HEAD_MAGIC)
+    pIpcHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pAppMsgSend);
+    if(pIpcHead->usMagic != IPC_HEAD_MAGIC)
     {
         return IPC_INVALID_HEAD;
     }
     
-    if(pIpcHead->NewIpcH==TRUE)
+    if(pIpcHead->NewIpcH == TRUE)
     {
         usSn = ipc_get_seqNo(gIfCtl);
-        pIpcHead->usSn=usSn;
-        pIpcHead->ucMsgType=ucMsgType;
-        pIpcHead->ucSrcMo=gIfCtl.ucSrcMo;
-        pIpcHead->ucDstMo=usDstMo;
+        
+        pIpcHead->usSn      = usSn;
+        pIpcHead->ucMsgType = ucMsgType;
+        pIpcHead->ucSrcMo   = gIfCtl.ucSrcMo;
+        pIpcHead->ucDstMo   = usDstMo;
         pIpcHead->usDataLen = usLenSend;
-        pIpcHead->SynFlag=IPC_ASYN_MSG;
-        pIpcHead->RCode=IPC_SUCCESS;
+        pIpcHead->SynFlag   = IPC_ASYN_MSG;
+        pIpcHead->RCode     = IPC_SUCCESS;
     }
     else
     {
-        pIpcHead->ucMsgType=ucMsgType;
+        pIpcHead->ucMsgType = ucMsgType;
         pIpcHead->usDataLen = usLenSend;
-        pIpcHead->RCode=IPC_SUCCESS;
+        pIpcHead->RCode     = IPC_SUCCESS;
     }   
-    
-    if (sendto(gIfCtl.CmdSockFd, pIpcHead, (sizeof(IPC_HEAD)+usLenSend),
-        0, (void*)&gIfCtl.IpcSoAddr, sizeof(struct sockaddr_un)) < 0)
+
+    do
     {
-        perror("Send Asyn msg FAIL");
+        Ret = sendto(gIfCtl.CmdSockFd, pIpcHead, (sizeof(IPC_HEAD) + usLenSend),
+                     0, (struct sockaddr*)&gIfCtl.IpcSoAddr, sizeof(struct sockaddr));
+    }while(Ret == -1 && errno == EINTR);
+    
+    if (Ret < 0)
+    {
+        perror("sendto Asyn msg FAIL");
         return IPC_SOCKET_SENDTO_FAIL;
     }
 
@@ -583,25 +613,25 @@ static ULONG ipc_if_preack(char *pRecMsg, char *pSendMsg)
 {
     IPC_HEAD *pIpcRecHead, *pIpcSendHead;
 
-    if((pRecMsg==NULL)||(pSendMsg==NULL))
+    if((pRecMsg == NULL) || (pSendMsg == NULL))
     {
         return IPC_NULL_PTR;
     }
     
     pIpcRecHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecMsg);
-    if(pIpcRecHead->usMagic!=IPC_HEAD_MAGIC)
+    if(pIpcRecHead->usMagic != IPC_HEAD_MAGIC)
     {
         return IPC_INVALID_HEAD;
     }
     
-    pIpcSendHead=(IPC_HEAD  *)IPC_APP_MEM_TO_IPC(pSendMsg);
-    pIpcSendHead->SynFlag=pIpcRecHead->SynFlag;
-    pIpcSendHead->usSn    =pIpcRecHead->usSn;
-    pIpcSendHead->ucSrcMo=pIpcRecHead->ucDstMo;
-    pIpcSendHead->ucDstMo=pIpcRecHead->ucSrcMo;
-    pIpcSendHead->ucMsgType=IPC_MSG_ACK;
+    pIpcSendHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pSendMsg);
+    pIpcSendHead->SynFlag   = pIpcRecHead->SynFlag;
+    pIpcSendHead->usSn      = pIpcRecHead->usSn;
+    pIpcSendHead->ucSrcMo   = pIpcRecHead->ucDstMo;
+    pIpcSendHead->ucDstMo   = pIpcRecHead->ucSrcMo;
+    pIpcSendHead->ucMsgType = IPC_MSG_ACK;
     //设置回应不需要再新构造头部信息
-    pIpcSendHead->NewIpcH=FALSE;
+    pIpcSendHead->NewIpcH   = FALSE;
 
     return IPC_SUCCESS;
 }
@@ -622,14 +652,14 @@ ULONG ipc_if_send_ack(
     pAckMsg   = (IPC_APP_MSG*)ipc_if_alloc(AckMsgLen);
     if (pAckMsg == NULL) 
     {
-        printf("ipc_if_alloc allocate memory fail!\n");    
+        printf("ipc_if_alloc allocate memory fail!\r\n");    
         ret = -1;
         goto end;
     }
     
-    if (ipc_if_preack(PRecMsg,(char*)pAckMsg)) 
+    if (ipc_if_preack(PRecMsg, (char*)pAckMsg)) 
     {
-        printf("ipc_if_preack fail!\n");    
+        printf("ipc_if_preack fail!\r\n");    
         ret = -1;
         goto end;
     }      
@@ -643,8 +673,7 @@ ULONG ipc_if_send_ack(
         bcopy(pAckData, pAckMsg->data, AckDataLen);
     }
     
-    //发送
-    if (ipc_if_send_asynmsg(ucDstMo,(char *)pAckMsg, AckMsgLen,IPC_MSG_ACK)) 
+    if (ipc_if_send_asynmsg(ucDstMo, (char*)pAckMsg, AckMsgLen, IPC_MSG_ACK)) 
     {
         printf("IPC send ack fail!\n");    
         ret = -1;
@@ -658,28 +687,28 @@ end:
     return ret;
 }
 
-ULONG ipc_if_release_event(UCHAR EventId,char *pDataSend,USHORT usLenSend)
+ULONG ipc_if_release_event(UCHAR EventId, char *pDataSend, USHORT usLenSend)
 {
-    IPC_EVENT_R_INFO  *pEventMsg;
-    int Ret;
+    IPC_EVENT_R_INFO *pEventMsg;
+    int              Ret;
 
-    if((pDataSend==NULL)&&(usLenSend!=0))
+    if((pDataSend == NULL) && (usLenSend != 0))
     {
         return IPC_NULL_PTR;
     }
 
-    pEventMsg=(IPC_EVENT_R_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_R_INFO)+usLenSend);
-    if(pEventMsg==NULL)
+    pEventMsg = (IPC_EVENT_R_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_R_INFO) + usLenSend);
+    if(pEventMsg == NULL)
         return IPC_MEM_LACK;
     
-    pEventMsg->EventMsgHead.ucEventId=EventId;
-    pEventMsg->EventMsgHead.usLen=usLenSend;
+    pEventMsg->EventMsgHead.ucEventId = EventId;
+    pEventMsg->EventMsgHead.usLen     = usLenSend;
 
     if (pDataSend)
-        memcpy(pEventMsg->data,pDataSend,usLenSend);
+        memcpy(pEventMsg->data, pDataSend, usLenSend);
     
-    Ret=ipc_if_send_asynmsg(MODULE_IPC,(char *)pEventMsg,
-        (sizeof(IPC_EVENT_R_INFO)+usLenSend),IPC_EVENT_RELEASE);
+    Ret = ipc_if_send_asynmsg(MODULE_IPC, (char*)pEventMsg, (sizeof(IPC_EVENT_R_INFO) + usLenSend),
+                            IPC_EVENT_RELEASE);
     
     ipc_if_free(pEventMsg);
 
@@ -727,15 +756,24 @@ static void ipc_if_reccmd_thread(void* arg)
         {
             continue;
         }
-        //peek
-        RecLen = recvfrom(gIfCtl.CmdSockFd, gIfCtl.CmdRecDataBuf,
-            IPC_MSG_MAX_LENGTH,0,NULL,NULL);
+
+        do
+        {
+            RecLen = recvfrom(gIfCtl.CmdSockFd, gIfCtl.CmdRecDataBuf, IPC_MSG_MAX_LENGTH,
+                              0, NULL, NULL);
+        }while(RecLen == -1 && errno == EINTR);
+
+        if (RecLen == -1)
+        {
+            perror("IPC if : recvfrom");
+            continue;
+        }
+
         if(RecLen <= sizeof(IPC_HEAD))
         {
             continue;
         }
 
-        
         pRecMsg = (char*)malloc(RecLen);
         if(pRecMsg == NULL)
         {
@@ -745,14 +783,15 @@ static void ipc_if_reccmd_thread(void* arg)
         
         memcpy(pRecMsg, gIfCtl.CmdRecDataBuf, RecLen);
         
-        pIpcHead=(IPC_HEAD*)pRecMsg;
-        ucType=pIpcHead->ucMsgType;
-        ucSrcMo = pIpcHead->ucSrcMo;
-        pAppData=IPC_APP_MEM_OFFSET(pRecMsg);
-        usAppDataLen=RecLen-sizeof(IPC_HEAD);        
+        pIpcHead     = (IPC_HEAD*)pRecMsg;
+        ucType       = pIpcHead->ucMsgType;
+        ucSrcMo      = pIpcHead->ucSrcMo;
+        pAppData     = IPC_APP_MEM_OFFSET(pRecMsg);
+        usAppDataLen = RecLen - sizeof(IPC_HEAD);
+        
         if(gIfCtl.pIfCallBack)
         {
-            gIfCtl.pIfCallBack(pAppData,usAppDataLen,ucType,ucSrcMo);
+            gIfCtl.pIfCallBack(pAppData, usAppDataLen, ucType, ucSrcMo);
         }
     }
 }
@@ -767,9 +806,9 @@ static ULONG  ipc_if_cmdsock_thread()
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED);
     pthread_attr_setstacksize(&attr, IPC_REC_CMD_DEFAULT_STACKSIZE);
-    pthread_attr_setscope( &attr, PTHREAD_SCOPE_SYSTEM );
+    pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM );
     
-    if (pthread_create(&thread, &attr, (void*)ipc_if_reccmd_thread, NULL))
+    if (pthread_create(&thread, &attr, (void*)ipc_if_reccmd_thread, NULL) < 0)
     {
         perror("pthread_create");
         return IPC_COMMON_FAIL;
@@ -787,12 +826,11 @@ static ULONG  ipc_if_cmdsock_thread()
 
 ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
 {
-    IPC_REG_MODULE_INFO *pRegInfo;
+    IPC_REG_MODULE_INFO     *pRegInfo;
     IPC_COMMON_REG_ACK_INFO *pRegAck;
     char                    *pMsgRec;
     USHORT                  usMsgRecLen;
-    int                     Ret;
-    int                     sndbuf = 64*1024;
+    int                     Ret, sndbuf = 64*1024;
     
     if(gIfCtl.gInitFlag != TRUE)
     {
@@ -827,12 +865,17 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
     
     if ((gIfCtl.AckSockFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
     {
-        perror("Create socket Error");
+        perror("socket Create Error");
         return IPC_SOCK_CREATE_FAIL;
     }
     
     unlink(gIfCtl.SoAckPath);
-    bind(gIfCtl.AckSockFd, (void*)&gIfCtl.AckSoAddr, sizeof(struct sockaddr_un));
+    
+    if (bind(gIfCtl.AckSockFd, (struct sockaddr*)&gIfCtl.AckSoAddr, sizeof(struct sockaddr)) < 0)
+    {
+        perror("bind Error");
+        return IPC_SOCK_CREATE_FAIL;
+    }
     
     pRegInfo->ucSrcMo = srcMo;
     strcpy(pRegInfo->NameMo, pNameMo);
@@ -841,9 +884,9 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
     
     for(;;)
     {
-        Ret=ipc_if_send_synmsg(MODULE_IPC, (char*)pRegInfo, sizeof(IPC_REG_MODULE_INFO),
-            IPC_MSG_REG_M,&pMsgRec,&usMsgRecLen);
-        if(IPC_SOCKET_SENDTO_FAIL==Ret)
+        Ret = ipc_if_send_synmsg(MODULE_IPC, (char*)pRegInfo, sizeof(IPC_REG_MODULE_INFO),
+                                 IPC_MSG_REG_M, &pMsgRec, &usMsgRecLen);
+        if(IPC_SOCKET_SENDTO_FAIL == Ret)
         {
             sleep(2);
         }
@@ -853,24 +896,25 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
         }
     }
     
-    if(Ret!=IPC_SUCCESS)
+    if(Ret != IPC_SUCCESS)
     {
         ipc_if_free(pRegInfo);
         return Ret;
     }
     
-    pRegAck=(IPC_COMMON_REG_ACK_INFO*)pMsgRec;
-    if((pRegAck->ucSrcMo!=srcMo)||(pRegAck->ucRetCode !=IPC_REG_M_ACK))
+    pRegAck = (IPC_COMMON_REG_ACK_INFO*)pMsgRec;
+    if((pRegAck->ucSrcMo != srcMo) || (pRegAck->ucRetCode != IPC_REG_M_ACK))
     {
         ipc_if_free(pRegInfo);
         ipc_if_free(pMsgRec);
         return IPC_COMMON_FAIL;
     }
+    
     ipc_if_free(pRegInfo);
     ipc_if_free(pMsgRec);
 
-    gIfCtl.CmdSoAddr.sun_family=AF_UNIX;
-    sprintf(gIfCtl.CmdSoAddr.sun_path,"%s", gIfCtl.SoCmdPath);
+    gIfCtl.CmdSoAddr.sun_family = AF_UNIX;
+    sprintf(gIfCtl.CmdSoAddr.sun_path, "%s", gIfCtl.SoCmdPath);
     
     if ((gIfCtl.CmdSockFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
     {
@@ -889,7 +933,13 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
     }
     
     unlink(gIfCtl.SoCmdPath);
-    bind(gIfCtl.CmdSockFd, (void*)&gIfCtl.CmdSoAddr, sizeof(struct sockaddr_un));
+    
+    if (bind(gIfCtl.CmdSockFd, (struct sockaddr*)&gIfCtl.CmdSoAddr, sizeof(struct sockaddr)) < 0)
+    {
+        perror("bind Error");
+        return IPC_SOCK_CREATE_FAIL;
+    }
+    
     if(pCallBack == NULL)
     {
         gIfCtl.Registered = TRUE;

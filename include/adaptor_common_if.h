@@ -56,6 +56,9 @@
 #define INVALID_TERM_UINT                     0xFFFFU
 #define VALID_TERM_UINT(term_uint)           ((term_uint) <= MAX_TERM_UINT)
 
+#define MY_PRINT(fmt,arg...) printf(fmt"\r\n", ##arg)
+#define MY_ERROR(fmt,arg...) printf(fmt"\r\n", ##arg)
+#define MY_DEBUG(fmt,arg...) printf("[ ] "fmt"\r\n", ##arg)
 
 //内存池使用开关
 #define NET_USE_MP

@@ -48,6 +48,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #define MODULE_VTYSH    22
 #define MODULE_DOT1X    23
 #define MODULE_ALARM_EVT 24
+#define MODULE_NODE1    25
 
 #define MODULE_DATA_MAX 30
 
@@ -75,8 +76,8 @@ typedef struct
 //发布事件的消息格式
 typedef struct
 {
-    IPC_EVENT_RELEASE_HEAD    EventMsgHead;
-    char     data[0];
+    IPC_EVENT_RELEASE_HEAD EventMsgHead;
+    char                   data[0];
 }IPC_EVENT_R_INFO;
 
 #define APP_MSG_ACK_BIT 0x8000
@@ -96,7 +97,7 @@ typedef struct
 typedef struct
 {
     IPC_APP_MSG_HEAD    MsgHead;
-    char     data[0];
+    char                data[0];
 }IPC_APP_MSG;
 
 #define IPC_EVENT_BASE  100

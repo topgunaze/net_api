@@ -279,7 +279,7 @@ net_send_packet(
     ret = net_send_msg(fd, p_remote_addr, &msg);
     if(ret)
     {
-        printf("AF_INET sendto error !\n");
+        printf("AF_INET net_send_msg error !\n");
         return ret;
     } 
 

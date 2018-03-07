@@ -34,6 +34,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #endif
 
 #define ERR_EXIT(str) perror(str);
+#define ERR_PRINTF(str) printf();
 
 #define NO_WAIT                   (0)
 #define WAIT_FOREVER              (-1)

@@ -14,6 +14,14 @@
 #define GCONFIG_FILENAME    "test.conf"
 #define GCONFIG_DIR         "/mnt"
 
+UINT32 
+ctrl_process_msg_task(
+                char  *pMsgIn,
+                UINT32 ulMsgLen,
+                UINT8  ucMsgType,
+                UINT8  ucSrcMo);
+
+
 //1. vty命令行 与 配置保存
 //2. snmp
 //4. 本地通信
@@ -143,22 +151,36 @@ main(void)
     ipc_shm_del(shm_id);
 #endif
     
-    return 0;
-
-    
     ipc_if_init();
 
     /* 向IPC 注册*/
-    ipc_if_reg_module(MODULE_CTRL, "GTRL", (IPC_MSG_CALLBACK)process_msg_task);
+    if (ipc_if_reg_module(MODULE_CTRL, "GTRL", (IPC_MSG_CALLBACK)ctrl_process_msg_task))
+    {
+        printf("ctrl reg ipc module fail\r\n");
+    }
 
-    /* 关注事件*/
-    ipc_if_engage_event(IPC_EVENT_CLI_START);
-    ipc_if_engage_event(IPC_EVENT_PORT_UP_DOWN);
-    ipc_if_engage_event(IPC_EVENT_SNMP_AGENT_SWITCH);
-    ipc_if_engage_event(IPC_EVENT_SNMP_PORT_SWITCH);
+    //通知事件
+    if (ipc_if_engage_event(IPC_EVENT_CLI_START))
+    {
+        printf("ctrl ipc engage event IPC_EVENT_CLI_START fail\r\n");
+    }
 
-        /* 发布初始化完成消息*/
-    ipc_if_release_event(IPC_EVENT_INITED, NULL, 0);
+    /* 发布初始化完成消息*/
+    if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
+    {
+        printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
+    }
+
+    while(1)
+    {
+        sleep(1);
+        if (ipc_if_release_event(IPC_EVENT_CLI_START, NULL, 0))
+        {
+            printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
+        }
+    }
+
+    return 0;
 
 #if 0        
 

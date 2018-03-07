@@ -26,7 +26,7 @@ IPC_KER_CTL         gIpcKerCtl;
 IPC_KER_MO_CTL      gIpcKerMoCtl[SYS_MAX_MODULE_NUM];
 IPC_KER_EVENT_LIST  *gIpcEventCtlHead[IPC_EVENT_MAX];
 
-ULONG ipc_ker_insert_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *pNew)
+static ULONG ipc_ker_insert_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *pNew)
 {
     IPC_KER_EVENT_LIST  *pCur;
     if(*pHead==NULL)
@@ -39,116 +39,145 @@ ULONG ipc_ker_insert_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *p
     
     for(;;)
     {
-        if(pCur->ucMo==pNew->ucMo)
+        if(pCur->ucMo == pNew->ucMo)
         {
             return IPC_OBJ_EXIST;
         }
-        if(pCur->pNext==NULL)
+        
+        if(pCur->pNext == NULL)
             break;
-        pCur=pCur->pNext;
+            
+        pCur = pCur->pNext;
     }
-    pNew->pPre=pCur;
-    pCur->pNext =pNew;
+    
+    pNew->pPre = pCur;
+    pCur->pNext = pNew;
+    
     return IPC_SUCCESS;
 }
-void ipc_ker_del_event_node(IPC_KER_EVENT_LIST **pHead,IPC_KER_EVENT_LIST *pDel)
+
+static void ipc_ker_del_event_node(IPC_KER_EVENT_LIST **pHead, IPC_KER_EVENT_LIST *pDel)
 {
-    IPC_KER_EVENT_LIST  *pPre,*pNext;
+    IPC_KER_EVENT_LIST *pPre, *pNext;
     
-    if(*pHead==NULL)
+    if(*pHead == NULL)
     {
         return;
     }
     
-    if((pDel->pPre==NULL)&&(pDel->pNext==NULL))
+    if((pDel->pPre == NULL) && (pDel->pNext == NULL))
     {
         *pHead=NULL;
         return;
     }
     
-    if(pDel->pPre==NULL)
+    if(pDel->pPre == NULL)
     {
-        pNext=pDel->pNext;
-        pNext->pPre=NULL;
-        *pHead=pNext;
+        pNext = pDel->pNext;
+        pNext->pPre = NULL;
+        *pHead = pNext;
+        
         return;
     }
     
-    if(pDel->pNext==NULL)
+    if(pDel->pNext == NULL)
     {
-        pPre=pDel->pPre;
-        pPre->pNext=NULL;
+        pPre = pDel->pPre;
+        pPre->pNext = NULL;
+        
         return;
     }
     
-    pPre=pDel->pPre;
-    pNext=pDel->pNext;
+    pPre = pDel->pPre;
+    pNext = pDel->pNext;
     
-    pPre->pNext=pDel->pNext;
-    pNext->pPre=pPre;    
+    pPre->pNext = pNext;
+    pNext->pPre = pPre;    
 }
 
-IPC_KER_EVENT_LIST *ipc_ker_lookup_event_node(IPC_KER_EVENT_LIST *pHead,UCHAR ucMo)
+static IPC_KER_EVENT_LIST *ipc_ker_lookup_event_node(IPC_KER_EVENT_LIST *pHead, UCHAR ucMo)
 {
-    IPC_KER_EVENT_LIST  *pCur=pHead;
+    IPC_KER_EVENT_LIST *pCur = pHead;
     
-    while(pCur!=NULL)
+    while(pCur != NULL)
     {
-        if(pCur->ucMo==ucMo)
+        if(pCur->ucMo == ucMo)
             return pCur;
-        pCur=pCur->pNext;
+            
+        pCur = pCur->pNext;
     }
+    
     return NULL;
 }
 
-void ipc_ker_init(void)
+#if DEFUNC("中转服务器")
+#endif
+static int ipc_ker_init(void)
 {
-    int i;
-    int rcvbuf = 64*1024;
+    int       i;
+    const int rcvbuf = 64*1024;
     
     memset(&gIpcKerCtl,0,sizeof(IPC_KER_CTL));
     memset(gIpcKerMoCtl,0,sizeof(IPC_KER_MO_CTL)*SYS_MAX_MODULE_NUM);
-    
-    for(i=0;i<IPC_EVENT_MAX;i++)
+
+    gIpcKerCtl.RecDataBuf = (char*)malloc(IPC_KER_MSG_MAX_LENGTH);
+    gIpcKerCtl.SndDataBuf = (char*)malloc(IPC_KER_MSG_MAX_LENGTH);
+    if (!gIpcKerCtl.RecDataBuf || !gIpcKerCtl.SndDataBuf)
     {
-        gIpcEventCtlHead[i]=NULL;
+        MY_ERROR("ipc_ker_init malloc fail\r\n");
+        return IPC_MEM_LACK;
     }
     
-    strcpy(gIpcKerCtl.KerSoPath,IPC_MAIN_REC_SO_PATH);
+    for(i = 0; i < IPC_EVENT_MAX; i++)
+    {
+        gIpcEventCtlHead[i] = NULL;
+    }
+    
+    strcpy(gIpcKerCtl.KerSoPath, IPC_MAIN_REC_SO_PATH);
 
-    gIpcKerCtl.KerSoAddr.sun_family=AF_UNIX;
-    sprintf(gIpcKerCtl.KerSoAddr.sun_path,"%s",gIpcKerCtl.KerSoPath);
-    if ((gIpcKerCtl.KerSockFd= socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
+    gIpcKerCtl.KerSoAddr.sun_family = AF_UNIX;
+    sprintf(gIpcKerCtl.KerSoAddr.sun_path, "%s", gIpcKerCtl.KerSoPath);
+    
+    if ((gIpcKerCtl.KerSockFd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
     {
         ipc_debug_printf("IPC kernel  Create socket Error.\r\n");
-        return;
+        return IPC_SOCK_CREATE_FAIL;
     }
-    if (setsockopt(gIpcKerCtl.KerSockFd,SOL_SOCKET,SO_RCVBUF,&rcvbuf,sizeof(rcvbuf)) < 0) {
+    
+    if (setsockopt(gIpcKerCtl.KerSockFd, SOL_SOCKET, SO_RCVBUF, (void*)&rcvbuf, sizeof(rcvbuf)) < 0) 
+    {
         ipc_debug_printf("set SO_RCVBUF Error.\r\n");
     }
 
     unlink(gIpcKerCtl.KerSoPath);
-    bind(gIpcKerCtl.KerSockFd,(void*)&gIpcKerCtl.KerSoAddr,sizeof(gIpcKerCtl.KerSoAddr));
+    
+    if (bind(gIpcKerCtl.KerSockFd, (struct sockaddr*)&gIpcKerCtl.KerSoAddr, sizeof(gIpcKerCtl.KerSoAddr)) < 0)
+    {
+        perror("bind Error");
+        return IPC_SOCK_CREATE_FAIL;
+    }
+
+    return IPC_SUCCESS;
 }
 
-ULONG ipc_ker_prepare_ackhead(char *pRecMsg, char *pSendMsg,UCHAR ucType,USHORT usRet)
+ULONG ipc_ker_prepare_ackhead(char *pRecMsg, char *pSendMsg, UCHAR ucType, USHORT usRet)
 {
-    IPC_HEAD  *pIpcRecHead,*pIpcSendHead;
+    IPC_HEAD *pIpcRecHead, *pIpcSendHead;
 
-    if((pRecMsg==NULL)||(pSendMsg==NULL))
+    if((pRecMsg == NULL) || (pSendMsg == NULL))
     {
         return IPC_NULL_PTR;
     }
     
-    pIpcRecHead=(IPC_HEAD  *)IPC_APP_MEM_TO_IPC(pRecMsg);
+    pIpcRecHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecMsg);
 
-    if(pIpcRecHead->usMagic!=IPC_HEAD_MAGIC)
+    if(pIpcRecHead->usMagic != IPC_HEAD_MAGIC)
     {
-        ipc_debug_printf("IPC Kernel Warning: invalid IPC head at line %d.\r\n",__LINE__);
+        ipc_debug_printf("IPC Kernel Warning: invalid IPC head at line %d.\r\n", __LINE__);
         return IPC_INVALID_HEAD;
     }
     
-    pIpcSendHead=(IPC_HEAD  *)IPC_APP_MEM_TO_IPC(pSendMsg);
+    pIpcSendHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pSendMsg);
     pIpcSendHead->SynFlag=pIpcRecHead->SynFlag;
     pIpcSendHead->usSn    =pIpcRecHead->usSn;
     pIpcSendHead->ucSrcMo=pIpcRecHead->ucDstMo;
@@ -177,14 +206,20 @@ int  ipc_ker_send_data(UCHAR ucDstMo,char *pSend,USHORT usSendLen,struct sockadd
     }
     
     SoAddrLen=sizeof(struct sockaddr_un);
-    ret = sendto(gIpcKerMoCtl[ucDstMo].sndsockfd,pSend,usSendLen,0,(void*)to,SoAddrLen);
+    do
+    {
+        ret = sendto(gIpcKerMoCtl[ucDstMo].sndsockfd, pSend, usSendLen, 0,
+                     (struct sockaddr*)to, (socklen_t)SoAddrLen);
+    }while(ret == -1 && errno == EINTR);
+
     if (ret < 0)
     {
-       if (errno==EAGAIN)
+       if (errno == EAGAIN)
            goto lblqueuemsg;
        else
            ipc_debug_printf("ipcker sendto error.errno:%d, errmsg:%s.\n", errno, strerror(errno));
     }
+    
     return ret;
 
 lblqueuemsg:        
@@ -576,10 +611,14 @@ static void ipc_ker_resend_blockmsg(void)
         blocktime = 0;
         while (gIpcKerMoCtl[ucDstMo].BlockMsgHead)
         {
-            curmsg = gIpcKerMoCtl[ucDstMo].BlockMsgHead;          
-            ret = sendto(gIpcKerMoCtl[ucDstMo].sndsockfd, curmsg->pData, curmsg->datalen, 0, 
-                               (void*)&curmsg->dstaddr, sizeof(struct sockaddr_un));
-            if (ret < 0 && errno==EAGAIN)
+            curmsg = gIpcKerMoCtl[ucDstMo].BlockMsgHead;
+            do
+            {
+                ret = sendto(gIpcKerMoCtl[ucDstMo].sndsockfd, curmsg->pData, curmsg->datalen, 0, 
+                             (struct sockaddr*)&curmsg->dstaddr, sizeof(struct sockaddr_un));
+            }while(ret == -1 && errno == EINTR);
+
+            if (ret < 0 && errno == EAGAIN)
             {
                 blocktime++;
                 gIpcKerMoCtl[ucDstMo].retry++;
@@ -701,8 +740,12 @@ int main(int argc,char **argv)
             }
         }
 
-        RecLen=recvfrom(gIpcKerCtl.KerSockFd, gIpcKerCtl.RecDataBuf,
-            IPC_KER_MSG_MAX_LENGTH,0,(void*)&(CliAddr),(socklen_t *)&AddrLen);
+        do
+        {
+            RecLen = recvfrom(gIpcKerCtl.KerSockFd, gIpcKerCtl.RecDataBuf, IPC_KER_MSG_MAX_LENGTH,
+                              0, (struct sockaddr*)&(CliAddr), (socklen_t*)&AddrLen);
+        }while(RecLen == -1 && errno == EINTR);
+
         if(RecLen<=sizeof(IPC_HEAD))
         {
             ipc_debug_printf("IPC kernel receive bad packet.lenght %d is too small.\r\n",RecLen); 
