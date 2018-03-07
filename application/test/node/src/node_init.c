@@ -77,6 +77,10 @@ node_process_msg_task(
                     MY_PRINT("NODE rec cli start msg\r\n");
                     break;
 
+                case IPC_EVENT_INITED:
+                    MY_PRINT("NODE rec event init msg\r\n");
+                    break;
+
                 /* 终端调试开关*/
                 case IPC_EVENT_TERM_DEBUG_NOTICE:
                 {
@@ -306,28 +310,33 @@ main(int argc, char ** argv)
 
     ipc_if_init();
 
-    /* 向IPC 注册*/
+    /* 向IPC 注册模块*/
     if (ipc_if_reg_module(MODULE_NODE1, "NODE1", (IPC_MSG_CALLBACK)node_process_msg_task))
     {
         printf("node reg ipc module fail\r\n");
     }
 
-    //通知事件
+    //注册事件
     if (ipc_if_engage_event(IPC_EVENT_CLI_START))
     {
         printf("node ipc engage event IPC_EVENT_CLI_START fail\r\n");
     }
 
-    /* 发布初始化完成消息*/
-    if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
+    if (ipc_if_engage_event(IPC_EVENT_INITED))
     {
-        printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
+        printf("node ipc engage event IPC_EVENT_CLI_START fail\r\n");
     }
 
     while(1)
     {
         sleep(1);
         if (ipc_if_release_event(IPC_EVENT_CLI_START, NULL, 0))
+        {
+            printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
+        }
+
+        sleep(1);
+        if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
         {
             printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
         }

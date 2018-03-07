@@ -44,6 +44,10 @@ ctrl_process_msg_task(
                     MY_PRINT("CTRL rec cli start msg\r\n");
                     break;
 
+                case IPC_EVENT_INITED:
+                    MY_PRINT("CTRL rec event init msg\r\n");
+                    break;
+
                 /* ÖÕ¶Ëµ÷ÊÔ¿ª¹Ø*/
                 case IPC_EVENT_TERM_DEBUG_NOTICE:
                 {

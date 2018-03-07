@@ -708,7 +708,7 @@ ULONG ipc_if_release_event(UCHAR EventId, char *pDataSend, USHORT usLenSend)
         memcpy(pEventMsg->data, pDataSend, usLenSend);
     
     Ret = ipc_if_send_asynmsg(MODULE_IPC, (char*)pEventMsg, (sizeof(IPC_EVENT_R_INFO) + usLenSend),
-                            IPC_EVENT_RELEASE);
+                              IPC_EVENT_RELEASE);
     
     ipc_if_free(pEventMsg);
 

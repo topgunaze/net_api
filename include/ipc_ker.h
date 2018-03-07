@@ -18,10 +18,10 @@
 
 typedef struct tag_SND_BLOCK_MSG
 {
-    struct tag_SND_BLOCK_MSG * next;
-    struct sockaddr_un dstaddr;
-    USHORT datalen; 
-    char pData[0];
+    struct tag_SND_BLOCK_MSG *next;
+    struct sockaddr_un       dstaddr;
+    USHORT                   datalen; 
+    char                     pData[0];
 }SND_BLOCK_MSG;
 
 /*定义IPC模块使用的全局信息,*/

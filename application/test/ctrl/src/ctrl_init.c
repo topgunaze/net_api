@@ -165,16 +165,21 @@ main(void)
         printf("ctrl ipc engage event IPC_EVENT_CLI_START fail\r\n");
     }
 
-    /* 发布初始化完成消息*/
-    if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
+    if (ipc_if_engage_event(IPC_EVENT_INITED))
     {
-        printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
+        printf("ctrl ipc engage event IPC_EVENT_CLI_START fail\r\n");
     }
 
     while(1)
     {
         sleep(1);
         if (ipc_if_release_event(IPC_EVENT_CLI_START, NULL, 0))
+        {
+            printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
+        }
+
+        sleep(1);
+        if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
         {
             printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
         }
