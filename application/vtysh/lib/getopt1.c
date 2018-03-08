@@ -131,10 +131,10 @@ main (argc, argv)
       switch (c)
 	{
 	case 0:
-	  prin("option %s", long_options[option_index].name);
+	  printf("option %s", long_options[option_index].name);
 	  if (optarg)
-	    prin(" with arg %s", optarg);
-	  prin("\n");
+	    printf(" with arg %s", optarg);
+	  printf("\n");
 	  break;
 
 	case '0':
@@ -148,41 +148,41 @@ main (argc, argv)
 	case '8':
 	case '9':
 	  if (digit_optind != 0 && digit_optind != this_option_optind)
-	    prin("digits occur in two different argv-elements.\n");
+	    printf("digits occur in two different argv-elements.\n");
 	  digit_optind = this_option_optind;
-	  prin("option %c\n", c);
+	  printf("option %c\n", c);
 	  break;
 
 	case 'a':
-	  prin("option a\n");
+	  printf("option a\n");
 	  break;
 
 	case 'b':
-	  prin("option b\n");
+	  printf("option b\n");
 	  break;
 
 	case 'c':
-	  prin("option c with value `%s'\n", optarg);
+	  printf("option c with value `%s'\n", optarg);
 	  break;
 
 	case 'd':
-	  prin("option d with value `%s'\n", optarg);
+	  printf("option d with value `%s'\n", optarg);
 	  break;
 
 	case '?':
 	  break;
 
 	default:
-	  prin("?? getopt returned character code 0%o ??\n", c);
+	  printf("?? getopt returned character code 0%o ??\n", c);
 	}
     }
 
   if (optind < argc)
     {
-      prin("non-option ARGV-elements: ");
+      printf("non-option ARGV-elements: ");
       while (optind < argc)
-	prin("%s ", argv[optind++]);
-      prin("\n");
+	printf("%s ", argv[optind++]);
+      printf("\n");
     }
 
   exit (0);

@@ -54,7 +54,7 @@
 #include "log.h"
 //#include "tfNvramParam.h"
 #include "vtyCommon.h"
-//#include "tfSysCtrlPub.h"
+#include "cdtSysCtrlPub.h"
 #include "ipc_if.h"
 
 static void vty_event (enum event, int, struct vty *);
@@ -142,13 +142,13 @@ vty_out (struct vty *vty, const char *format, ...)
 
     if (vty_shell (vty)) {
         va_start (args, format);
-        vprin(format, args);
+        vprintf(format, args);
         va_end (args);
     }
     else {
         /* Try to write to initial buffer.  */
         va_start (args, format);
-        len = vsnprin(buf, sizeof buf, format, args);
+        len = vsnprintf(buf, sizeof buf, format, args);
         va_end (args);
 
         /* Initial buffer is not enough.  */
@@ -164,7 +164,7 @@ vty_out (struct vty *vty, const char *format, ...)
                     return -1;
 
                 va_start (args, format);
-                len = vsnprin(p, size, format, args);
+                len = vsnprintf(p, size, format, args);
                 va_end (args);
 
                 if (len > -1 && len < size)
@@ -206,7 +206,7 @@ vty_out_line (struct vty *vty, const char *format, ...)
     }
 
     va_start (args, format);
-    len = vsnprin(buf, sizeof(buf), format, args);
+    len = vsnprintf(buf, sizeof(buf), format, args);
     va_end (args);
 
     if (len < 0)
@@ -281,13 +281,13 @@ vty_log_out (struct vty *vty, const char *level, const char *proto_str,
     buf[len] = '\0';
 
     if (level)
-        ret = snprin(buf + len, sizeof (buf) - len, "%s: %s: ", level, proto_str);
+        ret = snprintf(buf + len, sizeof (buf) - len, "%s: %s: ", level, proto_str);
     else
-        ret = snprin(buf + len, sizeof (buf) - len, "%s: ", proto_str);
+        ret = snprintf(buf + len, sizeof (buf) - len, "%s: ", proto_str);
     if ((ret < 0) || ((size_t) (len += ret) >= sizeof (buf)))
         return -1;
 
-    if (((ret = vsnprin(buf + len, sizeof (buf) - len, format, va)) < 0) ||
+    if (((ret = vsnprintf(buf + len, sizeof (buf) - len, format, va)) < 0) ||
         ((size_t) ((len += ret) + 2) > sizeof (buf)))
         return -1;
 
@@ -372,40 +372,40 @@ vty_prompt (struct vty *vty)
     memset(buf, 0x00, sizeof(buf));//stephen.liu
     switch (vty->node) {
     case TEST_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, "test");
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, "test");
         break;
   /*
     case SLA_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.slaprofile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.slaprofile_id);
         break;
     case SIPAGENT_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipagent_profile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipagent_profile_id);
         break;
     case POTS_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.pots_profile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.pots_profile_id);
         break;
     case DIGITMAP_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.digitmap_profile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.digitmap_profile_id);
         break;
     case SIPRIGHT_PROFILE_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipright_profile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.sipright_profile_id);
         break;
     case CLASSIFICATION_PROFILE_NODE: 
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.classificationprofile_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.classificationprofile_id);
         break;
     case INTERFACE_MVLAN_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.mvlan_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.mvlan_id);
         break;
     case INTERFACE_VLANIF_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.vlanif_id);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname, vty->user.env.vlanif_id);
         break;
     case ENABLE_REBOOT_INTERACTION_NODE:
     case CONFIG_REBOOT_INTERACTION_NODE:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node));
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node));
         break;
         */
     default:
-        snprin(buf, sizeof (buf), cmd_prompt (vty->node), hostname);
+        snprintf(buf, sizeof (buf), cmd_prompt (vty->node), hostname);
     }
 
     if (vty->type == VTY_TERM || vty->type == VTY_TERM_LOCAL || vty->type == VTY_SSH) {
@@ -521,7 +521,6 @@ vty_new ()
     return new;
 }
 
-/* Start. add by keith.gong 20151022. */
 void
 vty_login_show (struct vty *vty, char showSelfFlag)
 {
@@ -585,27 +584,6 @@ vty_login_show (struct vty *vty, char showSelfFlag)
 
     return;
 }
-
-void
-vty_logo_show(struct vty *vty)
-{
-    char  model[NVRAM_MODEL_LEN];
-    char  vendor[NVRAM_VENDOR_LEN];
-
-    //tfDeviceParametersGet(NULL, model, NULL, vendor);
-
-    if(model[0])
-        vty_out_line(vty, "  %s Integrated Operating System.", model);
-    else
-        vty_out_line(vty, "  GTF OLT Integrated Operating System.");
-
-    if(vendor[0])
-        vty_out_line(vty, "  Copyright(C) 2009-2017 by %s, All rights reserved.", vendor);
-
-    vty_out (vty, "%s", VTY_NEWLINE);
-}
-
-/* End. add by keith.gong 20151022. */
 
 /* Authentication of vty */
 static void
@@ -693,7 +671,7 @@ vty_auth (struct vty *vty, char *buf)
 #endif
         gettimeofday (&vty->time_start, NULL);
         vty_out (vty, "%s", VTY_NEWLINE);
-        vty_logo_show(vty);
+        //vty_logo_show(vty);
         vty_login_show (vty, 1);
     }
     else {
@@ -723,7 +701,7 @@ static int vty_execte_cmd_permit(void)
     short retCode = 0;
     int   rc = 0;
     
-    tfSysOperStatus_t operStatus;
+    SysOperStatus_t operStatus;
     memset(&operStatus, 0, sizeof(operStatus));
     operStatus.type = SYS_OPER_STATUS_TYPE_INTERACTION;
 
@@ -960,7 +938,7 @@ static void vty_cursor_to_end(struct vty *vty)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprin(buf, "\033[%dC", vty->width - 1);
+    sprintf(buf, "\033[%dC", vty->width - 1);
     vty_out (vty, buf);
 }
 
@@ -990,7 +968,7 @@ vty_cursor_to_begin_line (struct vty *vty)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprin(buf, "\033[%dD", vty->width - 1);
+    sprintf(buf, "\033[%dD", vty->width - 1);
     vty_out (vty, buf);
 }
 
@@ -1000,7 +978,7 @@ vty_cursor_move_left_pos (struct vty *vty, int pos)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprin(buf, "\033[80D");
+    sprintf(buf, "\033[80D");
     vty_out (vty, buf);
 }
 
@@ -1010,7 +988,7 @@ vty_cursor_move_right_pos (struct vty *vty, int pos)
     char buf[32];
 
     memset (buf, 0x00, sizeof (buf));
-    sprin(buf, "\033[%dC", pos);
+    sprintf(buf, "\033[%dC", pos);
     vty_out (vty, buf);
 }
 
@@ -2954,7 +2932,7 @@ alarm_to_vty (char *str)
     int alarmed = FALSE;
 
     if (NULL == str) {
-        prin("str is null.\n");
+        printf("str is null.\n");
         return -1;
     }
 
@@ -3563,7 +3541,7 @@ vty_serv_sock_addrinfo (const char *hostname, unsigned short port)
     req.ai_flags = AI_PASSIVE;
     req.ai_family = AF_UNSPEC;
     req.ai_socktype = SOCK_STREAM;
-    sprin(port_str, "%d", port);
+    sprintf(port_str, "%d", port);
     port_str[sizeof (port_str) - 1] = '\0';
 
     ret = getaddrinfo (hostname, port_str, &req, &ainfo);
@@ -4199,7 +4177,7 @@ thread_process_alarm_recv (void)
 
     serv_sock = vty_serv_un_alarm (ALARM_VTYSH_PATH);
     if (serv_sock < 0) {
-        prin("start alarm thread error.\n");
+        printf("start alarm thread error.\n");
         //system ("reboot");
         return;
     }
@@ -4223,7 +4201,7 @@ thread_process_alarm_recv (void)
             if (EINTR == errno) {
                 continue;
             }
-            prin("select error:%s\n", strerror (errno));
+            printf("select error:%s\n", strerror (errno));
             continue;
         }
         for (i = 3; i < max + 1; i++) {
@@ -4754,13 +4732,13 @@ vtysh_client_read (struct thread *thread)
         buffer_reset (vty->obuf);
         vty_close (vty);
 #ifdef VTYSH_DEBUG
-        prin("close vtysh\n");
+        printf("close vtysh\n");
 #endif /* VTYSH_DEBUG */
         return 0;
     }
 
 #ifdef VTYSH_DEBUG
-    prin("line: %.*s\n", nbytes, buf);
+    printf("line: %.*s\n", nbytes, buf);
 #endif /* VTYSH_DEBUG */
 
     for (p = buf; p < buf + nbytes; p++) {
@@ -4774,8 +4752,8 @@ vtysh_client_read (struct thread *thread)
 
             /* Return result. */
 #ifdef VTYSH_DEBUG
-            prin("result: %d\n", ret);
-            prin("vtysh node: %d\n", vty->node);
+            printf("result: %d\n", ret);
+            printf("vtysh node: %d\n", vty->node);
 #endif /* VTYSH_DEBUG */
 
             header[3] = ret;
@@ -5235,7 +5213,7 @@ vty_use_backup_config (char *fullpath)
     }
 
     fullpath_tmp = malloc (strlen (fullpath) + 8);
-    sprin(fullpath_tmp, "%s.XXXXXX", fullpath);
+    sprintf(fullpath_tmp, "%s.XXXXXX", fullpath);
 
     /* Open file to configuration write. */
     tmp = mkstemp (fullpath_tmp);
@@ -5290,7 +5268,7 @@ vty_read_config (char *config_file, char *config_default_dir)
         if (!IS_DIRECTORY_SEP (config_file[0])) {
             getcwd (cwd, MAXPATHLEN);
             tmp = XMALLOC (MTYPE_TMP, strlen (cwd) + strlen (config_file) + 2);
-            sprin(tmp, "%s/%s", cwd, config_file);
+            sprintf(tmp, "%s/%s", cwd, config_file);
             fullpath = tmp;
         }
         else

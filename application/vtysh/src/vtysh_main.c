@@ -29,7 +29,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include <version.h>
 #include "getopt.h"
 #include "command.h"
 #include "memory.h"
@@ -40,7 +39,6 @@
 
 #include "log.h"
 #include "monitor_pub.h"
-#include "tfNvramParam.h"
 
 /* VTY shell program name. */
 char *progname;
@@ -80,7 +78,7 @@ sigtstp (int sig)
   
   /* Initialize readline. */
   rl_initialize ();
-  prin("\n");
+  printf("\n");
 
   /* Check jmpflag for duplicate siglongjmp(). */
   if (! jmpflag)
@@ -100,7 +98,7 @@ sigint (int sig)
   if (! execute_flag)
     {
       rl_initialize ();
-      prin("\n");
+      printf("\n");
       rl_forced_update_display ();
     }
 }
@@ -147,7 +145,7 @@ usage (int status)
   if (status != 0)
     fprintf(stderr, "Try `%s --help' for more information.\n", progname);
   else
-    prin("Usage : %s [OPTION...]\n\n" \
+    printf("Usage : %s [OPTION...]\n\n" \
 	    "Integrated shell for Quagga routing software suite. \n\n" \
 	    "-b, --boot               Execute boot startup configuration\n" \
 	    "-c, --command            Execute argument as command\n" \
@@ -291,7 +289,7 @@ int vtysh_rl_select(void)
         }
     }
     
-    prin("rltest: Event loop has exited\n");
+    printf("rltest: Event loop has exited\n");
     return 0;
 }
 
@@ -449,7 +447,7 @@ void cli_client_init(void)
     vtysh_config_init ();
     memory_init ();
     vtysh_init();
-    vtysh_init_cmd();
+    //vtysh_init_cmd();
 
     /* 3.modules initialization */
     //test_zclient_init();
@@ -562,7 +560,7 @@ main (int argc, char **argv, char **env)
     vtysh_rl_select ();
     
     history_truncate_file(history_file,1000);
-    prin("\n");
+    printf("\n");
 #endif
 
     return 0;

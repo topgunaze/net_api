@@ -27,6 +27,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "vtysh.h"
 #include "log.h"
 #include "vtyCommon.h"
+#include "adaptor_types.h"
 
 vector configvec;
 
@@ -894,7 +895,7 @@ vtysh_config_write ()
 
   if (host.name)
     {
-      sprin(line, "hostname %s", host.name);
+      sprintf(line, "hostname %s", host.name);
       vtysh_config_parse_line(line);
     }
   if (vtysh_writeconfig_integrated)

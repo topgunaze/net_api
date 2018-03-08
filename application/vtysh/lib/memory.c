@@ -613,28 +613,28 @@ mtype_memstr (char *buf, size_t len, unsigned long bytes)
        */
       if (bytes & (1UL << (sizeof (unsigned long) >= 8 ? 39 : 0)))
         t++;
-      snprin(buf, len, "%4d TiB", t);
+      snprintf(buf, len, "%4d TiB", t);
     }
   else if (g > 10)
     {
       if (bytes & (1 << 29))
         g++;
-      snprin(buf, len, "%d GiB", g);
+      snprintf(buf, len, "%d GiB", g);
     }
   else if (m > 10)
     {
       if (bytes & (1 << 19))
         m++;
-      snprin(buf, len, "%d MiB", m);
+      snprintf(buf, len, "%d MiB", m);
     }
   else if (k > 10)
     {
       if (bytes & (1 << 9))
         k++;
-      snprin(buf, len, "%d KiB", k);
+      snprintf(buf, len, "%d KiB", k);
     }
   else
-    snprin(buf, len, "%ld bytes", bytes);
+    snprintf(buf, len, "%ld bytes", bytes);
   
   return buf;
 }

@@ -20,7 +20,6 @@
  */
 
 #include <zebra.h>
-#include <version.h>
 
 #include <pwd.h>
 
@@ -53,18 +52,18 @@ vtysh_pam (const char *user)
 
   /* Start PAM. */
   ret = pam_start(QUAGGA_PROGNAME, user, &conv, &pamh);
-  /* prin("ret %d\n", ret); */
+  /* printf("ret %d\n", ret); */
 
   /* Is user really user? */
   if (ret == PAM_SUCCESS)
     ret = pam_authenticate (pamh, 0);
-  /* prin("ret %d\n", ret); */
+  /* printf("ret %d\n", ret); */
   
 #if 0
   /* Permitted access? */
   if (ret == PAM_SUCCESS)
     ret = pam_acct_mgmt (pamh, 0);
-  prin("ret %d\n", ret);
+  printf("ret %d\n", ret);
 
   if (ret == PAM_AUTHINFO_UNAVAIL)
     ret = PAM_SUCCESS;
@@ -133,7 +132,7 @@ user_config_write ()
   for (ALL_LIST_ELEMENTS (userlist, node, nnode, user))
     {
       if (user->nopassword)
-	prin(" username %s nopassword\n", user->name);
+	printf(" username %s nopassword\n", user->name);
     }
 }
 

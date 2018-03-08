@@ -350,6 +350,7 @@ main(int argc, char ** argv)
     ipc_shm_del(shm_id);
 #endif
 
+#if 0
     ipc_if_init();
 
     /* ÏòIPC ×¢²áÄ£¿é*/
@@ -389,6 +390,7 @@ main(int argc, char ** argv)
             printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
         }*/
     }
+#endif
 
     return 0 ;
 

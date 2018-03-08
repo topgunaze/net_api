@@ -151,6 +151,7 @@ main(void)
     ipc_shm_del(shm_id);
 #endif
 
+#if 0
     short ret_code;
     char  sendbuf[128];
     char  recvbuf[128];
@@ -209,6 +210,7 @@ main(void)
 
          printf("ctrl ipc get cmd result IPC_EVENT_ALARM_NOTIFY ret %d recbuf %s\r\n", ret_code, recvbuf);
     }
+#endif
 
     return 0;
 

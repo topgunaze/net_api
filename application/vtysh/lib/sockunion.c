@@ -272,7 +272,7 @@ sockunion_log (union sockunion *su, char *buf, size_t len)
 #endif /* HAVE_IPV6 */
 
     default:
-      snprin(buf, len, "af_unknown %d ", su->sa.sa_family);
+      snprintf(buf, len, "af_unknown %d ", su->sa.sa_family);
       return buf;
     }
 }
@@ -675,14 +675,14 @@ sockunion_print (union sockunion *su)
   switch (su->sa.sa_family) 
     {
     case AF_INET:
-      prin("%s\n", inet_ntoa (su->sin.sin_addr));
+      printf("%s\n", inet_ntoa (su->sin.sin_addr));
       break;
 #ifdef HAVE_IPV6
     case AF_INET6:
       {
 	char buf [SU_ADDRSTRLEN];
 
-	prin("%s\n", inet_ntop (AF_INET6, &(su->sin6.sin6_addr),
+	printf("%s\n", inet_ntop (AF_INET6, &(su->sin6.sin6_addr),
 				 buf, sizeof (buf)));
       }
       break;
@@ -694,12 +694,12 @@ sockunion_print (union sockunion *su)
 	struct sockaddr_dl *sdl;
 
 	sdl = (struct sockaddr_dl *)&(su->sa);
-	prin("link#%d\n", sdl->sdl_index);
+	printf("link#%d\n", sdl->sdl_index);
       }
       break;
 #endif /* AF_LINK */
     default:
-      prin("af_unknown %d\n", su->sa.sa_family);
+      printf("af_unknown %d\n", su->sa.sa_family);
       break;
     }
 }

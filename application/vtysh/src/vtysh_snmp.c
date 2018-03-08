@@ -17,14 +17,14 @@
 ******************************************************************************/
 
 
-#include "types.h"
+#include "adaptor_types.h"
 #include "zebra.h"
 #include "thread.h"
 #include "command.h"
 #include "global.h"
 #include "memory.h"
 #include "vtyCommon.h"
-#include "sys_common.h"
+//#include "sys_common.h"
 #include "ipc_if.h"
 #include "ipc_public.h"
 #include "snmp.h"

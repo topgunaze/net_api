@@ -43,7 +43,7 @@ MODULE_APP_DEPS      := $(MODULE_APP_OBJS:src%=$(MODULE_OBJ_DIR)%)
 MODULE_LIB_OBJS      := $(subst .c,.o, $(wildcard lib/*.c))
 MODULE_LIB_DEPS      := $(MODULE_LIB_OBJS:lib%=$(MODULE_OBJ_DIR)%)
 
-APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a  #$(PRJ_LIB_DIR)/ipc/libipc_if.a
+APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a  $(PRJ_LIB_DIR)/ipc/libipc_if.a
 MODULE_DEP_LIBS      := $(PRJ_LIB_DIR)/common/libcommon.a 
 
 #  Pattern matching rules:
@@ -56,7 +56,7 @@ $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/lib/%.c
 #$(shell $(MKDIR) $(PRJ_LIB_DIR)/sysctrl; $(CP) $(SYSTEM_DIR)/libs/libMacCrypt.a $(PRJ_LIB_DIR)/sysctrl/libsysMacCrypt.a)
 
 .PHONY: all lib clean extract
-all: lib $(FW_ROOTFS_USR_BIN_DIR)/$(MODULE_NAME)
+all: lib $(MODULE_OBJ_DIR)/$(MODULE_NAME)
 
 lib : $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so $(MODULE_LIB_DIR)/lib$(MODULE_NAME).a
 
@@ -71,7 +71,7 @@ extract : $(EXTRACT_TOOL) $(VTYSH_CMD_FILES)
 	$(CC) -c $(CFLAGS) -D$(CPU_ENDIAN) -o $(MODULE_OBJ_DIR)/vtysh_cmd.o $(MODULE_DIR)/src/vtysh_cmd.c
 
 
-$(FW_ROOTFS_USR_BIN_DIR)/$(MODULE_NAME) : extract $(MODULE_APP_DEPS) $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so
+$(MODULE_OBJ_DIR)/$(MODULE_NAME) : extract $(MODULE_APP_DEPS) $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so
 	$(CC) $(CFLAGS) -o $@ $(MODULE_APP_DEPS) -Wl,--start-group $(APP_DEP_LIBS) $(CC_LIBS) -Wl,--end-group
 	$(STRIP) $@
 

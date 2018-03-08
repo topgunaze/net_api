@@ -157,11 +157,11 @@ typedef struct
         int cause;
         int status;
     }val;
-}tfTypeVal_t;
+}TypeVal_t;
 
-typedef tfTypeVal_t tfSysRebootCtrl_t;
+typedef TypeVal_t SysRebootCtrl_t;
 
-typedef tfTypeVal_t tfSysOperStatus_t;
+typedef TypeVal_t SysOperStatus_t;
 
 typedef struct
 {

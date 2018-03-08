@@ -239,7 +239,7 @@ foreach (keys %live) {
     my ($key);
     $key = $live{$_};
     $proto = join ("|", @{$oproto{$key}});
-    prin"DEFSH ($proto$odefun{$key})\n\n";
+    printf"DEFSH ($proto$odefun{$key})\n\n";
 }
 
 # Output install_element
@@ -255,17 +255,22 @@ foreach (keys %odefun) {
     $cmd =~ s/_cmd/_cmd_vtysh/;
     $right = $oright{$_};
 	$style = $ostyle{$_};
+	$version = $out_version{$_};
     if (defined $right) {
-        prin"  install_element_with_right ($node, $right, &$cmd);\n";
+        printf "  install_element_with_right ($node, $right, &$cmd);\n";
     }
     elsif (defined $style) {
-        prin"  install_element_with_style ($node, $style, &$cmd);\n";
+        printf "  install_element_with_style ($node, $style, &$cmd);\n";
+    }
+    elsif (defined $version) {
+        printf "  install_element_v ($node, $version, &$cmd);\n";
     }
     else {
-        prin"  install_element ($node, &$cmd);\n";
+        printf "  install_element ($node, &$cmd);\n";
     }
 }
 
 print <<EOF
+
 }
 EOF

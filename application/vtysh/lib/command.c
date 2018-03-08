@@ -189,9 +189,9 @@ level_match (const char *s)
 void
 print_version (const char *progname)
 {
-    prin("%s version %s\n", progname, QUAGGA_VERSION);
-    prin("%s\n", QUAGGA_COPYRIGHT);
-    prin("configured with:\n\t%s\n", QUAGGA_CONFIG_ARGS);
+    printf("%s version %s\n", progname, QUAGGA_VERSION);
+    printf("%s\n", QUAGGA_COPYRIGHT);
+    printf("configured with:\n\t%s\n", QUAGGA_CONFIG_ARGS);
 }
 
 
@@ -232,10 +232,10 @@ install_node (struct cmd_node *node, int (*func) (struct vty *))
 #if 0
     if (node->node == VTY_NODE) {
         if (vector_slot (cmdvec, node->node)) {
-            prin("ddddd\n");
+            printf("ddddd\n");
         }
         else
-            prin("aaaaa\n");
+            printf("aaaaa\n");
     }
 #endif
 }
@@ -3830,7 +3830,7 @@ DEFUN (config_write_file,
     }
 
     config_file_tmp = XMALLOC (MTYPE_TMP, strlen (config_file) + 8);
-    sprin(config_file_tmp, "%s.XXXXXX", config_file);
+    sprintf(config_file_tmp, "%s.XXXXXX", config_file);
 
     /* Open file to configuration write. */
     fd = mkstemp (config_file_tmp);
@@ -4467,7 +4467,7 @@ set_log_file (struct vty *vty, const char *fname, int loglevel)
             zlog_err ("config_log_file: Unable to alloc mem!");
             return CMD_WARNING;
         }
-        sprin(p, "%s/%s", cwd, fname);
+        sprintf(p, "%s/%s", cwd, fname);
         fullpath = p;
     }
     else

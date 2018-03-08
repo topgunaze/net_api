@@ -295,7 +295,7 @@ vtflog (struct tflog *cl, int type, int priority, const char *format, va_list ar
     {
         #if 0
         fprintf(stderr, "%s: ", "unknown");
-        vfprinf(stderr, format, args);
+        vfprintf(stderr, format, args);
         fprintf(stderr, "\n");
         fflush (stderr);
         #endif

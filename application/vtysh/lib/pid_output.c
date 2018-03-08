@@ -93,7 +93,7 @@ pid_output (const char *path)
           exit(1);
         }
 
-      sprin(buf, "%d\n", (int) pid);
+      sprintf(buf, "%d\n", (int) pid);
       pidsize = strlen(buf);
       if ((tmp = write (fd, buf, pidsize)) != (int)pidsize)
         zlog_err("Could not write pid %d to pid_file %s, rc was %d: %s",

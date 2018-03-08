@@ -38,21 +38,21 @@
 //#include "bgpd/bgp_vty.h"
 #include "sigevent.h"
 #include <global.h>
-# include <termios.h>
+#include <termios.h>
 #include "vtyCommon.h"
-#include "../../switch/include/swAcl.h"
-#include "tfNvramParam.h"
+//#include "../../switch/include/swAcl.h"
+//#include "tfNvramParam.h"
 
 #include "log.h"
 #include "monitor_pub.h"
 /*Add by jq.deng at 2016.09.03(start)*/
 #include "alarm.h"
-#include "port_vif.h"
+//#include "port_vif.h"
 #include "ipc_if.h"
 #include "ipc_public.h"
 /*Add by jq.deng at 2016.09.03(end)*/
 
-#include "tfSysCtrlPub.h"
+#include "cdtSysCtrlPub.h"
 
 //stephen.liu 20160811
 extern vector cmdvec;
@@ -291,7 +291,7 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "dba-profile profile-id", strlen("dba-profile profile-id")) == 0)
             {
-                vty_node = DBA_PROFILE_NODE;
+                //vty_node = DBA_PROFILE_NODE;
             }
             break;
         }
@@ -299,53 +299,48 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "ont-lineprofile profile-id", strlen("ont-lineprofile profile-id")) == 0)
             {
-                vty_node = LINE_PROFILE_NODE;
+                //vty_node = LINE_PROFILE_NODE;
             }
             else if (strncmp(line, "ont-srvprofile profile-id", strlen("ont-srvprofile profile-id")) == 0)
             {
-                vty_node = SRV_PROFILE_NODE;
+                //vty_node = SRV_PROFILE_NODE;
             }
             else if (strncmp(line, "ont-slaprofile profile-id", strlen("ont-slaprofile profile-id")) == 0)
             {
-                vty_node = SLA_PROFILE_NODE;
+                //vty_node = SLA_PROFILE_NODE;
             }
             else if (strncmp(line, "classification profile-id", strlen("classification profile-id")) == 0)
             {
-                vty_node = CLASSIFICATION_PROFILE_NODE;
+                //vty_node = CLASSIFICATION_PROFILE_NODE;
             }
-#if 0/*closed by Gerhard Lao	2016/02/29 */
-            else if (strncmp(line, "ont-sipagent-profile profile-id", strlen("ont-sipagent-profile profile-id")) == 0)
-            {
-                vty_node = SIPAGENT_PROFILE_NODE;
-            }
-#endif
+            
             break;
         }
         case 'i':
         {
             if (strncmp(line, "interface gtf", strlen("interface gtf")) == 0)
             {
-                vty_node = INTERFACE_GNODE;
+                //vty_node = INTERFACE_GNODE;
             }
             else if (strncmp(line, "interface ge", strlen("interface ge")) == 0)
             {
-                vty_node = INTERFACE_GE_NODE;
+                //vty_node = INTERFACE_GE_NODE;
             }
             else if (strncmp(line, "interface xge", strlen("interface xge")) == 0)
             {
-                vty_node = INTERFACE_XGE_NODE;
+                //vty_node = INTERFACE_XGE_NODE;
             }
             else if (strncmp(line, "interface link-aggregation", strlen("interface link-aggregation")) == 0)
             {
-                vty_node = INTERFACE_SA_NODE;
+                //vty_node = INTERFACE_SA_NODE;
             }
             else if (strncmp(line, "interface mgmt", strlen("interface mgmt")) == 0)
             {
-                vty_node = INTERFACE_MGMT_NODE;
+                //vty_node = INTERFACE_MGMT_NODE;
             }
             else if (strncmp(line, "interface vlanif", strlen("interface vlanif")) == 0)
             {
-                vty_node = INTERFACE_VLANIF_NODE;
+                //vty_node = INTERFACE_VLANIF_NODE;
             }
             break;
         }
@@ -353,7 +348,7 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "multicast-vlan", strlen("multicast-vlan")) == 0)
             {
-                vty_node = INTERFACE_MVLAN_NODE;
+                //vty_node = INTERFACE_MVLAN_NODE;
             }
             else if(strncmp(line, "manu", 4) == 0)
             {
@@ -365,12 +360,12 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "acl ipv6", strlen("acl ipv6")) == 0)
             {
-                vty_node = ACL6_BASIC_NODE;
+                //vty_node = ACL6_BASIC_NODE;
             }
             /* Other acl node must be judged before this */
             else if (strncmp(line, "acl ", strlen("acl ")) == 0)
             {
-                vty_node = ACL_BASIC_NODE;
+                //vty_node = ACL_BASIC_NODE;
             }
             break;
         }
@@ -378,7 +373,7 @@ int vtysh_node_get(const char *line)
         {
             if (strncmp(line, "btv", strlen("btv")) == 0)
             {
-                vty_node = INTERFACE_BTV_NODE;
+                //vty_node = INTERFACE_BTV_NODE;
             }
             break;
         }
@@ -948,201 +943,11 @@ static struct cmd_node ge_node =
 };
 #endif
 
-static struct cmd_node acl_basic_node = {
-    ACL_BASIC_NODE,
-    "%s(acl-basic-%d)# "
-};
-
-static struct cmd_node acl_adv_node = {
-    ACL_ADV_NODE,
-    "%s(acl-adv-%d)# "
-};
-
-#ifdef ACL_SUPPORT_IPV6
-static struct cmd_node acl6_basic_node = {
-    ACL6_BASIC_NODE,
-    "%s(acl6-basic-%d)# "
-};
-
-static struct cmd_node acl6_adv_node = {
-    ACL6_ADV_NODE,
-    "%s(acl6-adv-%d)# "
-};
-#endif
-static struct cmd_node acl_link_node = {
-    ACL_LINK_NODE,
-    "%s(acl-link-%d)# "
-};
-
-static struct cmd_node acl_user_node = {
-    ACL_USER_NODE,
-    "%s(acl-user-%d)# "
-};
-
-static struct cmd_node acl_node = {
-    ACL_NODE,
-    "%s(acl-tf-%d)# "
-};
-
-static struct cmd_node vtyNodeDbaProfile =
-{
-    DBA_PROFILE_NODE,
-    "%s(config-dba-profile-%d)# "
-};
-
-static struct cmd_node vtyNodeDbaProfileInterAction =
-{
-    DBA_PROFILE_INTERACTION_NODE,
-    "\r\nPlease commit this profile before exit, or the latest configuration will lost. Are you sure to continue? (y/n):"
-};
-
-static struct cmd_node vtyNodeLineProfile =
-{
-    LINE_PROFILE_NODE,
-    "%s(config-ont-lineprofile-%d)# "
-};
-
-static struct cmd_node vtyNodeLineProfileInterAction =
-{
-    LINE_PROFILE_INTERACTION_NODE,
-    "\r\nPlease commit this profile before exit, or the latest configuration will lost. Are you sure to continue? (y/n):"
-};
-
-static struct cmd_node vtyNodeSrvProfile =
-{
-    SRV_PROFILE_NODE,
-    "%s(config-ont-srvprofile-%d)# "
-};
-
-static struct cmd_node vtyNodeSrvProfileInterAction =
-{
-    SRV_PROFILE_INTERACTION_NODE,
-    "\r\nPlease commit this profile before exit, or the latest configuration will lost. Are you sure to continue? (y/n):"
-};
-
-static struct cmd_node vtyNodeSlaProfile =
-{
-    SLA_PROFILE_NODE,
-    "%s(sla-%d)# "
-};
-
-static struct cmd_node vtyNodeSlaProfileInterAction =
-{
-    SLA_PROFILE_INTERACTION_NODE,
-    "\r\nPlease commit this profile before exit, or the latest configuration will lost. Are you sure to continue? (y/n):"
-};
-
-#if 0/*closed by Gerhard Lao	2016/08/10 */
-static struct cmd_node vtyNodeClassificationProfile =
-{
-    CLASSIFICATION_PROFILE_NODE,
-    "%s(classification-%d)# "
-};
-
-static struct cmd_node vtyNodeClassificationProfileInterAction =
-{
-    CLASSIFICATION_PROFILE_INTERACTION_NODE,
-    "\r\nPlease commit this profile before exit, or the latest configuration will lost. Are you sure to continue? (y/n):"
-};
-#endif
-
-static struct cmd_node vtyNodeGtfOntDelInterAction =
-{
-    GONT_DELETE_ALL_INTERACTION_NODE,
-    "\r\nThis command will delete all the ONTs in port. Are you sure to execute this command? (y/n):"
-};
-
-static struct cmd_node vtyNodeIfG=
-{
-    INTERFACE_GNODE,
-    "%s(config-interface-gtf-%d)# "
-};
-
-static struct cmd_node vtyNodeIfGe =
-{
-    INTERFACE_GE_NODE,
-    "%s(config-interface-ge)# "
-};
-
-static struct cmd_node vtyNodeIfXge =
-{
-    INTERFACE_XGE_NODE,
-    "%s(config-interface-xge)# "
-};
-
-static struct cmd_node vtyNodeIfSa =
-{
-    INTERFACE_SA_NODE,
-    "%s(config-interface-aggregation)# "
-};
-
-static struct cmd_node mgmt_if_node =
-{
-    INTERFACE_MGMT_NODE,
-    "%s(config-interface-mgmt)# "
-};
-
-static struct cmd_node vlan_if_node =
-{
-    INTERFACE_VLANIF_NODE,
-    "%s(config-interface-vlanif-%d)# "
-};
-
-static struct cmd_node vtyNodeMvlan =
-{
-    INTERFACE_MVLAN_NODE,
-    "%s(config-multicast-vlan-%d)# "
-};
-
-static struct cmd_node vtyNodeBtv =
-{
-    INTERFACE_BTV_NODE,
-    "%s(config-btv)# "
-};
-
-static struct cmd_node vtyNodeEnableRebootInterAction =
-{
-    ENABLE_REBOOT_INTERACTION_NODE,
-    "  Please check whether data has saved, \r\n"
-    "  the unsaved data will lose if reboot system.\r\n"
-    "  Are you sure to reboot system? (y/n):"
-};
-
-static struct cmd_node vtyNodeConfigRebootInterAction =
-{
-    CONFIG_REBOOT_INTERACTION_NODE,
-    "  Please check whether data has saved, \r\n"
-    "  the unsaved data will lose if reboot system.\r\n"
-    "  Are you sure to reboot system? (y/n):"
-};
-
-static struct cmd_node vtyNodeConfigLoadCfgInterAction =
-{
-    CONFIG_LOAD_CFG_INTERACTION_NODE,
-    "  The new configuration file will overwrite the old one\r\n"
-    "  Are you sure to load new configuration file? (y/n):"
-};
-
-static struct cmd_node vtyNodeConfigEraseCfgInterAction =
-{
-    CONFIG_ERASE_CFG_INTERACTION_NODE,
-    "  This command will clear the active board data that has been saved\r\n"
-    "  Please remember to backup the system configuration data\r\n"
-    "  Are you sure to continue? (y/n):"
-};
-
 static struct cmd_node manu_node =
 {
     MANU_NODE,
     "%s(manufacture)# "
 };
-static struct cmd_node vtyNodeConfigDisableDhcpSnoopingInterAction =
-{
-    CONFIG_DISABLE_DHCP_SNOOPING_NODE,
-    "  The saved DHCP snooping configuratons wouldn't be restored after reboot system! \r\n"
-    "  Are you sure to continue? (y/n):"
-};
-
 
 /* Defined in lib/vty.c */
 extern struct cmd_node vty_node;
@@ -1159,63 +964,6 @@ DEFUNSH (VTYSH_TEST,
   return CMD_SUCCESS;
 }
 
-/*add by jq.deng, 20160304*/
-DEFUNSH (VTYSH_DHCPSN,
-    vtysh_disable_dhcp_snooping_yes,
-    vtysh_disable_dhcp_snooping_yes_cmd,
-    "y",
-    "\n")
-{
-	if(vty->node==CONFIG_DISABLE_DHCP_SNOOPING_NODE)
-		vty->node = CONFIG_NODE;
-	return CMD_SUCCESS;
-}
-
-/*add by jq.deng, 20160304*/
-DEFUNSH (VTYSH_DHCPSN,
-    vtysh_disable_dhcp_snooping_no,
-    vtysh_disable_dhcp_snooping_no_cmd,
-    "n",
-    "\n")
-{
-	if(vty->node==CONFIG_DISABLE_DHCP_SNOOPING_NODE)
-		vty->node = CONFIG_NODE;
-	return CMD_SUCCESS;
-}
-
-/*add by jq.deng, 20160304*/
-DEFUNSH (VTYSH_DHCPSN,
-    vty_dhcpsn_switch,
-    vty_dhcpsn_switch_cmd,
-    "dhcp-snooping (disable|enable)",
-    "<Group> DHCP snooping command group\n"
-    "Disable DHCP snooping\n"
-    "Enable DHCP snooping\n")
-{
-	if(!strcmp(argv[0], "disable"))
-	{
-		if(vty->node==CONFIG_NODE)
-       		vty->node = CONFIG_DISABLE_DHCP_SNOOPING_NODE;
-	}
-	return CMD_SUCCESS;
-}
-
-
-
-/*close by jq.deng, 20151110*/
-#if 0
-DEFUNSH (VTYSH_QOSACL | VTYSH_DEVCTRL|VTYSH_LAYER2,
-    interface_ge,
-    interface_ge_cmd,
-    "interface ge",
-     "Enable a ge process\n"
-    "Start ge configuration\n")
-{
-  vty->node = INTERFACE_GE_NODE;
-  return CMD_SUCCESS;
-}
-#endif
-
 DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
     vty_exit_interface_ge_node,
     vty_exit_interface_ge_node_cmd,
@@ -1224,8 +972,6 @@ DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
 {
     return vtysh_exit (vty);
 }
-
-
 
 DEFUNSH (VTYSH_ALL,
 	 vtysh_enable,
@@ -1292,29 +1038,6 @@ vtysh_exit (struct vty *vty)
             break;
         case INTERFACE_NODE:
         case TEST_NODE:
-
-        case INTERFACE_GE_NODE:
-        case INTERFACE_XGE_NODE:
-        case INTERFACE_SA_NODE:
-        case INTERFACE_GNODE:
-        case INTERFACE_MGMT_NODE:
-        case INTERFACE_VLANIF_NODE:
-		case INTERFACE_MVLAN_NODE:/* add by ben.zheng  2015.11.12*/
-		case INTERFACE_BTV_NODE:
-
-        case DBA_PROFILE_NODE:
-        case LINE_PROFILE_NODE:
-        case SRV_PROFILE_NODE:
-        case SLA_PROFILE_NODE:
-        case CLASSIFICATION_PROFILE_NODE:
-
-        case ACL_BASIC_NODE:
-	    case ACL_ADV_NODE:
-        case ACL6_BASIC_NODE:
-        case ACL6_ADV_NODE:
-	    case ACL_LINK_NODE:
-	    case ACL_USER_NODE:
-        case ACL_NODE:
             //stephen.liu, add, 20150928
             //vtysh_execute("end");
             //vtysh_execute("configure");
@@ -1350,7 +1073,7 @@ DEFUNSH(VTYSH_TEST, test_config_input_yn,
     rv = vty_command_get_data(vty->fd, buf);
     if(rv == RT_OK){
         vtysh_info = (vtysh_client_info *) vty->vtysh_info;
-        prin("daemon_num=%d\n", vty->daemon_num);
+        printf("daemon_num=%d\n", vty->daemon_num);
         for (j = 0; j < vty->daemon_num; j++) {
             //ret = vtysh_client_config (&vtysh_info[j], cmd_line);
             if(vtysh_info[j].flag == VTYSH_TEST){
@@ -1387,27 +1110,6 @@ DEFUNSH (VTYSH_ALL,vtysh_config_end_all,
         case DEBUG_NODE:
         case INTERFACE_NODE:
         case TEST_NODE:
-        case INTERFACE_GE_NODE:
-        case INTERFACE_XGE_NODE:
-        case INTERFACE_SA_NODE:
-        case INTERFACE_GNODE:
-		case INTERFACE_MGMT_NODE:
-        case INTERFACE_VLANIF_NODE:
-		case INTERFACE_MVLAN_NODE:/* add by ben.zheng  2015.11.12*/
-		case INTERFACE_BTV_NODE:
-
-        case DBA_PROFILE_NODE:
-        case LINE_PROFILE_NODE:
-        case SRV_PROFILE_NODE:
-        case SLA_PROFILE_NODE:
-        case CLASSIFICATION_PROFILE_NODE:
-        case ACL_BASIC_NODE:
-	    case ACL_ADV_NODE:
-	    case ACL_LINK_NODE:
-	    case ACL_USER_NODE:
-        case ACL_NODE:
-        case ACL6_BASIC_NODE:
-        case ACL6_ADV_NODE:
         case MANU_NODE:
             vty->node = VIEW_NODE;
             break;
@@ -2023,7 +1725,7 @@ write_config_integrated(void)
 
 int vtysh_reboot_req(int type)
 {
-    tfSysRebootCtrl_t rebootCtrl;
+    SysRebootCtrl_t rebootCtrl;
     short retCode = 0;
     int   rc = 0;
 
@@ -2174,7 +1876,7 @@ int vtysh_write_config_file(struct vty *vty)
 
 
     config_file_tmp = XMALLOC (MTYPE_TMP, strlen (config_file) + 8);
-    sprin(config_file_tmp, "%s.XXXXXX", config_file);
+    sprintf(config_file_tmp, "%s.XXXXXX", config_file);
 
     /* Open file to configuration write. */
     fd = mkstemp (config_file_tmp);
@@ -2911,24 +2613,6 @@ DEFUN (vtysh_logout,
     return CMD_SUCCESS;
 }
 
-
-/* add by ben.zheng  2015.11.12*/
-DEFUNSH (VTYSH_IGMPSN,
-    vty_enter_multicast_vlan_node,
-    vty_enter_multicast_vlan_node_cmd,
-    "multicast-vlan "VLAN_CMD_STR,
-    "Multicast vlan common\n"
-    "Multicast vlan. <U>"VLAN_CMD_STR"\n")
-{
-	int mvlanId = 0;
-	PARSE_ULONG_STRING (argv[0], mvlanId, mvlanId);
-
-    vty->node = INTERFACE_MVLAN_NODE;
-	vty->user.env.mvlan_id = mvlanId;
-
-    return CMD_SUCCESS;
-}
-
 DEFUNSH (VTYSH_IGMPSN,
     vty_exit_multicast_vlan_node,
     vty_exit_multicast_vlan_node_cmd,
@@ -2936,22 +2620,6 @@ DEFUNSH (VTYSH_IGMPSN,
      "Exit current mode and down to previous mode\n")
 {
   return vtysh_exit (vty);
-}
-
-
-/* end add by ben.zheng */
-
-
-/* add by ben.zheng  2016.3.1*/
-DEFUNSH (VTYSH_IGMPSN,
-    vty_enter_btv_node,
-    vty_enter_btv_node_cmd,
-    "btv",
-    "Btv common\n")
-{
-    vty->node = INTERFACE_BTV_NODE;
-
-    return CMD_SUCCESS;
 }
 
 DEFUNSH (VTYSH_IGMPSN,
@@ -2965,55 +2633,6 @@ DEFUNSH (VTYSH_IGMPSN,
 
 
 /* end add by ben.zheng */
-
-#define SW_ACL_
-DEFUNSH (VTYSH_QOSACL,
-         interface_acl,
-         interface_acl_cmd,
-         "acl "CMD_ACL_ID"",
-         "ACL configuration\n"
-         DESC_ACL_INDEX)
-{
-    int aclId = 0;
-
-    VTY_GET_ULONG (aclId, aclId, argv[0]);
-
-    //vty_out(vty, "aclId: %d%s", aclId, VTY_NEWLINE);
-
-    if (BasicAcl(aclId)) {
-        vty->node = ACL_BASIC_NODE;
-    }else if (AdvancedAcl(aclId)) {
-        vty->node = ACL_ADV_NODE;
-    }else if (LinkAcl(aclId)) {
-        vty->node = ACL_LINK_NODE;
-    }else if (UserAcl(aclId)) {
-        vty->node = ACL_USER_NODE;
-    }else {
-        //vty_out (vty, " ACL ID not defined!%s", VTY_NEWLINE);
-        return CMD_SUCCESS;
-    }
-    vty->user.env.aclId = aclId;
-
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-         interface_eacl,
-         interface_eacl_cmd,
-         "acl "CMD_EACL_ID"",
-         "ACL configuration\n"
-         DESC_EACL_INDEX)
-{
-    int aclId = 0;
-
-    VTY_GET_ULONG (aclId, aclId, argv[0]);
-
-    vty->node = ACL_NODE;
-    vty->user.env.aclId = aclId;
-
-    return CMD_SUCCESS;
-}
-
 
 DEFUNSH (VTYSH_QOSACL,
 	 vtysh_exit_acl,
@@ -3034,73 +2653,6 @@ DEFUNSH (VTYSH_GTF,
   return vtysh_exit (vty);
 }
 
-
-DEFUNSH (VTYSH_QOSACL,
-    interface_acl6, 
-    interface_acl6_cmd,
-    "acl ipv6 <1000-3999>",
-    DESC_ACL_STR
-    IPV6_STR
-    "ACL ID: <2000-2999>basic acl/<3000-4999>advanced acl\n")
-{
-    int aclId = 0;
-    PARSE_ULONG_STRING (argv[0], aclId, aclId);
-    //vty_out(vty, "aclId: %d%s", aclId, VTY_NEWLINE);
-    if (BasicAcl(aclId)) {
-        vty->node = ACL6_BASIC_NODE;
-    }else if (AdvancedAcl(aclId)) {
-        vty->node = ACL6_ADV_NODE;
-    }else {
-        vty_out (vty, " ACL ID not defined!!!%s", VTY_NEWLINE);
-        return CMD_SUCCESS;
-    }
-    
-    vty->user.env.aclId = aclId;
-    
-    return CMD_SUCCESS;
-}
-
-
-DEFUNSH (VTYSH_GTF,
-    vty_enter_dba_profile_node,
-    vty_enter_dba_profile_node_cmd,
-    "dba-profile {profile-id <0-128>|profile-name PROFILE-NAME}",
-    "<Group> DBA profile configuration command group\n"
-    "By profile ID\n"
-    DESC_GDBA_PROFILE_ID
-    "By profile name\n"
-    DESC_GDBA_PROFILE_NAME)
-{
-    vtysh_user_env_get_from_serv(vty, self);
-
-    vty->node = DBA_PROFILE_NODE;
-
-    vtysh_gprofile_node_enter_check(vty);
-    
-    return CMD_SUCCESS;
-}
-
-ALIAS_SH(VTYSH_GTF,
-    vty_enter_dba_profile_node,
-    vty_enter_dba_profile_node_none_arg_cmd,
-    "dba-profile",
-    "<Group> DBA profile configuration command group\n")
-
-DEFUNSH (VTYSH_GTF,
-	 vtysh_exit_dba_profile_node,
-	 vtysh_exit_dba_profile_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-    if (atoi(argv[argc - 1]) == CMD_SUCCESS_INTERACTION)
-    {
-        vty->node = DBA_PROFILE_INTERACTION_NODE;
-        return CMD_SUCCESS;
-    }
-    else
-        return vtysh_exit (vty);
-}
-
 DEFUNSH (VTYSH_GTF,
      vtysh_dba_profile_interaction_yes,
      vtysh_dba_profile_interaction_yes_cmd,
@@ -3109,56 +2661,6 @@ DEFUNSH (VTYSH_GTF,
 {
     vty->node = CONFIG_NODE;
     return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-     vtysh_dba_profile_interaction_no,
-     vtysh_dba_profile_interaction_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = DBA_PROFILE_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-    vty_enter_line_profile_node,
-    vty_enter_line_profile_node_cmd,
-    "ont-lineprofile g{profile-id <1-512>|profile-name PROFILE-NAME}",
-    "<Group> line profile configuration command group\n"
-    "By profile ID\n"
-    DESC_GLINE_PROFILE_ID
-    "By profile name\n"
-    DESC_GLINE_PROFILE_NAME)
-{
-    vtysh_user_env_get_from_serv(vty, self);
-
-    vty->node = LINE_PROFILE_NODE;
-
-    vtysh_gprofile_node_enter_check(vty);
-      
-    return CMD_SUCCESS;
-}
-
-ALIAS_SH(VTYSH_GTF,
-    vty_enter_line_profile_node,
-    vty_enter_line_profile_node_none_arg_cmd,
-    "ont-lineprofile gtf",
-    "<Group> line profile configuration command group\n")
-
-DEFUNSH (VTYSH_GTF,
-	 vtysh_exit_line_profile_node,
-	 vtysh_exit_line_profile_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-    if (atoi(argv[argc - 1]) == CMD_SUCCESS_INTERACTION)
-    {
-        vty->node = LINE_PROFILE_INTERACTION_NODE;
-        return CMD_SUCCESS;
-    }
-    else
-        return vtysh_exit (vty);
 }
 
 DEFUNSH (VTYSH_GTF,
@@ -3172,56 +2674,6 @@ DEFUNSH (VTYSH_GTF,
 }
 
 DEFUNSH (VTYSH_GTF,
-     vtysh_line_profile_interaction_no,
-     vtysh_line_profile_interaction_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = LINE_PROFILE_NODE;
-    return CMD_SUCCESS;
-}
-    
-DEFUNSH (VTYSH_GTF,
-    vty_enter_srv_profile_node,
-    vty_enter_srv_profile_node_cmd,
-    "ont-srvprofile g{profile-id <1-512>|profile-name PROFILE-NAME}",
-    "<Group> service profile configuration command group\n"
-    "By profile ID\n"
-    DESC_GSRV_PROFILE_ID
-    "By profile name\n"
-    DESC_GSRV_PROFILE_NAME)
-{
-    vtysh_user_env_get_from_serv(vty, self);
-
-    vty->node = SRV_PROFILE_NODE;
-
-    vtysh_gprofile_node_enter_check(vty);
-    
-    return CMD_SUCCESS;
-}
-
-ALIAS_SH(VTYSH_GTF,
-    vty_enter_srv_profile_node,
-    vty_enter_srv_profile_node_none_arg_cmd,
-    "ont-srvprofile gtf",
-    "<Group> service profile configuration command group\n")
-
-DEFUNSH (VTYSH_GTF,
-	 vtysh_exit_srv_profile_node,
-	 vtysh_exit_srv_profile_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-    if (atoi(argv[argc - 1]) == CMD_SUCCESS_INTERACTION)
-    {
-        vty->node = SRV_PROFILE_INTERACTION_NODE;
-        return CMD_SUCCESS;
-    }
-    else
-        return vtysh_exit (vty);
-}
-
-DEFUNSH (VTYSH_GTF,
      vtysh_srv_profile_interaction_yes,
      vtysh_srv_profile_interaction_yes_cmd,
      "y",
@@ -3229,56 +2681,6 @@ DEFUNSH (VTYSH_GTF,
 {
     vty->node = CONFIG_NODE;
     return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-     vtysh_srv_profile_interaction_no,
-     vtysh_srv_profile_interaction_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = SRV_PROFILE_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-    vty_enter_sla_profile_node,
-    vty_enter_sla_profile_node_cmd,
-    "ont-slaprofile {profile-id <1-256>|profile-name PROFILE-NAME}",
-    "<Group> sla profile configuration command group\n"
-    "By profile ID\n"
-    DESC_GSLA_PROFILE_ID
-    "By profile name\n"
-    DESC_GSLA_PROFILE_NAME)
-{
-    vtysh_user_env_get_from_serv(vty, self);
-
-    vty->node = SLA_PROFILE_NODE;
-
-    vtysh_gprofile_node_enter_check(vty);
-    
-    return CMD_SUCCESS;
-}
-
-ALIAS_SH(VTYSH_GTF,
-    vty_enter_sla_profile_node,
-    vty_enter_sla_profile_node_none_arg_cmd,
-    "ont-slaprofile",
-    "<Group> sla profile configuration command group\n")
-
-DEFUNSH (VTYSH_GTF,
-	 vtysh_exit_sla_profile_node,
-	 vtysh_exit_sla_profile_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-    if (atoi(argv[argc - 1]) == CMD_SUCCESS_INTERACTION)
-    {
-        vty->node = SLA_PROFILE_INTERACTION_NODE;
-        return CMD_SUCCESS;
-    }
-    else
-        return vtysh_exit (vty);
 }
 
 DEFUNSH (VTYSH_GTF,
@@ -3292,186 +2694,12 @@ DEFUNSH (VTYSH_GTF,
 }
 
 DEFUNSH (VTYSH_GTF,
-     vtysh_sla_profile_interaction_no,
-     vtysh_sla_profile_interaction_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = SLA_PROFILE_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-    vty_enter_classification_profile_node,
-    vty_enter_classification_profile_node_cmd,
-    "classification {profile-id <1-512>|profile-name PROFILE-NAME}",
-    "<Group> classification profile configuration command group\n"
-    "By profile ID\n"
-    DESC_GCLASSIFICATION_PROFILE_ID
-    "By profile name\n"
-    DESC_GCLASSIFICATION_PROFILE_NAME)
-{
-    vtysh_user_env_get_from_serv(vty, self);
-
-    vty->node = CLASSIFICATION_PROFILE_NODE;
-
-    vtysh_gprofile_node_enter_check(vty);
-    
-    return CMD_SUCCESS;
-}
-
-ALIAS_SH(VTYSH_GTF,
-    vty_enter_classification_profile_node,
-    vty_enter_classification_profile_node_none_arg_cmd,
-    "classification",
-    "<Group> classification profile configuration command group\n")
-
-DEFUNSH (VTYSH_GTF,
-	 vtysh_exit_classification_profile_node,
-	 vtysh_exit_classification_profile_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-    if (atoi(argv[argc - 1]) == CMD_SUCCESS_INTERACTION)
-    {
-        vty->node = CLASSIFICATION_PROFILE_INTERACTION_NODE;
-        return CMD_SUCCESS;
-    }
-    else
-        return vtysh_exit (vty);
-}
-
-DEFUNSH (VTYSH_GTF,
      vtysh_classification_profile_interaction_yes,
      vtysh_classification_profile_interaction_yes_cmd,
      "y",
      "\n")
 {
     vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-     vtysh_classification_profile_interaction_no,
-     vtysh_classification_profile_interaction_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = CLASSIFICATION_PROFILE_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-     vty_interface_gont_delete_all_yes,
-     vty_interface_gont_delete_all_yes_cmd,
-     "y",
-     "\n")
-{
-    vty->node = INTERFACE_GNODE;
-        
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-     vty_interface_gont_delete_all_no,
-     vty_interface_gont_delete_all_no_cmd,
-     "n",
-     "\n")
-{
-    vty->node = INTERFACE_GNODE;
-    
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_GTF,
-    vty_interface_gont_delete_all,
-    vty_interface_gont_delete_all_cmd,
-    "ont delete "CMD_STR" all",
-    "<Group> ont command group\n"
-    "Delete ONT(s)\n"
-    DESC_PORT_ID
-    DESC_GONT_ALL)
-{
-    vty->node = GONT_DELETE_ALL_INTERACTION_NODE;
-    VTY_ID2ENV(vty->user.env.tfId, atoi(argv[0]) - 1);
-        
-    return CMD_SUCCESS_INTERACTION;
-}
-
-
-/*add by jq.deng, 20151110*/
-DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-    vty_enter_interface_ge_node,
-    vty_enter_interface_ge_node_cmd,
-    "interface ge",
-    "<Group> interface command group\n"
-    "Change into GE command mode\n")
-{
-  vty->node = INTERFACE_GE_NODE;
-  return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-	 vtysh_exit_interface_ge_node,
-	 vtysh_exit_interface_ge_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-  return vtysh_exit (vty);
-}
-
-DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-    vty_enter_interface_xge_node,
-    vty_enter_interface_xge_node_cmd,
-    "interface xge",
-    "<Group> interface command group\n"
-    "Change into XGE command mode\n")
-{
-
-    vty->node = INTERFACE_XGE_NODE;
-    return CMD_SUCCESS;
-
-}
-
-DEFUNSH (VTYSH_LAYER2|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-	 vtysh_exit_interface_xge_node,
-	 vtysh_exit_interface_xge_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-  return vtysh_exit (vty);
-}
-DEFUNSH (VTYSH_LAYER2|VTYSH_HAL|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-    vty_enter_interface_sa_node,
-    vty_enter_interface_sa_node_cmd,
-    "interface link-aggregation",
-    "<Group> interface command group\n"
-    "Change into link-aggregation command mode\n")
-{
-    vty->node = INTERFACE_SA_NODE;
-  
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_LAYER2|VTYSH_HAL|VTYSH_RSTP|VTYSH_LACP|VTYSH_DOT1X,
-    vty_exit_interface_sa_node,
-    vty_exit_interface_sa_node_cmd,
-     "exit",
-     "Exit current mode and down to previous mode\n")
-{
-    return vtysh_exit (vty);
-}
-
-DEFUNSH (VTYSH_GTF|VTYSH_LAYER2,
-    vty_enter_interface_gnode,
-    vty_enter_interface_gnode_cmd,
-    "interface g<0-0>",
-    "<Group> interface command group\n"
-    "Change into GTF command mode\n"
-     "Slot ID. <U><0-0>\n")
-{
-    VTY_SLOT_ID2ENV(vty->user.env.slot_id, atoi(argv[0]));
-    vty->node = INTERFACE_GNODE;
     return CMD_SUCCESS;
 }
 
@@ -3582,55 +2810,6 @@ void vtysh_set_timeout_flag(bool s)
 {
     g_vtysh_timeout_flag = s;
 }
-
-DEFUNSH (VTYSH_SYSCTRL,
-    vty_enter_interface_mgmt_node,
-    vty_enter_interface_mgmt_node_cmd,
-    "interface mgmt",
-    "<Group> interface command group\n"
-    "Change into mgmt command mode\n")
-{
-    vty->node = INTERFACE_MGMT_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-	 vtysh_exit_interface_mgmt_node,
-	 vtysh_exit_interface_mgmt_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-  return vtysh_exit (vty);
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-    vty_enter_interface_vlanif_node,
-    vty_enter_interface_vlanif_node_cmd,
-    "interface vlanif "VLAN_CMD_STR,
-    "<Group> interface command group\n"
-    "Change into vlanif command mode\n"
-    "VLAN ID. <U>"VLAN_CMD_STR"\n")
-{
-    short vlanId = 0;
-
-    PARSE_ULONG_STRING(argv[0], vlanId, vlanId);
-
-    vty->node = INTERFACE_VLANIF_NODE;
-    vty->user.env.vlanif_id = vlanId;
-
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-	 vtysh_exit_interface_vlanif_node,
-	 vtysh_exit_interface_vlanif_node_cmd,
-	 "exit",
-	 "Exit current mode and down to previous mode\n")
-{
-  return vtysh_exit (vty);
-}
-
-
 
 DEFUNSH (VTYSH_QOSACL,
         terminal_show_process_info,
@@ -3756,20 +2935,6 @@ DEFUN (vtysh_show_alarm_history,
     return CMD_SUCCESS;
 }
 
-DEFUN (
-    vtysh_system_reboot,
-    vtysh_system_reboot_cmd,
-    "reboot",
-    "Reboot system\n")
-{
-    if (vty->node == ENABLE_NODE)
-        vty->node = ENABLE_REBOOT_INTERACTION_NODE;
-    else if (vty->node == CONFIG_NODE)
-        vty->node = CONFIG_REBOOT_INTERACTION_NODE;
-
-    return CMD_SUCCESS;
-}
-
 #if 0
 int
 boardReset_alarm(void)
@@ -3808,54 +2973,6 @@ deviceReset_event(void)
     return RTN_OK;
 }
 #endif
-
-DEFUN (
-    vtysh_system_reboot_yes,
-    vtysh_system_reboot_yes_cmd,
-    "y",
-    "\n")
-{
-    char msg[128] = {0};
-    tfSysRebootCtrl_t rebootCtrl;
-    short rc = 0, retCode = 0;
-
-    memset(&rebootCtrl, 0, sizeof(rebootCtrl));
-    rebootCtrl.type = SYS_REBOOT_NORMAL;
-    rc = ipc_if_exe_cmd(MODULE_SYSCTRL, IPC_SYS_REBOOT_CTRL, &rebootCtrl, sizeof(rebootCtrl), &retCode);
-
-    if((0 == rc) && (0 == retCode))
-    {
-        snprintf(msg, sizeof(msg), "%sSystem is about to reboot, please wait!%s", VTY_NEWLINE, VTY_NEWLINE);
-        vty_out_to_all(msg);
-
-        //boardReset_alarm();
-        //deviceReset_event();
-    }
-    else
-    {
-        vty_out_line(vty, "System is busy, Please try again later!");
-    }
-
-    if (vty->node == ENABLE_REBOOT_INTERACTION_NODE)
-        vty->node = ENABLE_NODE;
-    else if (vty->node == CONFIG_REBOOT_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUN (
-    vtysh_system_reboot_no,
-    vtysh_system_reboot_no_cmd,
-    "n",
-    "\n")
-{
-    if (vty->node == ENABLE_REBOOT_INTERACTION_NODE)
-        vty->node = ENABLE_NODE;
-    else if (vty->node == CONFIG_REBOOT_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-
-    return CMD_SUCCESS;
-}
 
 DEFUNSH (VTYSH_ALL,
        vtysh_alarm_priority_severity,
@@ -4015,79 +3132,6 @@ DEFUN (
 }
 
 DEFUNSH (VTYSH_SYSCTRL,
-    vtysh_system_cfg_erase,
-    vtysh_system_cfg_erase_cmd,
-    "erase saved-config",
-    "Erase certain data from internal storage\n"
-    "Erase saved configurations\n")
-{
-    if (vty->node == CONFIG_NODE)
-        vty->node = CONFIG_ERASE_CFG_INTERACTION_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-     vtysh_system_cfg_erase_yes,
-     vtysh_system_cfg_erase_yes_cmd,
-     "y",
-     "\n")
-{
-    if (vty->node == CONFIG_ERASE_CFG_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-     vtysh_system_cfg_erase_no,
-     vtysh_system_cfg_erase_no_cmd,
-     "n",
-     "\n")
-{
-    if (vty->node == CONFIG_ERASE_CFG_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-    vtysh_system_cfg_load,
-    vtysh_system_cfg_load_cmd,
-    "load configuration ftp A.B.C.D USER-NAME USER-PASSWORD FILE-NAME",
-    "<Group> load command group\n"
-    "Configuration file\n"
-    "FTP mode\n"
-    "FTP Server's IP address. <I><X.X.X.X>\n"
-    "FTP user name. <S><Length 1-32>\n"
-    "FTP user password. <S><Length 1-32>\n"
-    "Load file name. <S><Length 1-64>\n")
-{
-    if (vty->node == CONFIG_NODE)
-        vty->node = CONFIG_LOAD_CFG_INTERACTION_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-     vtysh_system_cfg_load_yes,
-     vtysh_system_cfg_load_yes_cmd,
-     "y",
-     "\n")
-{
-    if (vty->node == CONFIG_LOAD_CFG_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
-     vtysh_system_cfg_load_no,
-     vtysh_system_cfg_load_no_cmd,
-     "n",
-     "\n")
-{
-    if (vty->node == CONFIG_LOAD_CFG_INTERACTION_NODE)
-        vty->node = CONFIG_NODE;
-    return CMD_SUCCESS;
-}
-
-DEFUNSH (VTYSH_SYSCTRL,
     vty_enter_manu_node,
     vty_enter_manu_node_cmd,
     "manufacture",
@@ -4174,7 +3218,7 @@ sigtstp (int sig)
 
   /* Initialize readline. */
   rl_initialize ();
-  prin("\n");
+  printf("\n");
 
   /* Check jmpflag for duplicate siglongjmp(). */
   if (! jmpflag)
@@ -4196,7 +3240,7 @@ sigint (int sig)
   if (! execute_flag)
     {
       rl_initialize ();
-      prin("\n");
+      printf("\n");
       rl_forced_update_display ();
     }
   #endif
@@ -4248,6 +3292,7 @@ void vtysh_init()
     //stephen.liu, for vty_read execute vtysh function. 20160811
     g_vtysh_exec_command = vtysh_cmd;
 
+#if 0
     //stephen add, 20150928
     #ifdef VTYSH_TEST_CMD
     install_node (&test_node, NULL); //stephen, 20150928
@@ -4490,6 +3535,7 @@ void vtysh_init()
     install_element(DEBUG_NODE, &vtysh_write_terminal_cmd);
 
     /* install_element(CONFIG_NODE, &vtysh_default_interface_cmd); */
+#endif
 }
 
 void vtysh_init_vty (void)
