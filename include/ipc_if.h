@@ -39,6 +39,8 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #define NO_WAIT                   (0)
 #define WAIT_FOREVER              (-1)
 
+#define DEBUG
+
 #ifdef DEBUG
 #define ipc_debug_printf(format, ...) \
 do{ \
@@ -190,26 +192,21 @@ typedef enum
 #define UNLOCK(mutex) pthread_mutex_unlock(&mutex) 
 
 /*申明对外的接口函数*/
+ULONG ipc_if_free(void* pToFree);
 int  ipc_if_init(void);
 
 ULONG ipc_if_reg_module(UCHAR srcMo,char *pNameMo,IPC_MSG_CALLBACK pCallBack);
 ULONG ipc_if_disreg_module();
 
-ULONG ipc_if_send_synmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend,UCHAR ucMsgType,char **pMsgRec,USHORT *pLenRec);
-ULONG ipc_if_send_asynmsg(USHORT usDstMo,char *pAppMsgSend,USHORT usLenSend,UCHAR ucMsgType);
-ULONG ipc_if_send_ack(UCHAR ucDstMo,char * PRecMsg,short RetCode,char *pAckData,USHORT AckDataLen);
-
 ULONG ipc_if_engage_event(UCHAR EventId);
 ULONG ipc_if_disengage_event(UCHAR EventId);
 
+ULONG ipc_if_send_ack(UCHAR ucDstMo,char * PRecMsg,short RetCode,char *pAckData,USHORT AckDataLen);
 ULONG ipc_if_release_event(UCHAR EventId,char *pDataSend,USHORT usLenSend);
-
-void *ipc_if_alloc(ULONG ulLenth);
-ULONG ipc_if_free(void* pToFree);
 
 UCHAR ipc_if_get_thismoid();
 
-int ipc_if_get_cmd_result(
+ULONG ipc_if_get_cmd_result(
                 unsigned short dstModuleID,
                 short          MsgID,
                 char           *cmd,
@@ -218,7 +215,7 @@ int ipc_if_get_cmd_result(
                 int            buflen,
                 short          *retCode);
 
-int ipc_if_exe_cmd(unsigned short dstModuleID, short MsgID, char *cmddata, int cmdlen, short *retCode);
+ULONG ipc_if_exe_cmd(unsigned short dstModuleID, short MsgID, char *cmddata, int cmdlen, short *retCode);
 
 int ipc_key_get(char *path, int sub_key);
 int ipc_sem_create(key_t key);

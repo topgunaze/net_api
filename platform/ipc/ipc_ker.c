@@ -206,183 +206,6 @@ static void clear_snd_resource(UCHAR ucMo)
 
 #endif
 
-#if DEFUNC("模块与事件注册")
-
-static ULONG ipc_ker_regmod_proc(IPC_REG_MODULE_INFO *pRegInfo, char *pAck, USHORT *pAckLen)
-{
-    UCHAR                   ucMo;
-    IPC_COMMON_REG_ACK_INFO *pRegAck;
-    const int               sndbuf = 64*1024;
-
-    if((pRegInfo == NULL) || (pAck == NULL) || (pAckLen == NULL))
-        return IPC_NULL_PTR;
-
-    ucMo = pRegInfo->ucSrcMo;
-    if(gIpcKerMoCtl[ucMo].IsReged == TRUE)
-    {
-        ipc_debug_printf("IPC Kernel Warning: source module %d has been registered.\r\n", ucMo);
-        clear_snd_resource(ucMo);
-        gIpcKerMoCtl[ucMo].IsReged == FALSE;
-    }
-    
-    ipc_debug_printf("IPC Ker:to be registered module %d,name:%s.\r\n", ucMo, pRegInfo->NameMo);
-
-    if ((gIpcKerMoCtl[ucMo].sndsockfd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
-    {
-        ipc_debug_printf("Create socket Error.\r\n");
-        return IPC_SOCK_CREATE_FAIL;
-    }
-    
-    if (setsockopt(gIpcKerMoCtl[ucMo].sndsockfd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0) 
-    {
-        ipc_debug_printf("set SO_SNDBUF Error.\n");
-    }
-    
-    if (set2nonblock(gIpcKerMoCtl[ucMo].sndsockfd) < 0)
-    {
-        close(gIpcKerMoCtl[ucMo].sndsockfd);
-        gIpcKerMoCtl[ucMo].sndsockfd = -1;
-        return IPC_SOCK_CREATE_FAIL;
-    }
-    
-    strcpy(gIpcKerMoCtl[ucMo].NameMo, pRegInfo->NameMo);
-    
-    gIpcKerMoCtl[ucMo].AckSoAddr.sun_family = AF_UNIX;
-    sprintf(gIpcKerMoCtl[ucMo].AckSoAddr.sun_path,"%s", pRegInfo->SoAckPath);
-    
-    gIpcKerMoCtl[ucMo].CmdSoAddr.sun_family = AF_UNIX;
-    sprintf(gIpcKerMoCtl[ucMo].CmdSoAddr.sun_path,"%s", pRegInfo->SoCmdPath);
-    
-    gIpcKerMoCtl[ucMo].IsReged=TRUE;
-
-    pRegAck = (IPC_COMMON_REG_ACK_INFO*)pAck;
-    pRegAck->ucSrcMo   = ucMo;
-    pRegAck->ucRetCode = IPC_REG_M_ACK;
-    *pAckLen = sizeof(IPC_COMMON_REG_ACK_INFO);
-
-    return IPC_SUCCESS;
-}
-
-static ULONG ipc_ker_disregmod_proc(IPC_DIS_REG_MODULE_MSG_INFO *pDisRegInfo, char *pAck, USHORT *pAckLen)
-{
-    UCHAR                   ucMo;
-    IPC_COMMON_REG_ACK_INFO *pRegAck;
-
-    if((pDisRegInfo == NULL) || (pAck == NULL) || (pAckLen == NULL))
-        return IPC_NULL_PTR;
-
-    ucMo = pDisRegInfo->ucSrcMo;
-    if(gIpcKerMoCtl[ucMo].IsReged == FALSE)
-    {
-        ipc_debug_printf("IPC Kernel Warning: source module %d has been disregistered.\r\n", ucMo);
-    }
-    else 
-    {
-         ipc_debug_printf("to be disregister module %d ,name:%s.\r\n", ucMo, gIpcKerMoCtl[ucMo].NameMo);
-    }
-    
-    pRegAck = (IPC_COMMON_REG_ACK_INFO*)pAck;
-    pRegAck->ucSrcMo   = ucMo;
-    pRegAck->ucRetCode = IPC_DISREG_M_ACK;
-    *pAckLen = sizeof(IPC_COMMON_REG_ACK_INFO);
-
-    return IPC_SUCCESS;
-}
-
-//注册模块关注事件
-ULONG ipc_ker_event_enage_preproc(IPC_EVENT_CMD_MSG_INFO *pEngage, char *pAck, USHORT *pAckLen)
-{
-    UCHAR  ucMo;
-    UCHAR  ucEId;
-    ULONG  ulRet;
-    IPC_KER_EVENT_LIST      *pAdd;
-    IPC_COMMON_REG_ACK_INFO *pEvAck;
-
-    if((pEngage == NULL) || (pAck == NULL)||(pAckLen == NULL))
-        return IPC_NULL_PTR;    
-
-    ucMo  = pEngage->ucSrcMo;
-    ucEId = pEngage->ucEventId;
-    pEvAck=(IPC_COMMON_REG_ACK_INFO*)pAck;
-    if((ucEId >= IPC_EVENT_MAX) || (ucEId <= IPC_EVENT_BASE))
-    {
-        pEvAck->ucSrcMo   = ucMo;
-        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_NAK;
-        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d to be engaged by module %d.\r\n", ucEId, ucMo);
-        return IPC_INVALID_EID;
-    }
-
-    pAdd = (IPC_KER_EVENT_LIST*)calloc(1, sizeof(IPC_KER_EVENT_LIST));
-    if (!pAdd)
-    {
-        ipc_debug_printf("IPC Kernel Warning: calloc failed event id:%d to be engaged by module %d.\r\n", ucEId, ucMo);
-        return IPC_MEM_LACK; 
-    }
-    
-    pAdd->ucMo = ucMo;    
-	/*事件id使用数组下标来表示*/
-    ulRet = ipc_ker_insert_event_node(&(gIpcEventCtlHead[ucEId]), pAdd);
-    if(ulRet == IPC_OBJ_EXIST)
-    {
-        ipc_debug_printf("IPC Kernel Warning: Eid:%d has been already engaged by  module %d.\r\n",ucEId,ucMo);
-        free(pAdd);
-        pEvAck->ucSrcMo   = ucMo;
-        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_ACK;
-        return IPC_SUCCESS;        
-    }
-    
-    if(IPC_SUCCESS != ulRet)
-    {
-        pEvAck->ucSrcMo   = ucMo;
-        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_NAK;
-        ipc_debug_printf("IPC Kernel Warning: insert event Nod FAIL. Eid:%d source module %d.\r\n",ucEId,ucMo);
-        return IPC_COMMON_FAIL;    
-    }
-    else
-    {
-        pEvAck->ucSrcMo   = ucMo;
-        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_ACK;
-        return IPC_SUCCESS;    
-    }
-}
-
-static ULONG ipc_ker_event_disenage_preproc(IPC_EVENT_CMD_MSG_INFO *pEngage,char *pAck, USHORT *pAckLen)
-{
-    UCHAR  ucMo;
-    UCHAR  ucEId;
-    IPC_COMMON_REG_ACK_INFO *pEvAck;
-    IPC_KER_EVENT_LIST      *pDel;
-
-    if((pEngage == NULL) || (pAck == NULL) || (pAckLen == NULL))
-        return IPC_NULL_PTR;    
-
-    ucMo  = pEngage->ucSrcMo;
-    ucEId = pEngage->ucEventId;
-    pEvAck=(IPC_COMMON_REG_ACK_INFO*)pAck;
-    if((ucEId >= IPC_EVENT_MAX) || (ucEId <= IPC_EVENT_BASE))
-    {
-        pEvAck->ucSrcMo  = ucMo;
-        pEvAck->ucRetCode= IPC_DISENGAGE_EVENT_NAK;
-        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d to be disengaged by module %d.\r\n",ucEId,ucMo);
-        return IPC_INVALID_EID;
-    }
-    
-    pDel = ipc_ker_lookup_event_node(gIpcEventCtlHead[ucEId], ucMo);
-    if(pDel != NULL)
-    {
-        ipc_ker_del_event_node(&(gIpcEventCtlHead[ucEId]), pDel);
-        free(pDel);
-    }
-    
-    pEvAck->ucSrcMo   = ucMo;
-    pEvAck->ucRetCode = IPC_DISENGAGE_EVENT_ACK;
-
-    return IPC_SUCCESS;    
-}
-
-
-#endif
-
 #if DEFUNC("消息转发")
 
 static ULONG ipc_ker_prepare_ackhead(char *pRecMsg, char *pSendMsg, UCHAR ucType, USHORT usRet)
@@ -395,10 +218,10 @@ static ULONG ipc_ker_prepare_ackhead(char *pRecMsg, char *pSendMsg, UCHAR ucType
     }
     
     pIpcRecHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecMsg);
-
     if(pIpcRecHead->usMagic != IPC_HEAD_MAGIC)
     {
         ipc_debug_printf("IPC Kernel Warning: invalid IPC head at line %d.\r\n", __LINE__);
+        
         return IPC_INVALID_HEAD;
     }
     
@@ -528,12 +351,12 @@ static ULONG ipc_ker_event_release_proc(IPC_EVENT_R_INFO *pEv)
             continue;
         }
 
-        /*自身发送消息
+        /*自身发送消息*/
         if (ucMo == tmpMo)
         {
             pEvDst = pEvDst->pNext;
             continue;
-        }*/
+        }
         
         pIpc->ucDstMo = ucMo;
         ipc_ker_send_data(ucMo, (char*)pIpc, usToLen, &gIpcKerMoCtl[ucMo].CmdSoAddr);
@@ -547,7 +370,7 @@ static ULONG ipc_ker_event_release_proc(IPC_EVENT_R_INFO *pEv)
 }
 
 //异步消息发送目的模块
-static ULONG ipc_ker_cmd_msg_proc(char *pMsg, UCHAR type)
+static ULONG ipc_ker_cmd_msg_proc(char *pMsg)
 {
     IPC_HEAD  *pIpc;
     UCHAR     ucDstMo;
@@ -572,13 +395,14 @@ static ULONG ipc_ker_cmd_msg_proc(char *pMsg, UCHAR type)
         return IPC_INVALID_HEAD;
     }
 
-    if((type == IPC_MSG_CMD) && (ucDstMo == pIpc->ucSrcMo))
+    if((pIpc->ucMsgType == IPC_MSG_CMD) && (ucDstMo == pIpc->ucSrcMo))
     {
         ipc_debug_printf("IPC kernel error:cmd msg from module %d to himself.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
+
         return IPC_CMD_MODULE_LOOP;
     }
     
-    usToLen   = pIpc->usDataLen+sizeof(IPC_HEAD);
+    usToLen   = pIpc->usDataLen + sizeof(IPC_HEAD);
     usSentLen = ipc_ker_send_data(ucDstMo, (char*)pIpc, usToLen, &gIpcKerMoCtl[ucDstMo].CmdSoAddr);
     if(usToLen != usSentLen)
     {
@@ -592,13 +416,13 @@ static ULONG ipc_ker_cmd_msg_proc(char *pMsg, UCHAR type)
 }
 
 //同步响应消息处理
-ULONG ipc_ker_ack_msg_proc(char *pMsg, UCHAR type)
+static ULONG ipc_ker_ack_msg_proc(char *pMsg)
 {
     IPC_HEAD  *pIpc;
     UCHAR     ucDstMo;
     USHORT    usToLen;
     USHORT    usSentLen;
-    
+  
     if(pMsg == NULL)
     {
         return IPC_NULL_PTR;
@@ -606,6 +430,7 @@ ULONG ipc_ker_ack_msg_proc(char *pMsg, UCHAR type)
     
     pIpc    = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pMsg);
     ucDstMo = pIpc->ucDstMo;
+    
     if(gIpcKerMoCtl[ucDstMo].IsReged == FALSE)
     {
         return IPC_INVALID_MODULE;
@@ -619,9 +444,10 @@ ULONG ipc_ker_ack_msg_proc(char *pMsg, UCHAR type)
     ipc_debug_printf("IPC kernel ACK from module %d to module %d,Sn=%d.\r\n",
                      pIpc->ucSrcMo, pIpc->ucDstMo, pIpc->usSn);
 
-    if((type == IPC_MSG_ACK) && (ucDstMo == pIpc->ucSrcMo))
+    if((pIpc->ucMsgType == IPC_MSG_ACK) && (ucDstMo == pIpc->ucSrcMo))
     {
         ipc_debug_printf("IPC kernel error:ACK msg from module %d to himself.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
+
         return IPC_CMD_MODULE_LOOP;
     }
     
@@ -707,31 +533,285 @@ static void ipc_ker_resend_blockmsg(void)
 
 #endif
 
+
+#if DEFUNC("模块与事件注册")
+
+static ULONG ipc_ker_regmod_proc(IPC_REG_MODULE_INFO *pRegInfo, char *pAck, USHORT *pAckLen)
+{
+    UCHAR                   ucMo;
+    IPC_COMMON_REG_ACK_INFO *pRegAck;
+    const int               sndbuf = 64*1024;
+
+    if((pRegInfo == NULL) || (pAck == NULL) || (pAckLen == NULL))
+        return IPC_NULL_PTR;
+
+    ucMo = pRegInfo->ucSrcMo;
+    if(gIpcKerMoCtl[ucMo].IsReged == TRUE)
+    {
+        ipc_debug_printf("IPC Kernel Warning: source module %d has been registered.\r\n", ucMo);
+        clear_snd_resource(ucMo);
+        gIpcKerMoCtl[ucMo].IsReged == FALSE;
+    }
+    
+    ipc_debug_printf("IPC Ker:to be registered module %d,name:%s.\r\n", ucMo, pRegInfo->NameMo);
+
+    if ((gIpcKerMoCtl[ucMo].sndsockfd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0)
+    {
+        ipc_debug_printf("Create socket Error.\r\n");
+        return IPC_SOCK_CREATE_FAIL;
+    }
+    
+    if (setsockopt(gIpcKerMoCtl[ucMo].sndsockfd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf)) < 0) 
+    {
+        ipc_debug_printf("set SO_SNDBUF Error.\n");
+    }
+    
+    if (set2nonblock(gIpcKerMoCtl[ucMo].sndsockfd) < 0)
+    {
+        close(gIpcKerMoCtl[ucMo].sndsockfd);
+        gIpcKerMoCtl[ucMo].sndsockfd = -1;
+        return IPC_SOCK_CREATE_FAIL;
+    }
+    
+    strcpy(gIpcKerMoCtl[ucMo].NameMo, pRegInfo->NameMo);
+    
+    gIpcKerMoCtl[ucMo].AckSoAddr.sun_family = AF_UNIX;
+    sprintf(gIpcKerMoCtl[ucMo].AckSoAddr.sun_path,"%s", pRegInfo->SoAckPath);
+    
+    gIpcKerMoCtl[ucMo].CmdSoAddr.sun_family = AF_UNIX;
+    sprintf(gIpcKerMoCtl[ucMo].CmdSoAddr.sun_path,"%s", pRegInfo->SoCmdPath);
+    
+    gIpcKerMoCtl[ucMo].IsReged=TRUE;
+
+    pRegAck = (IPC_COMMON_REG_ACK_INFO*)pAck;
+    pRegAck->ucSrcMo   = ucMo;
+    pRegAck->ucRetCode = IPC_REG_M_ACK;
+    *pAckLen = sizeof(IPC_COMMON_REG_ACK_INFO);
+
+    return IPC_SUCCESS;
+}
+
+static ULONG ipc_ker_disregmod_proc(IPC_DIS_REG_MODULE_MSG_INFO *pDisRegInfo, char *pAck, USHORT *pAckLen)
+{
+    UCHAR                   ucMo;
+    IPC_COMMON_REG_ACK_INFO *pRegAck;
+
+    if((pDisRegInfo == NULL) || (pAck == NULL) || (pAckLen == NULL))
+        return IPC_NULL_PTR;
+
+    ucMo = pDisRegInfo->ucSrcMo;
+    if(gIpcKerMoCtl[ucMo].IsReged == FALSE)
+    {
+        ipc_debug_printf("IPC Kernel Warning: source module %d has been disregistered.\r\n", ucMo);
+    }
+    else 
+    {
+         ipc_debug_printf("to be disregister module %d ,name:%s.\r\n", ucMo, gIpcKerMoCtl[ucMo].NameMo);
+    }
+    
+    pRegAck = (IPC_COMMON_REG_ACK_INFO*)pAck;
+    pRegAck->ucSrcMo   = ucMo;
+    pRegAck->ucRetCode = IPC_DISREG_M_ACK;
+    *pAckLen = sizeof(IPC_COMMON_REG_ACK_INFO);
+
+    return IPC_SUCCESS;
+}
+
+//注册模块关注事件
+ULONG ipc_ker_event_enage_preproc(IPC_EVENT_CMD_MSG_INFO *pEngage, char *pAck, USHORT *pAckLen)
+{
+    UCHAR                   ucMo;
+    UCHAR                   ucEId;
+    ULONG                   ulRet;
+    IPC_KER_EVENT_LIST      *pAdd;
+    IPC_COMMON_REG_ACK_INFO *pEvAck;
+
+    if((pEngage == NULL) || (pAck == NULL)||(pAckLen == NULL))
+        return IPC_NULL_PTR;    
+
+    ucMo  = pEngage->ucSrcMo;
+    ucEId = pEngage->ucEventId;
+    pEvAck=(IPC_COMMON_REG_ACK_INFO*)pAck;
+    if((ucEId >= IPC_EVENT_MAX) || (ucEId <= IPC_EVENT_BASE))
+    {
+        pEvAck->ucSrcMo   = ucMo;
+        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_NAK;
+        
+        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d to be engaged by module %d.\r\n", ucEId, ucMo);
+
+        return IPC_INVALID_EID;
+    }
+
+    pAdd = (IPC_KER_EVENT_LIST*)calloc(1, sizeof(IPC_KER_EVENT_LIST));
+    if (!pAdd)
+    {
+        ipc_debug_printf("IPC Kernel Warning: calloc failed event id:%d to be engaged by module %d.\r\n", ucEId, ucMo);
+
+        return IPC_MEM_LACK; 
+    }
+    
+    pAdd->ucMo = ucMo;    
+	/*事件id使用数组下标来表示*/
+    ulRet = ipc_ker_insert_event_node(&(gIpcEventCtlHead[ucEId]), pAdd);
+    if(ulRet == IPC_OBJ_EXIST)
+    {
+        ipc_debug_printf("IPC Kernel Warning: Eid:%d has been already engaged by  module %d.\r\n", ucEId, ucMo);
+
+        free(pAdd);
+        pEvAck->ucSrcMo   = ucMo;
+        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_ACK;
+        return IPC_SUCCESS;        
+    }
+    
+    if(IPC_SUCCESS != ulRet)
+    {
+        pEvAck->ucSrcMo   = ucMo;
+        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_NAK;
+        ipc_debug_printf("IPC Kernel Warning: insert event Nod FAIL. Eid:%d source module %d.\r\n",ucEId,ucMo);
+
+        return IPC_COMMON_FAIL;    
+    }
+    else
+    {
+        pEvAck->ucSrcMo   = ucMo;
+        pEvAck->ucRetCode = IPC_ENGAGE_EVENT_ACK;
+        return IPC_SUCCESS;    
+    }
+}
+
+static ULONG ipc_ker_event_disenage_preproc(IPC_EVENT_CMD_MSG_INFO *pEngage,char *pAck, USHORT *pAckLen)
+{
+    UCHAR  ucMo;
+    UCHAR  ucEId;
+    IPC_COMMON_REG_ACK_INFO *pEvAck;
+    IPC_KER_EVENT_LIST      *pDel;
+
+    if((pEngage == NULL) || (pAck == NULL) || (pAckLen == NULL))
+        return IPC_NULL_PTR;    
+
+    ucMo  = pEngage->ucSrcMo;
+    ucEId = pEngage->ucEventId;
+    pEvAck=(IPC_COMMON_REG_ACK_INFO*)pAck;
+    if((ucEId >= IPC_EVENT_MAX) || (ucEId <= IPC_EVENT_BASE))
+    {
+        pEvAck->ucSrcMo  = ucMo;
+        pEvAck->ucRetCode= IPC_DISENGAGE_EVENT_NAK;
+        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d to be disengaged by module %d.\r\n",ucEId,ucMo);
+        return IPC_INVALID_EID;
+    }
+    
+    pDel = ipc_ker_lookup_event_node(gIpcEventCtlHead[ucEId], ucMo);
+    if(pDel != NULL)
+    {
+        ipc_ker_del_event_node(&(gIpcEventCtlHead[ucEId]), pDel);
+        free(pDel);
+    }
+    
+    pEvAck->ucSrcMo   = ucMo;
+    pEvAck->ucRetCode = IPC_DISENGAGE_EVENT_ACK;
+
+    return IPC_SUCCESS;    
+}
+
+static ULONG 
+ipc_ker_msg_event_enage_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
+{
+    USHORT usActuSendLen, usSendLen;
+    ULONG  ulRet;
+
+    ipc_debug_printf("IPC kernel rec engage event msg.\r\n");
+    
+    ulRet = ipc_ker_event_enage_preproc((IPC_EVENT_CMD_MSG_INFO*)pRecData, pSendData, &usSendLen);
+    if(IPC_SUCCESS != ulRet)
+    {
+        ipc_debug_printf("IPC Kernel process event engage FAIL ,code=%lu .\r\n", ulRet);                    
+    }
+
+    ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_EVENT_ENGAGE_ACK, ulRet);
+    if(IPC_SUCCESS != ulRet)
+    {
+        ipc_debug_printf("IPC Kernel prepair IPC head of event engage ACK FAIL.\r\n");
+        
+        return ulRet;
+    }
+    
+    usActuSendLen = ipc_ker_send_data(((IPC_EVENT_CMD_MSG_INFO*)pRecData)->ucSrcMo, gIpcKerCtl.SndDataBuf,
+                                      usSendLen+sizeof(IPC_HEAD), to);                        
+    if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))
+    {
+        if (usActuSendLen != 0)
+            ipc_debug_printf("IPC Kernel send fewer data length of event engage ACK.\r\n");
+
+        return IPC_SOCKET_SENDTO_FAIL;
+    }
+
+    return IPC_SUCCESS;
+}
+
+static ULONG 
+ipc_ker_msg_event_disenage_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
+{
+    USHORT usActuSendLen, usSendLen;
+    ULONG  ulRet;
+
+    ipc_debug_printf("IPC kernel rec dis engage event msg.\r\n");
+    
+    ulRet = ipc_ker_event_disenage_preproc((IPC_EVENT_CMD_MSG_INFO*)pRecData, pSendData, &usSendLen);
+    if (ulRet)
+    {
+        return ulRet;
+    }
+
+    ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_EVENT_DIS_ENGAGE, ulRet);
+    if(IPC_SUCCESS != ulRet)
+    {
+        ipc_debug_printf("IPC Kernel prepair IPC head of event dis engage ACK FAIL.\r\n");
+        
+        return ulRet;
+    }
+    
+    usActuSendLen = ipc_ker_send_data(((IPC_EVENT_CMD_MSG_INFO*)pRecData)->ucSrcMo, gIpcKerCtl.SndDataBuf,
+                                      usSendLen+sizeof(IPC_HEAD), to);
+    if(usActuSendLen != (usSendLen+sizeof(IPC_HEAD)))
+    {
+        if (usActuSendLen != 0)
+            ipc_debug_printf("IPC Kernel send fewer data length of event engage ACK.\r\n");
+
+        return IPC_SOCKET_SENDTO_FAIL;
+    }
+
+    return IPC_SUCCESS;
+}
+
+#endif
+
 #if DEFUNC("事件处理")
 
 static ULONG ipc_ker_msg_module_reg_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
 {
-    USHORT              usActuSendLen, usSendLen;
-    ULONG               ulRet = 0;
+    USHORT usActuSendLen, usSendLen;
+    ULONG  ulRet;
 
     ipc_debug_printf("IPC kernel rec module register msg.\r\n");
-    ulRet =ipc_ker_regmod_proc((IPC_REG_MODULE_INFO*)pRecData,pSendData,&usSendLen);
+    
+    ulRet = ipc_ker_regmod_proc((IPC_REG_MODULE_INFO*)pRecData,pSendData,&usSendLen);
     if(IPC_SUCCESS != ulRet)
     {
         ipc_debug_printf("IPC Kernel process module register FAIL.\r\n");
-        //break;
+        
         return ulRet;
     }
 
-    if((ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_MSG_REG_M_ACK, ulRet)))
+    ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_MSG_REG_M_ACK, ulRet);
+    if(IPC_SUCCESS != ulRet)
     {
         ipc_debug_printf("IPC Kernel prepair IPC head of register ACK FAIL.\r\n");
-        //break;
+
         return ulRet;
     }
 
     usActuSendLen = ipc_ker_send_data(((IPC_REG_MODULE_INFO*)pRecData)->ucSrcMo, gIpcKerCtl.SndDataBuf,
-                                      usSendLen+sizeof(IPC_HEAD), &to);
+                                      usSendLen+sizeof(IPC_HEAD), to);
              
     if(usActuSendLen != (usSendLen + sizeof(IPC_HEAD)))
     {
@@ -747,8 +827,8 @@ static ULONG ipc_ker_msg_module_reg_proc(char *pRecData, char *pSendData, struct
 static ULONG 
 ipc_ker_msg_module_disreg_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
 {
-    ULONG               ulRet = 0;
-    USHORT              usActuSendLen, usSendLen;
+    USHORT usActuSendLen, usSendLen;
+    ULONG  ulRet;
 
     ipc_debug_printf("IPC kernel rec module dis register msg.\r\n");
     
@@ -756,6 +836,7 @@ ipc_ker_msg_module_disreg_proc(char *pRecData, char *pSendData, struct sockaddr_
     if(IPC_SUCCESS != ulRet)
     {
         ipc_debug_printf("IPC Kernel process module disregister FAIL.\r\n");
+        
         return ulRet;
     }
 
@@ -763,11 +844,12 @@ ipc_ker_msg_module_disreg_proc(char *pRecData, char *pSendData, struct sockaddr_
     if(IPC_SUCCESS != ulRet)
     {
         ipc_debug_printf("IPC Kernel prepair IPC head of register ACK FAIL.\r\n");
-        break;
+
+        return ulRet;
     }
 
     usActuSendLen = ipc_ker_send_data(((IPC_DIS_REG_MODULE_MSG_INFO*)pRecData)->ucSrcMo, gIpcKerCtl.SndDataBuf,
-                                      usSendLen + sizeof(IPC_HEAD), &to);
+                                      usSendLen + sizeof(IPC_HEAD), to);
     if(usActuSendLen != (usSendLen+sizeof(IPC_HEAD)))
     {
         if (usActuSendLen != 0)
@@ -781,74 +863,8 @@ ipc_ker_msg_module_disreg_proc(char *pRecData, char *pSendData, struct sockaddr_
     if(gIpcKerMoCtl[ucMo].IsReged)
     {
         clear_snd_resource(ucMo);
-        gIpcKerMoCtl[ucMo].IsReged == FALSE;
-        memset(gIpcKerMoCtl+ucMo,0,sizeof(IPC_KER_MO_CTL));                    
-    }
-
-    return IPC_SUCCESS;
-}
-
-static ULONG 
-ipc_ker_msg_event_enage_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
-{
-    ULONG               ulRet = 0;
-    USHORT              usActuSendLen, usSendLen;
-
-    ipc_debug_printf("IPC kernel rec engage event msg.\r\n");
-    ulRet = ipc_ker_event_enage_preproc((IPC_EVENT_CMD_MSG_INFO*)pRecData, pSendData, &usSendLen);
-    if(IPC_SUCCESS != ulRet)
-    {
-        ipc_debug_printf("IPC Kernel process event engage FAIL ,code=%lu .\r\n", ulRet);                    
-    }
-
-    ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_EVENT_ENGAGE_ACK, ulRet);
-    if(IPC_SUCCESS != ulRet)
-    {
-        ipc_debug_printf("IPC Kernel prepair IPC head of event engage ACK FAIL.\r\n");
-        return ulRet;
-    }
-    
-    usActuSendLen = ipc_ker_send_data(((IPC_EVENT_CMD_MSG_INFO*)pRecData)->ucSrcMo, gIpcKerCtl.SndDataBuf,
-                                      usSendLen+sizeof(IPC_HEAD), &to);                        
-    if(usActuSendLen!=(usSendLen+sizeof(IPC_HEAD)))
-    {
-        if (usActuSendLen != 0)
-            ipc_debug_printf("IPC Kernel send fewer data length of event engage ACK.\r\n");
-
-        return IPC_SOCKET_SENDTO_FAIL;
-    }
-
-    return IPC_SUCCESS;
-}
-
-static ULONG 
-ipc_ker_msg_event_disenage_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
-{
-    ULONG               ulRet = 0;
-    USHORT              usActuSendLen, usSendLen;
-
-    ipc_debug_printf("IPC kernel rec dis engage event msg.\r\n");
-    ulRet = ipc_ker_event_disenage_preproc((IPC_EVENT_CMD_MSG_INFO*)pRecData, pSendData, &usSendLen);
-    if (ulRet)
-    {
-        return ulRet;
-    }
-
-    ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_EVENT_DIS_ENGAGE, ulRet);
-    if(IPC_SUCCESS!= ulRet)
-    {
-        ipc_debug_printf("IPC Kernel prepair IPC head of event dis engage ACK FAIL.\r\n");
-        return ulRet;
-    }
-    
-    usActuSendLen = ipc_ker_send_data(((IPC_EVENT_CMD_MSG_INFO*)pRecData)->ucSrcMo,gIpcKerCtl.SndDataBuf,
-                                    usSendLen+sizeof(IPC_HEAD),&to);
-    if(usActuSendLen != (usSendLen+sizeof(IPC_HEAD)))
-    {
-        if (usActuSendLen != 0)
-            ipc_debug_printf("IPC Kernel send fewer data length of event engage ACK.\r\n");
-
-        return IPC_SOCKET_SENDTO_FAIL;
+        gIpcKerMoCtl[ucMo].IsReged = FALSE;
+        memset(gIpcKerMoCtl+ucMo, 0, sizeof(IPC_KER_MO_CTL));                    
     }
 
     return IPC_SUCCESS;
@@ -857,26 +873,30 @@ ipc_ker_msg_event_disenage_proc(char *pRecData, char *pSendData, struct sockaddr
 static ULONG 
 ipc_ker_msg_event_notify_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
 {
-    ULONG               ulRet = 0;
-    USHORT              usActuSendLen, usSendLen;
-
-    ipc_debug_printf("IPC kernel rec  msg type:%d.\r\n",pIpc->ucMsgType);
-    ulRet = ipc_ker_cmd_msg_proc(pRecData,pIpc->ucMsgType);
-    if ((ulRet!=IPC_SUCCESS ) && (ulRet != IPC_SEND_BLOCK))
+    USHORT   usActuSendLen, usSendLen;
+    ULONG    ulRet;
+    IPC_HEAD *pIpc = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecData);
+    
+    ipc_debug_printf("IPC kernel rec msg type:%d.\r\n", pIpc->ucMsgType);
+    
+    ulRet = ipc_ker_cmd_msg_proc(pRecData);
+    if ((ulRet != IPC_SUCCESS) && (ulRet != IPC_SEND_BLOCK))
     {
         ipc_debug_printf("IPC kernel forward cmd msg FAIL.\r\n");
+        
         if (pIpc->SynFlag == IPC_SYN_MSG) /*只有同步消息才需要回应*/
         {
-            IPC_HEAD *pIpc = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecData);
             ulRet = ipc_ker_prepare_ackhead(pRecData, pSendData, IPC_MSG_ACK, ulRet);
             if (ulRet)
             {
                 return ulRet;
             }
             
-            ulRet = ipc_ker_send_data(pIpc->ucSrcMo,gIpcKerCtl.SndDataBuf, sizeof(IPC_HEAD), &CliAddr);
+            ulRet = ipc_ker_send_data(pIpc->ucSrcMo, IPC_APP_MEM_TO_IPC(pSendData), sizeof(IPC_HEAD), to);
             if (ulRet)
             {
+                ipc_debug_printf("IPC kernel send cmd msg ack FAIL.\r\n");
+                
                 return ulRet;
             }
         }
@@ -886,19 +906,26 @@ ipc_ker_msg_event_notify_proc(char *pRecData, char *pSendData, struct sockaddr_u
 }
 
 static ULONG 
-ipc_ker_msg_event_notify_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
+ipc_ker_msg_event_ack_proc(char *pRecData)
 {
+    USHORT   usActuSendLen, usSendLen;
+    ULONG    ulRet;
+    
     ipc_debug_printf("IPC kernel rec ack msg.\r\n");
-    ulRet=ipc_ker_ack_msg_proc(pRecData,pIpc->ucMsgType);
-    if ((ulRet!=IPC_SUCCESS) && (ulRet != IPC_SEND_BLOCK))
+    
+    ulRet = ipc_ker_ack_msg_proc(pRecData);
+    if ((ulRet != IPC_SUCCESS) && (ulRet != IPC_SEND_BLOCK))
     {
-        ipc_debug_printf("IPC kernel forward ack  msg FAIL.\r\n");
+        ipc_debug_printf("IPC kernel forward ack  msg FAIL. ret %d\r\n", ulRet);
+
+        return ulRet;
     }
 
     return IPC_SUCCESS;
 }
 
-static void ipc_ker_read_msg_proc(void)
+static ULONG 
+ipc_ker_read_msg_proc(void)
 {
     char                *pRecData, *pSendData;
     struct sockaddr_un  CliAddr;
@@ -915,18 +942,22 @@ static void ipc_ker_read_msg_proc(void)
     if (RecLen < 0)
     {
         perror("ipc_ker recvfrom");
-        continue;    
+        
+        return IPC_REC_INVALID_MSG;
     }
 
     if(RecLen <= sizeof(IPC_HEAD))
     {
         ipc_debug_printf("IPC kernel receive bad packet.lenght %d is too small.\r\n", RecLen); 
-        continue;
+        
+        return IPC_REC_INVALID_MSG;
     }
 
     pIpc      = (IPC_HEAD*)gIpcKerCtl.RecDataBuf;
     pRecData  = gIpcKerCtl.RecDataBuf + sizeof(IPC_HEAD);
     pSendData = gIpcKerCtl.SndDataBuf + sizeof(IPC_HEAD);
+
+    printf("MsgType %d, SrcMo %d, DstMo %d\r\n", pIpc->ucMsgType, pIpc->ucSrcMo, pIpc->ucDstMo);
 
     switch (pIpc->ucMsgType)
     {
@@ -955,9 +986,10 @@ static void ipc_ker_read_msg_proc(void)
             break;
 
         case IPC_EVENT_RELEASE:
-            ipc_debug_printf("IPC kernel rec release event msg.\r\n");
-            ipc_ker_event_release_proc((IPC_EVENT_R_INFO*)pRecData);
-        break;
+            {
+                Ret = ipc_ker_event_release_proc((IPC_EVENT_R_INFO*)pRecData);
+            }
+            break;
                 
         case IPC_MSG_CMD:
         case IPC_MSG_ECHO:
@@ -966,24 +998,22 @@ static void ipc_ker_read_msg_proc(void)
                 Ret = ipc_ker_msg_event_notify_proc(pRecData, pSendData, &CliAddr);
             }
             break;
-/****************************************************
-这里把所有的ack消息都放到了ACKSoAddr,
-而因为异步消息的处理函数返回的ACK
-会在app中被过滤掉
-*****************************************************/                
-            case IPC_MSG_ACK:
-                {
-                    Ret = ipc_ker_msg_event_notify_proc(pRecData, pSendData, &CliAddr);
-                }
-                break;
+          
+        case IPC_MSG_ACK:
+            {
+                Ret = ipc_ker_msg_event_ack_proc(pRecData);
+            }
+            break;
 
-            default :
-                ipc_debug_printf("IPC kernel warning: rec unknown msg.\r\n");
+        default :
+            ipc_debug_printf("IPC kernel warning: rec unknown msg.\r\n");
 
-                break;
-        }
+            break;
+    }
 
-        ipc_debug_printf("ipcker to process msg end.\n");//for test only. 
+    ipc_debug_printf("ipcker to process msg end.\n");
+
+    return IPC_SUCCESS;
 }
 
 #endif
@@ -993,7 +1023,7 @@ static void ipc_ker_read_msg_proc(void)
 ******************************************************************/
 int main(int argc,char **argv)
 {
-    int            Ret, i, RecLen;;
+    int            Ret, i;;
     fd_set         fds;
     struct timeval timout, last_time, now_time;
     
@@ -1006,8 +1036,6 @@ int main(int argc,char **argv)
     
     for(;;)
     {
-        //memset(&CliAddr, 0, sizeof(CliAddr));
-        
         FD_ZERO(&fds);
         FD_SET(gIpcKerCtl.KerSockFd, &fds);
         

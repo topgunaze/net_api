@@ -127,6 +127,7 @@ static  void ipc_if_ack_sockpath_create()
 {
     sprintf(gIfCtl.SoAckPath, "%s_%d", IPC_IF_ACK_SO_PATH_PRE, gIfCtl.ucSrcMo);
 }
+
 static  void ipc_if_cmd_sockpath_create()
 {
     sprintf(gIfCtl.SoCmdPath, "%s_%d", IPC_IF_CMD_SO_PATH_PRE, gIfCtl.ucSrcMo);
@@ -147,7 +148,7 @@ static void ipc_if_reset()
     ipc_if_init();
 }
 
-USHORT ipc_get_seqNo()
+static USHORT ipc_get_seqNo()
 {
     USHORT sn;
 
@@ -161,13 +162,13 @@ USHORT ipc_get_seqNo()
 
 UCHAR ipc_if_get_thismoid()
 {
-    if(gIfCtl.gInitFlag==TRUE)
+    if(gIfCtl.gInitFlag == TRUE)
         return gIfCtl.ucSrcMo;
         
     return 0;
 }
 
-void *ipc_if_alloc(ULONG ulLenth)
+static void *ipc_if_alloc(ULONG ulLenth)
 {
     char      *pAlloc;
     IPC_HEAD  *pIpcHead;
@@ -190,7 +191,10 @@ ULONG ipc_if_free(void* pToFree)
     IPC_HEAD *pIpcHead = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pToFree);
     
     if(pIpcHead->usMagic != IPC_HEAD_MAGIC)
+    {
+        printf("ipc_if_free IPC HEAD MAGIC error\r\n");
         return IPC_INVALID_HEAD;
+    }
 
     pIpcHead->usMagic = 0;
     free(pIpcHead);
@@ -206,7 +210,7 @@ ULONG ipc_if_free(void* pToFree)
 *程的回调函数,而回调函数中不限制对此函数的 *
 *调用,从而此两个线程有并发的可能.                           *
 *******************************************************************/
-ULONG ipc_if_send_synmsg(
+static ULONG ipc_if_send_synmsg(
                 USHORT  usDstMo,
                 char    *pAppMsgSend,
                 USHORT  usLenSend,
@@ -243,7 +247,7 @@ ULONG ipc_if_send_synmsg(
     
     pIpcHead->usSn      = usSn;
     pIpcHead->ucMsgType = ucMsgType;
-    //pIpcHead->ucSrcMo=gIfCtl.ucSrcMo;
+    pIpcHead->ucSrcMo   = gIfCtl.ucSrcMo;
     pIpcHead->ucDstMo   = usDstMo;
     pIpcHead->usDataLen = usLenSend;
     pIpcHead->SynFlag   = IPC_SYN_MSG;
@@ -346,7 +350,7 @@ ULONG ipc_if_send_synmsg(
     return IPC_SUCCESS;
 }
 
-int ipc_if_get_cmd_result(
+ULONG ipc_if_get_cmd_result(
                 unsigned short dstModuleID,
                 short          MsgID,
                 char           *cmd,
@@ -362,11 +366,11 @@ int ipc_if_get_cmd_result(
     USHORT      rcvLen;
 
     msgLen = sizeof(IPC_APP_MSG) + cmdlen;
-    pSend = (IPC_APP_MSG *)ipc_if_alloc(msgLen);
+    pSend = (IPC_APP_MSG*)ipc_if_alloc(msgLen);
     if (pSend == NULL)
     {
-        printf("error occured!allocate memory fail! MsgID=%d\n",MsgID); 
-        return -1;
+        printf("error occured!allocate memory fail! MsgID=%d\n", MsgID); 
+        return IPC_NULL_PTR;
     }
     
     pSend->MsgHead.MsgID   = MsgID;
@@ -374,30 +378,29 @@ int ipc_if_get_cmd_result(
     if (cmd)
         memcpy(pSend->data,cmd,cmdlen);
     
-    ret = ipc_if_send_synmsg(dstModuleID,(char *)pSend,msgLen,IPC_MSG_CMD,(char **)&pRcv,&rcvLen);
+    ret = ipc_if_send_synmsg(dstModuleID, (char*)pSend, msgLen, IPC_MSG_CMD, (char **)&pRcv, &rcvLen);
     ipc_if_free(pSend);
     if (ret == IPC_INVALID_MODULE)
     {
-        char buf[100];
-        sprintf(buf,"error occured!invalid module:%d",dstModuleID);
-        printf("%s\n",buf); 
-        return -2;
+        printf("error occured! invalid module:%d\r\n", dstModuleID); 
+        return ret;
     }
     else if (ret == IPC_SOCKET_SENDTO_FAIL)
     {
-        printf("error occured!send message fail! MsgID=%d\n",MsgID); 
-        return -3;
+        printf("error occured!send message fail! MsgID=%d\r\n", MsgID); 
+        return ret;
     }
     else if (ret == 0)
     {
         if ( (rcvLen - sizeof(IPC_APP_MSG)) != buflen)
         {
-            printf("error occured!receive bad message. MsgID=%d, rcvLen=%d expLen=%d\n",MsgID, rcvLen - sizeof(IPC_APP_MSG), buflen); 
+            printf("error occured!receive bad message. MsgID=%d, rcvLen=%d expLen=%d\n", 
+                   MsgID, rcvLen - sizeof(IPC_APP_MSG), buflen); 
             ipc_if_free(pRcv);
-            return -5;
+            return IPC_REC_INVALID_MSG;
         }        
   
-        memcpy(rcvbuf,pRcv->data,buflen);
+        memcpy(rcvbuf, pRcv->data, buflen);
         
         if(pRetCode)
         {
@@ -408,21 +411,21 @@ int ipc_if_get_cmd_result(
     }
     else
     {
-        printf("error occured!ipc return error . MsgID=%d\n",MsgID); 
-        return -6;
+        printf("error occured!ipc return error . MsgID=%d\n", MsgID); 
+        return IPC_SOCKET_SENDTO_FAIL;
     }
 
-    return 0;
+    return IPC_SUCCESS;
 }
 
-int ipc_if_exe_cmd(
+ULONG ipc_if_exe_cmd(
             unsigned short dstModuleID,
             short          MsgID, 
             char           *cmddata,
             int            cmdlen, 
             short          *pRetCode)
 {
-    int           ret=0;
+    int           ret;
     IPC_APP_MSG   *pSend;
     USHORT        msgLen;
     IPC_APP_MSG   *pRcv;
@@ -432,27 +435,25 @@ int ipc_if_exe_cmd(
     pSend  = (IPC_APP_MSG*)ipc_if_alloc(msgLen);
     if (pSend == NULL)
     {
-        printf("\r\nerror occured!allocate memory fail! MsgID=%d\n",MsgID);
+        printf("\r\nerror occured!allocate memory fail! MsgID=%d\n", MsgID);
         return -1;
     }
     
     pSend->MsgHead.MsgID   = MsgID;
     pSend->MsgHead.DataLen = cmdlen;
-    memcpy(pSend->data,cmddata,cmdlen);
+    memcpy(pSend->data, cmddata, cmdlen);
     
-    ret = ipc_if_send_synmsg(dstModuleID,(char *)pSend,msgLen,IPC_MSG_CMD,(char **)&pRcv,&rcvLen);
+    ret = ipc_if_send_synmsg(dstModuleID, (char*)pSend, msgLen, IPC_MSG_CMD, (char **)&pRcv, &rcvLen);
     ipc_if_free(pSend);
     if (ret == IPC_INVALID_MODULE)
     {
-        char buf[100];
-        sprintf(buf,"\r\nerror occured!%d not in running!MsgID=%d\n",dstModuleID,MsgID);
-        printf("%s",buf); 
-        return -2;
+        printf("error occured!%d not in running!MsgID=%d", dstModuleID, MsgID); 
+        return ret;
     }
     else if (ret == IPC_SOCKET_SENDTO_FAIL)
     {
-        printf("\r\nerror occured!send message fail! MsgID=%d\n",MsgID); 
-        return -3;
+        printf("\r\nerror occured!send message fail! MsgID=%d\n", MsgID); 
+        return ret;
     }
     else if (ret == 0)
     {
@@ -460,101 +461,23 @@ int ipc_if_exe_cmd(
         {
             *pRetCode = pRcv->MsgHead.RetCode;
         }
+        
         ipc_if_free(pRcv);
     }
     else
     {
-        printf("\r\nerror occured!ipc return error ! MsgID=%d\n",MsgID); 
-        return -5;
+        printf("\r\nerror occured!ipc return error ! MsgID=%d\n", MsgID); 
+        return ret;
     }
 
-    return 0;
-}
-
-ULONG ipc_if_engage_event(UCHAR EventId)
-{
-    IPC_EVENT_CMD_MSG_INFO    *pEngageEvent;
-    IPC_COMMON_REG_ACK_INFO   *pAck;
-    char                      *pMsgRec;
-    USHORT                    usMsgRecLen;    
-    int                       Ret;
-    UCHAR                     srcMo = gIfCtl.ucSrcMo;
-
-    pEngageEvent = (IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
-    if(pEngageEvent == NULL)
-        return IPC_MEM_LACK;
-        
-    pEngageEvent->ucSrcMo   = srcMo;
-    pEngageEvent->ucEventId = EventId;
-    
-    Ret=ipc_if_send_synmsg(MODULE_IPC, 
-                           (char*)pEngageEvent, sizeof(IPC_EVENT_CMD_MSG_INFO), IPC_EVENT_ENGAGE, 
-                           &pMsgRec, &usMsgRecLen);
-    if(Ret != IPC_SUCCESS)
-    {
-        ipc_if_free(pEngageEvent);
-        return Ret;
-    }    
-    
-    pAck = (IPC_COMMON_REG_ACK_INFO*)pMsgRec;
-
-    if((pAck->ucSrcMo != srcMo) || (pAck->ucRetCode != IPC_ENGAGE_EVENT_ACK))
-    {
-        ipc_if_free(pEngageEvent);
-        ipc_if_free(pMsgRec);
-        return IPC_COMMON_FAIL;
-    }
-
-    ipc_if_free(pEngageEvent);
-    ipc_if_free(pMsgRec);
-    
-    return IPC_SUCCESS;  
-}
-
-ULONG ipc_if_disengage_event(UCHAR EventId)
-{
-    IPC_EVENT_CMD_MSG_INFO *pEngageEvent;
-    IPC_COMMON_REG_ACK_INFO    *pAck;
-    char *pMsgRec;
-    USHORT usMsgRecLen;    
-    int Ret;
-    UCHAR srcMo = gIfCtl.ucSrcMo;
-
-    pEngageEvent=(IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
-    if(pEngageEvent==NULL)
-        return IPC_MEM_LACK;
-    pEngageEvent->ucSrcMo=srcMo;
-    pEngageEvent->ucEventId=EventId;
-    
-    Ret=ipc_if_send_synmsg(MODULE_IPC,(char*)pEngageEvent,sizeof(IPC_EVENT_CMD_MSG_INFO),
-        IPC_EVENT_DIS_ENGAGE,&pMsgRec,&usMsgRecLen);
-    if(Ret!=IPC_SUCCESS)
-    {
-        ipc_if_free(pEngageEvent);
-        return Ret;
-    }    
-    pAck=(IPC_COMMON_REG_ACK_INFO*)pMsgRec;
-
-    if((pAck->ucSrcMo!=srcMo)||(pAck->ucRetCode !=IPC_DISENGAGE_EVENT_ACK))
-    {
-        ipc_if_free(pEngageEvent);
-        ipc_if_free(pMsgRec);
-        return IPC_COMMON_FAIL;
-    }
-
-    ipc_if_free(pEngageEvent);
-    ipc_if_free(pMsgRec);
-    
     return IPC_SUCCESS;
-    
 }
-
 
 #endif
 
 #if DEFUNC("异步消息")
 
-ULONG ipc_if_send_asynmsg(
+static ULONG ipc_if_send_asynmsg(
                 USHORT usDstMo, 
                 char   *pAppMsgSend,
                 USHORT usLenSend,
@@ -656,7 +579,7 @@ ULONG ipc_if_send_ack(
         ret = -1;
         goto end;
     }
-    
+
     if (ipc_if_preack(PRecMsg, (char*)pAckMsg)) 
     {
         printf("ipc_if_preack fail!\r\n");    
@@ -788,7 +711,7 @@ static void ipc_if_reccmd_thread(void* arg)
         ucSrcMo      = pIpcHead->ucSrcMo;
         pAppData     = IPC_APP_MEM_OFFSET(pRecMsg);
         usAppDataLen = RecLen - sizeof(IPC_HEAD);
-        
+
         if(gIfCtl.pIfCallBack)
         {
             gIfCtl.pIfCallBack(pAppData, usAppDataLen, ucType, ucSrcMo);
@@ -796,7 +719,7 @@ static void ipc_if_reccmd_thread(void* arg)
     }
 }
 
-static ULONG  ipc_if_cmdsock_thread()
+static ULONG  ipc_if_cmdsock_task_init()
 {
     pthread_t          thread;
     pthread_attr_t     attr;
@@ -822,7 +745,7 @@ static ULONG  ipc_if_cmdsock_thread()
 
 #endif
 
-#if DEFUNC("模块注册")
+#if DEFUNC("模块与事件注册")
 
 ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
 {
@@ -947,7 +870,7 @@ ULONG ipc_if_reg_module(UCHAR srcMo, char *pNameMo, IPC_MSG_CALLBACK pCallBack)
     }
     
     gIfCtl.pIfCallBack = pCallBack;
-    if (IPC_SUCCESS != ipc_if_cmdsock_thread()) 
+    if (IPC_SUCCESS != ipc_if_cmdsock_task_init()) 
     {
         printf("Create socket Thread FAIL.\r\n");
         return IPC_CREATE_THREAD_FAIL;
@@ -998,11 +921,86 @@ ULONG ipc_if_disreg_module()
     ipc_if_free(pMsgRec);
     
     return IPC_SUCCESS;
+}
 
+ULONG ipc_if_engage_event(UCHAR EventId)
+{
+    IPC_EVENT_CMD_MSG_INFO    *pEngageEvent;
+    IPC_COMMON_REG_ACK_INFO   *pAck;
+    char                      *pMsgRec;
+    USHORT                    usMsgRecLen;    
+    int                       Ret;
+    UCHAR                     srcMo = gIfCtl.ucSrcMo;
+
+    pEngageEvent = (IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
+    if(pEngageEvent == NULL)
+        return IPC_MEM_LACK;
+        
+    pEngageEvent->ucSrcMo   = srcMo;
+    pEngageEvent->ucEventId = EventId;
+    
+    Ret=ipc_if_send_synmsg(MODULE_IPC, 
+                           (char*)pEngageEvent, sizeof(IPC_EVENT_CMD_MSG_INFO), IPC_EVENT_ENGAGE, 
+                           &pMsgRec, &usMsgRecLen);
+    if(Ret != IPC_SUCCESS)
+    {
+        ipc_if_free(pEngageEvent);
+        return Ret;
+    }    
+    
+    pAck = (IPC_COMMON_REG_ACK_INFO*)pMsgRec;
+
+    if((pAck->ucSrcMo != srcMo) || (pAck->ucRetCode != IPC_ENGAGE_EVENT_ACK))
+    {
+        ipc_if_free(pEngageEvent);
+        ipc_if_free(pMsgRec);
+        return IPC_COMMON_FAIL;
+    }
+
+    ipc_if_free(pEngageEvent);
+    ipc_if_free(pMsgRec);
+    
+    return IPC_SUCCESS;  
+}
+
+ULONG ipc_if_disengage_event(UCHAR EventId)
+{
+    IPC_EVENT_CMD_MSG_INFO *pEngageEvent;
+    IPC_COMMON_REG_ACK_INFO    *pAck;
+    char *pMsgRec;
+    USHORT usMsgRecLen;    
+    int Ret;
+    UCHAR srcMo = gIfCtl.ucSrcMo;
+
+    pEngageEvent=(IPC_EVENT_CMD_MSG_INFO*)ipc_if_alloc(sizeof(IPC_EVENT_CMD_MSG_INFO));
+    if(pEngageEvent==NULL)
+        return IPC_MEM_LACK;
+    pEngageEvent->ucSrcMo=srcMo;
+    pEngageEvent->ucEventId=EventId;
+    
+    Ret=ipc_if_send_synmsg(MODULE_IPC,(char*)pEngageEvent,sizeof(IPC_EVENT_CMD_MSG_INFO),
+        IPC_EVENT_DIS_ENGAGE,&pMsgRec,&usMsgRecLen);
+    if(Ret!=IPC_SUCCESS)
+    {
+        ipc_if_free(pEngageEvent);
+        return Ret;
+    }    
+    pAck=(IPC_COMMON_REG_ACK_INFO*)pMsgRec;
+
+    if((pAck->ucSrcMo!=srcMo)||(pAck->ucRetCode !=IPC_DISENGAGE_EVENT_ACK))
+    {
+        ipc_if_free(pEngageEvent);
+        ipc_if_free(pMsgRec);
+        return IPC_COMMON_FAIL;
+    }
+
+    ipc_if_free(pEngageEvent);
+    ipc_if_free(pMsgRec);
+    
+    return IPC_SUCCESS;
 }
 
 #endif
-
 
 #if DEFUNC("信号量")
 

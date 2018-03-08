@@ -127,14 +127,12 @@ node_process_msg_task(
             if (dataLen < 0)
             {
                 MY_ERROR("Receive bad IPC_MSG_CMD msg! message length %d is less than size of IPC_APP_MSG:%d.\r\n",
-                      dataLen, sizeof(IPC_APP_MSG));
+                         dataLen, sizeof(IPC_APP_MSG));
                 goto end;
             }
             
             pMsg = (IPC_APP_MSG*)pMsgIn;
-            
-            MY_PRINT("ctrl rec msg cmd, msgid:%d\r\n", pMsg->MsgHead.MsgID);
-            
+               
             switch(pMsg->MsgHead.MsgID)
             {
 #if 0                
@@ -160,14 +158,58 @@ node_process_msg_task(
                     }
                 }
                 break;
-#endif                
+#endif         
+                case IPC_EVENT_INITED:
+                    {
+                        char *p;
+
+                        /*if (dataLen < 128)
+                        {
+                            MY_ERROR("receive bad IPC_EVENT_INITED msg!message length %d is not equal size of Port_Attr_t:%d.\r\n",dataLen, 128);
+                            goto end;
+                        }*/    
+                    
+                        p = (char*)(pMsg->data);
+                        /*if(RTN_OK != tf_snmp_gtf_port_state_set(gtfOltPortId, state))
+                        {
+                            MY_ERROR("Called _tf_snmp_gtf_port_state_set() error.\r\n");
+                            rc = -1;
+                        }*/
+                        printf("node rec cmd IPC_EVENT_INITED %s\r\n", p);
+                        rc = 0;
+                    }
+                    break;
+
+                case IPC_EVENT_ALARM_NOTIFY:
+                    {
+                        char *p;
+                        char sendbuf[128] = {"this is node send\r\n"};
+
+                        /*if (dataLen < 128)
+                        {
+                            MY_ERROR("receive bad IPC_EVENT_ALARM_NOTIFY msg!message length %d is not equal size of Port_Attr_t:%d.\r\n",dataLen, 128);
+                            goto end;
+                        }*/    
+                    
+                        p = (char*)(pMsg->data);
+                        /*if(RTN_OK != tf_snmp_gtf_port_state_set(gtfOltPortId, state))
+                        {
+                            MY_ERROR("Called _tf_snmp_gtf_port_state_set() error.\r\n");
+                            rc = -1;
+                        }*/
+                        printf("node rec cmd IPC_EVENT_ALARM_NOTIFY %s\r\n", p);
+                        rc = 0;
+                        ipc_if_send_ack(ucSrcMo, pMsgIn, rc, sendbuf, sizeof(sendbuf)); /*rc作为错误值返回给用户*/
+                        goto end;
+                    }
+                    break;
+                    
                 default:
                     rc = -1;
                     break;
             }
             
             ipc_if_send_ack(ucSrcMo, pMsgIn, rc, NULL, 0); /*rc作为错误值返回给用户*/
-            
         }       
     }while(0);
 
@@ -324,12 +366,18 @@ main(int argc, char ** argv)
 
     if (ipc_if_engage_event(IPC_EVENT_INITED))
     {
-        printf("node ipc engage event IPC_EVENT_CLI_START fail\r\n");
+        printf("node ipc engage event IPC_EVENT_INITED fail\r\n");
+    }
+
+    if (ipc_if_engage_event(IPC_EVENT_ALARM_NOTIFY))
+    {
+        printf("ctrl ipc engage event IPC_EVENT_ALARM_NOTIFY fail\r\n");
     }
 
     while(1)
     {
         sleep(1);
+        /*
         if (ipc_if_release_event(IPC_EVENT_CLI_START, NULL, 0))
         {
             printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
@@ -339,7 +387,7 @@ main(int argc, char ** argv)
         if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
         {
             printf("node ipc release event IPC_EVENT_CLI_START fail\r\n");
-        }
+        }*/
     }
 
     return 0 ;

@@ -138,7 +138,7 @@ ctrl_process_msg_task(
     }while(0);
 
 end:
-    ipc_if_free(pMsgIn);
+    ipc_if_free((void*)pMsgIn);
 
     return 0;
 }

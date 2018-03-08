@@ -150,6 +150,11 @@ main(void)
 
     ipc_shm_del(shm_id);
 #endif
+
+    short ret_code;
+    char  sendbuf[128];
+    char  recvbuf[128];
+    int   sendlen = sizeof(sendbuf);//recvlen = sizeof(recvbuf);
     
     ipc_if_init();
 
@@ -167,22 +172,42 @@ main(void)
 
     if (ipc_if_engage_event(IPC_EVENT_INITED))
     {
-        printf("ctrl ipc engage event IPC_EVENT_CLI_START fail\r\n");
+        printf("ctrl ipc engage event IPC_EVENT_INITED fail\r\n");
     }
 
+    if (ipc_if_engage_event(IPC_EVENT_ALARM_NOTIFY))
+    {
+        printf("ctrl ipc engage event IPC_EVENT_ALARM_NOTIFY fail\r\n");
+    }
+    
     while(1)
     {
-        sleep(1);
+        sleep(3);
         if (ipc_if_release_event(IPC_EVENT_CLI_START, NULL, 0))
         {
             printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
         }
 
-        sleep(1);
-        if (ipc_if_release_event(IPC_EVENT_INITED, NULL, 0))
+        sleep(3);
+        bzero(sendbuf, sizeof(sendbuf));
+        snprintf(sendbuf, sendlen, "this is event init msg form ctrl id_%d", IPC_EVENT_INITED);
+        if (ipc_if_exe_cmd(MODULE_NODE1, IPC_EVENT_INITED, sendbuf, strlen(sendbuf), &ret_code))
         {
-            printf("ctrl ipc release event IPC_EVENT_CLI_START fail\r\n");
+            printf("ctrl ipc exe cmd IPC_EVENT_INITED fail\r\n");
         }
+
+        printf("ctrl ipc exe cmd IPC_EVENT_INITED ret %d\r\n", ret_code);
+
+        sleep(3);
+        bzero(sendbuf, sizeof(sendbuf));
+        snprintf(sendbuf, sendlen, "this is event alarm notify msg form ctrl id_%d", IPC_EVENT_INITED);
+        if (ipc_if_get_cmd_result(MODULE_NODE1, IPC_EVENT_ALARM_NOTIFY, 
+                                  sendbuf, strlen(sendbuf), recvbuf, sizeof(recvbuf), &ret_code))
+        {
+            printf("ctrl ipc get cmd result IPC_EVENT_ALARM_NOTIFY fail\r\n");
+        }
+
+         printf("ctrl ipc get cmd result IPC_EVENT_ALARM_NOTIFY ret %d recbuf %s\r\n", ret_code, recvbuf);
     }
 
     return 0;
