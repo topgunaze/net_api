@@ -1,11 +1,4 @@
-#  Name         : Makefile
-#  Version      : V2.01
-#  Author       : keith.gong (kizerg@163.com)
-#  Time         : 2015.10.16
-#  Description  : Makefile for FD1508GS vtysh
-#                 Copyright (c) 2009-2015 C-Data Co.,Ltd.
-#                 All Rights Reserved.
-#  Modification : 2015.10.16, keith.gong, created
+
 
 MODULE_DIR           ?= $(shell pwd)
 MODULE_NAME          := $(notdir $(MODULE_DIR))
@@ -25,15 +18,18 @@ MODULE_OBJ_DIR       := $(PRJ_OBJ_DIR)/$(MODULE_NAME)
 MODULE_LIB_DIR       := $(PRJ_LIB_DIR)/$(MODULE_NAME)
 $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 
+#利用warning函数打印消息  
+$(warning "the value of MODULE_NAME is $(MODULE_NAME)")
+
 INCLUDE_DIRS         := $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include ./include
-INCLUDE_LIBS         := $(wildcard $(PRJ_LIB_DIR)/*.a) $(wildcard $(PRJ_LIB_DIR)/*/*.a)
+#INCLUDE_LIBS         := $(wildcard $(PRJ_LIB_DIR)/*/*.a) #$(wildcard $(PRJ_LIB_DIR)/*.a)
 CC_LIBS              := -lrt -lpthread -L$(MODULE_LIB_DIR) -l$(MODULE_NAME)
 
-CFLAGS               += -Wall -DHAVE_CONFIG_H $(addprefix -I,$(INCLUDE_DIRS)) #-D$(CDT_PRODUCT)
-ifeq ($(CC),gcc)
-CFLAGS               += -Wno-unused-but-set-variable
-endif
-LIBS_FLAGS           := -Wl,--start-group $(INCLUDE_LIBS) -Wl,--end-group
+CFLAGS               += -Wall -g -DHAVE_CONFIG_H $(addprefix -I,$(INCLUDE_DIRS)) #-D$(CDT_PRODUCT)
+#ifeq ($(CC),gcc)
+#CFLAGS               += -Wno-unused-but-set-variable
+#endif
+#LIBS_FLAGS           := -Wl,--start-group $(INCLUDE_LIBS) -Wl,--end-group
 
 MODULE_APP_OBJS      := $(subst .c,.o, $(wildcard src/*.c))
 ifneq (src/vtysh_cmd.c, $(wildcard src/vtysh_cmd.c))
@@ -42,6 +38,10 @@ endif
 MODULE_APP_DEPS      := $(MODULE_APP_OBJS:src%=$(MODULE_OBJ_DIR)%)
 MODULE_LIB_OBJS      := $(subst .c,.o, $(wildcard lib/*.c))
 MODULE_LIB_DEPS      := $(MODULE_LIB_OBJS:lib%=$(MODULE_OBJ_DIR)%)
+
+#利用warning函数打印消息  
+$(warning "the value of MODULE_APP_DEPS is $(MODULE_APP_DEPS)")
+$(warning "the value of MODULE_LIB_DEPS is $(MODULE_LIB_DEPS)")
 
 APP_DEP_LIBS         := $(PRJ_LIB_DIR)/common/libcommon.a  $(PRJ_LIB_DIR)/ipc/libipc_if.a
 MODULE_DEP_LIBS      := $(PRJ_LIB_DIR)/common/libcommon.a 
@@ -61,10 +61,10 @@ all: lib $(MODULE_OBJ_DIR)/$(MODULE_NAME)
 lib : $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so $(MODULE_LIB_DIR)/lib$(MODULE_NAME).a
 
 $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so : $(MODULE_LIB_DEPS) $(MODULE_DEP_LIBS)
-	$(CC) -shared -o $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so $(MODULE_LIB_DEPS) $(MODULE_DEP_LIBS)
+	$(CC) -shared -o  $@ $^ 
 
 $(MODULE_LIB_DIR)/lib$(MODULE_NAME).a: $(MODULE_LIB_DEPS)
-	$(AR) $(ARFLAGS) $(MODULE_LIB_DIR)/lib$(MODULE_NAME).a $(MODULE_LIB_DEPS)
+	$(AR) $(ARFLAGS) $@ $< 
 
 extract : $(EXTRACT_TOOL) $(VTYSH_CMD_FILES)
 	$(shell export CROSS_COMPILE=$(CROSS_COMPILE); export GPON_INC="$(addprefix -I, $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include $(GPON_SUB_INC_DIRS) $(SNMP_DIR)/include)"; export SYSTEM_DIR=$(SYSTEM_DIR); ./$(EXTRACT_TOOL) $(VTYSH_CMD_FILES) > $(MODULE_DIR)/src/vtysh_cmd.c)
