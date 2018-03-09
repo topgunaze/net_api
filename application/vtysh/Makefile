@@ -63,11 +63,14 @@ $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so : $(MODULE_LIB_DEPS) $(MODULE_DEP_LIBS)
 $(MODULE_LIB_DIR)/lib$(MODULE_NAME).a: $(MODULE_LIB_DEPS)
 	$(AR) $(ARFLAGS) $@ $< 
 
+#extract : $(EXTRACT_TOOL) $(VTYSH_CMD_FILES)
+#	$(shell export CROSS_COMPILE=$(CROSS_COMPILE); export GPON_INC="$(addprefix -I, $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include #$(GPON_SUB_INC_DIRS) $(SNMP_DIR)/include)"; export SYSTEM_DIR=$(SYSTEM_DIR); ./$(EXTRACT_TOOL) $(VTYSH_CMD_FILES) > $(MODULE_DIR)/src/vtysh_cmd.c)
+#	$(CC) -c $(CFLAGS) -D$(CPU_ENDIAN) -o $(MODULE_OBJ_DIR)/vtysh_cmd.o $(MODULE_DIR)/src/vtysh_cmd.c
+
 extract : $(EXTRACT_TOOL) $(VTYSH_CMD_FILES)
-	$(shell export CROSS_COMPILE=$(CROSS_COMPILE); export GPON_INC="$(addprefix -I, $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include $(GPON_SUB_INC_DIRS) $(SNMP_DIR)/include)"; export SYSTEM_DIR=$(SYSTEM_DIR); ./$(EXTRACT_TOOL) $(VTYSH_CMD_FILES) > $(MODULE_DIR)/src/vtysh_cmd.c)
+	$(shell export CROSS_COMPILE=$(CROSS_COMPILE); export GPON_INC="$(addprefix -I, $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include $(GPON_SUB_INC_DIRS) $(SNMP_DIR)/include)";  ./$(EXTRACT_TOOL) $(VTYSH_CMD_FILES) > $(MODULE_DIR)/src/vtysh_cmd.c)
 	$(CC) -c $(CFLAGS) -D$(CPU_ENDIAN) -o $(MODULE_OBJ_DIR)/vtysh_cmd.o $(MODULE_DIR)/src/vtysh_cmd.c
-
-
+	
 $(MODULE_OBJ_DIR)/$(MODULE_NAME) : extract $(MODULE_APP_DEPS) $(MODULE_LIB_DIR)/lib$(MODULE_NAME).so
 	$(CC) $(CFLAGS) -o $@ $(MODULE_APP_DEPS) -Wl,--start-group $(APP_DEP_LIBS) $(CC_LIBS) -Wl,--end-group
 	$(STRIP) $@

@@ -447,7 +447,7 @@ void cli_client_init(void)
     vtysh_config_init ();
     memory_init ();
     vtysh_init();
-    //vtysh_init_cmd();
+    vtysh_init_cmd();
 
     /* 3.modules initialization */
     //test_zclient_init();
