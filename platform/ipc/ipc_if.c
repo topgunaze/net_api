@@ -16,6 +16,7 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include "malloc.h"
 #include "stdlib.h" 
 #include <fcntl.h>
+#include <unistd.h>
 
 IPC_IF_MODULE_INFO   gIfCtl;
 /*因为在模块中都是多线程,这里提供对收发包的计数上锁*/
@@ -61,12 +62,12 @@ static void signal_segv(int signum, siginfo_t* info, void* ptr)
     fprintf(stderr, "info.si_addr = %p\n", info->si_addr);
 
     //fprintf(stderr, "EPC=0x%08llx\n",ucontext->uc_mcontext.pc);
-    fprintf(stderr, "RA=0x%08llx\n",ucontext->uc_mcontext.gregs[31]);
+    fprintf(stderr, "RA=0x%08llx\n", (long long unsigned int)ucontext->uc_mcontext.gregs[31]);
     for (i = 0; i < NGREG; i++)
     {
           if (i%2 == 0)
           fprintf(stderr, "\n");
-          fprintf(stderr, "%s = 0x%08llx          ", mips_reg[i], ucontext->uc_mcontext.gregs[i]);
+          fprintf(stderr, "%s = 0x%08llx          ", mips_reg[i], (long long unsigned int)ucontext->uc_mcontext.gregs[i]);
     }
     
     fprintf(stderr,"\n");
@@ -219,11 +220,10 @@ static ULONG ipc_if_send_synmsg(
                 USHORT  *pLenRec)
 {
     IPC_HEAD       *pIpcHead, *pRecIpcHead;
-    int            Ret, RecLen, i;
+    int            Ret, RecLen;
     char           *pRecMsg;
     fd_set         fds;
     struct timeval timout;
-    UCHAR          *pData;
     USHORT         usSn;
     
     if((pAppMsgSend == NULL) || (pLenRec == NULL) || (pMsgRec == NULL))
@@ -484,7 +484,7 @@ static ULONG ipc_if_send_asynmsg(
                 UCHAR  ucMsgType)
 {
     IPC_HEAD  *pIpcHead;
-    int       AddrLen, Ret;
+    int       Ret;
     USHORT    usSn;
 
     if(pAppMsgSend == NULL)
@@ -652,8 +652,6 @@ static void ipc_if_reccmd_thread(void* arg)
     USHORT         usAppDataLen;
     UCHAR          ucType;
     UCHAR          ucSrcMo;
-    int            i;
-    UCHAR          *pDebug;
     fd_set         fds;
     struct timeval timout;
  

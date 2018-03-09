@@ -60,6 +60,11 @@ main(void)
         exit(1);
     }
 
+    while(1)
+    {
+        sleep(1);
+    }
+
     //key_t key = ipc_key_get("/etc", 20);
 
 #if 0
@@ -221,23 +226,11 @@ main(void)
 
     UINT8 module;
 
-
     /* 1.Prepare master thread. */
     master = thread_master_create ();
 
-    /* 2.Library initialization. */
-    tflog_default = opentflog("GTF", GSYSLOG_MODULE_MAX_NUM, TRUE,
-                                TFLOG_SYSLOG | TFLOG_CLI, LOG_LOCAL0, alarm_to_vty);
-
-    for(module = 0; module < GSYSLOG_MODULE_MAX_NUM; module++)
-        tflog_debug_mod_enable(module, 0);
-        
     cmd_init (1);
     vty_init (master);
-
-    /* 3.modules initialization */
-
-    //适配控制板数据库与模块网络接口
 
     /* 4. Get configuration file. */
     vty_read_config (GCONFIG_FILENAME, GCONFIG_DIR);
@@ -260,6 +253,16 @@ main(void)
     while (thread_fetch (master, &thread))
         thread_call (&thread); 
      
+
+#if 0
+    /* 2.Library initialization. */
+    tflog_default = opentflog("GTF", GSYSLOG_MODULE_MAX_NUM, TRUE,
+                                TFLOG_SYSLOG | TFLOG_CLI, LOG_LOCAL0, alarm_to_vty);
+
+    for(module = 0; module < GSYSLOG_MODULE_MAX_NUM; module++)
+        tflog_debug_mod_enable(module, 0);
+#endif
+
     /* Not reached. */
     exit(1);
 #endif

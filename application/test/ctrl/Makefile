@@ -30,7 +30,7 @@ INCLUDE_DIRS := $(PRJ_INC_DIR) $(APP_INC_DIR) $(COM_DIR)/include \
 				
 APP_DEP_LIBS :=	$(ADP_LIB_DIR)/libadp.a $(PRJ_LIB_DIR)/common/libcommon.a $(IPC_LIB_DIR)/libipc_if.a
 
-CFLAGS               += -Wall -Werror -g $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
+CFLAGS               += -Wall -Werror $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
 CC_LIBS              := -lm -lrt -lpthread -L$(ZLIB_DIR)/install/lib -lz -L$(LIBEV_DIR)/install/lib -lev #-L$(PRJ_LIB_DIR)/vtysh -lvtysh
 
 #  Pattern matching rules: 

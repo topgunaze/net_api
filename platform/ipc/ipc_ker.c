@@ -21,6 +21,8 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
 #include "ipc_if.h"
 #include "ipc_private.h"
 #include "ipc_ker.h"
+#include <sys/time.h>
+
 
 IPC_KER_CTL         gIpcKerCtl;
 IPC_KER_MO_CTL      gIpcKerMoCtl[SYS_MAX_MODULE_NUM];
@@ -326,7 +328,7 @@ static ULONG ipc_ker_event_release_proc(IPC_EVENT_R_INFO *pEv)
     ucEId = pEv->EventMsgHead.ucEventId;
     if((ucEId >= IPC_EVENT_MAX) || (ucEId <= IPC_EVENT_BASE))
     {
-        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d to be released by module %d.\r\n", ucEId,ucMo);
+        ipc_debug_printf("IPC Kernel Warning: invalid event id:%d.\r\n", ucEId);
         return IPC_INVALID_EID;
     }
     
@@ -397,7 +399,7 @@ static ULONG ipc_ker_cmd_msg_proc(char *pMsg)
 
     if((pIpc->ucMsgType == IPC_MSG_CMD) && (ucDstMo == pIpc->ucSrcMo))
     {
-        ipc_debug_printf("IPC kernel error:cmd msg from module %d to himself.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
+        ipc_debug_printf("IPC kernel error:cmd msg from module %d to himself %d.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
 
         return IPC_CMD_MODULE_LOOP;
     }
@@ -446,7 +448,7 @@ static ULONG ipc_ker_ack_msg_proc(char *pMsg)
 
     if((pIpc->ucMsgType == IPC_MSG_ACK) && (ucDstMo == pIpc->ucSrcMo))
     {
-        ipc_debug_printf("IPC kernel error:ACK msg from module %d to himself.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
+        ipc_debug_printf("IPC kernel error:ACK msg from module %d to himself %d.\r\n", pIpc->ucSrcMo, pIpc->ucDstMo);
 
         return IPC_CMD_MODULE_LOOP;
     }
@@ -469,7 +471,6 @@ static void ipc_ker_resend_blockmsg(void)
     SND_BLOCK_MSG  *curmsg;
     UCHAR          ucDstMo;
     int            ret, blocktime;
-    struct timeval timout;
 
     for (ucDstMo = 0; ucDstMo < SYS_MAX_MODULE_NUM; ucDstMo++)
     {
@@ -550,7 +551,7 @@ static ULONG ipc_ker_regmod_proc(IPC_REG_MODULE_INFO *pRegInfo, char *pAck, USHO
     {
         ipc_debug_printf("IPC Kernel Warning: source module %d has been registered.\r\n", ucMo);
         clear_snd_resource(ucMo);
-        gIpcKerMoCtl[ucMo].IsReged == FALSE;
+        gIpcKerMoCtl[ucMo].IsReged = FALSE;
     }
     
     ipc_debug_printf("IPC Ker:to be registered module %d,name:%s.\r\n", ucMo, pRegInfo->NameMo);
@@ -873,7 +874,6 @@ ipc_ker_msg_module_disreg_proc(char *pRecData, char *pSendData, struct sockaddr_
 static ULONG 
 ipc_ker_msg_event_notify_proc(char *pRecData, char *pSendData, struct sockaddr_un *to)
 {
-    USHORT   usActuSendLen, usSendLen;
     ULONG    ulRet;
     IPC_HEAD *pIpc = (IPC_HEAD*)IPC_APP_MEM_TO_IPC(pRecData);
     
@@ -908,15 +908,14 @@ ipc_ker_msg_event_notify_proc(char *pRecData, char *pSendData, struct sockaddr_u
 static ULONG 
 ipc_ker_msg_event_ack_proc(char *pRecData)
 {
-    USHORT   usActuSendLen, usSendLen;
-    ULONG    ulRet;
+    ULONG ulRet;
     
     ipc_debug_printf("IPC kernel rec ack msg.\r\n");
     
     ulRet = ipc_ker_ack_msg_proc(pRecData);
     if ((ulRet != IPC_SUCCESS) && (ulRet != IPC_SEND_BLOCK))
     {
-        ipc_debug_printf("IPC kernel forward ack  msg FAIL. ret %d\r\n", ulRet);
+        ipc_debug_printf("IPC kernel forward ack  msg FAIL. ret %lu\r\n", ulRet);
 
         return ulRet;
     }
@@ -1013,7 +1012,7 @@ ipc_ker_read_msg_proc(void)
 
     ipc_debug_printf("ipcker to process msg end.\n");
 
-    return IPC_SUCCESS;
+    return Ret;
 }
 
 #endif

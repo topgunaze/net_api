@@ -6,28 +6,45 @@
 #  日期:2014/12
 #  描述: 此文件定义IPC模块主程序
 
-PRJ_ROOT_DIR         ?= $(shell cd ../..; pwd)
 
--include $(PRJ_ROOT_DIR)/make/Make.config
+MODULE_DIR     ?= $(shell pwd)
+PRJ_ROOT_DIR   ?= $(shell cd ../..; pwd)
+MODULE_NAME    := $(notdir $(MODULE_DIR))
 
-MODULE_OBJ_DIR := $(PRJ_OBJ_DIR)/ipc
-MODULE_LIB_DIR := $(PRJ_LIB_DIR)/ipc
+include $(PRJ_ROOT_DIR)/make/Make.config
+
+MODULE_OBJ_DIR := $(PRJ_OBJ_DIR)/$(MODULE_NAME)
+MODULE_LIB_DIR := $(PRJ_LIB_DIR)/$(MODULE_NAME)
 $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 
-CFLAGS += -D_GNU_SOURCE -I$(PRJ_INC_DIR) -I$(COM_DIR)/include
-all:ipc_ker libipc_if.a
+MODULE_OBJS          := $(subst .c,.o,$(wildcard *.c)) 
+MODULE_DEPS          := $(addprefix $(MODULE_OBJ_DIR)/,$(MODULE_OBJS))
 
-ipc_ker:ipc_ker.o
-	$(CC) -o ipc_ker $(CFLAGS) ipc_ker.c
-	$(MV) ipc_ker.o $(MODULE_OBJ_DIR)
-	$(MV) ipc_ker $(MODULE_OBJ_DIR)
+INCLUDE_DIRS         := $(PRJ_INC_DIR) \
+						$(COM_DIR)/include
+						
+CFLAGS += -Wall -Werror $(addprefix -I,$(INCLUDE_DIRS)) -D_GNU_SOURCE -DHAVE_CONFIG_H
+
+$(MODULE_OBJ_DIR)/%.o: $(MODULE_DIR)/%.c
+	$(CC) -c $(CFLAGS) -o $@ $< #第一个依赖对象
 	
-libipc_if.a:ipc_if.o
-	$(AR) $(ARFLAGS) libipc_if.a ipc_if.o
-	$(MV) ipc_if.o $(MODULE_OBJ_DIR)
-	$(MV) libipc_if.a $(MODULE_LIB_DIR)
+.PHONY: all clean 
+all:$(MODULE_OBJ_DIR)/ipc_ker $(MODULE_LIB_DIR)/libipc_if.a
+
+$(MODULE_OBJ_DIR)/ipc_ker: $(MODULE_OBJ_DIR)/ipc_ker.o
+	$(CC) $(CFLAGS) -o $@ $<
+	#$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -o $@ $^ -Wl,--start-group $(APP_DEP_LIBS) -Wl,--end-group 
+	#$(MV) ipc_ker.o $(MODULE_OBJ_DIR)
+	#$(MV) ipc_ker $(MODULE_OBJ_DIR)
+	
+$(MODULE_LIB_DIR)/libipc_if.a: $(MODULE_OBJ_DIR)/ipc_if.o
+	$(AR) $(ARFLAGS) $@ $<
+	#$(MV) ipc_if.o $(MODULE_OBJ_DIR)
+	#$(MV) libipc_if.a $(MODULE_LIB_DIR)
 
 clean:
 	#-rm -f *.o ipc_ker libipc_if.a
 	$(RM) $(MODULE_OBJ_DIR)/*
 	$(RM) $(MODULE_LIB_DIR)/*
+	
+

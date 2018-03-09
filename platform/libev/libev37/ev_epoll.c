@@ -82,8 +82,8 @@ epoll_modify (EV_P_ int fd, int oev, int nev)
   /* store the generation counter in the upper 32 bits, the fd in the lower 32 bits */
   ev.data.u64 = (uint64_t)(uint32_t)fd
               | ((uint64_t)(uint32_t)++anfds [fd].egen << 32);
-  ev.events   = (nev & EV_READ  ? EPOLLIN  : 0)
-              | (nev & EV_WRITE ? EPOLLOUT : 0);
+  ev.events   = (nev & EV_READ  ? (EPOLLIN | EPOLLET) : 0)
+              | (nev & EV_WRITE ? (EPOLLOUT | EPOLLET) : 0);
 
   if (expect_true (!epoll_ctl (backend_fd, oev ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, fd, &ev)))
     return;
@@ -156,8 +156,8 @@ epoll_poll (EV_P_ ev_tstamp timeout)
 
           /* we received an event but are not interested in it, try mod or del */
           /* I don't think we ever need MOD, but let's handle it anyways */
-          ev->events = (want & EV_READ  ? EPOLLIN  : 0)
-                     | (want & EV_WRITE ? EPOLLOUT : 0);
+          ev->events = (want & EV_READ  ? (EPOLLIN | EPOLLET)  : 0)
+                     | (want & EV_WRITE ? (EPOLLOUT | EPOLLET) : 0);
 
           if (epoll_ctl (backend_fd, want ? EPOLL_CTL_MOD : EPOLL_CTL_DEL, fd, ev))
             {

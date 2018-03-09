@@ -18,9 +18,6 @@ MODULE_OBJ_DIR       := $(PRJ_OBJ_DIR)/$(MODULE_NAME)
 MODULE_LIB_DIR       := $(PRJ_LIB_DIR)/$(MODULE_NAME)
 $(shell $(MKDIR) $(MODULE_OBJ_DIR) $(MODULE_LIB_DIR))
 
-#利用warning函数打印消息  
-$(warning "the value of MODULE_NAME is $(MODULE_NAME)")
-
 INCLUDE_DIRS         := $(PRJ_ROOT_DIR)/include $(APP_DIR)/include $(COM_DIR)/include ./include
 #INCLUDE_LIBS         := $(wildcard $(PRJ_LIB_DIR)/*/*.a) #$(wildcard $(PRJ_LIB_DIR)/*.a)
 CC_LIBS              := -lrt -lpthread -L$(MODULE_LIB_DIR) -l$(MODULE_NAME)

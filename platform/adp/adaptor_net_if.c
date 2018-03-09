@@ -129,17 +129,13 @@ net_rec_packet_fix(
 }
 
 static unsigned int 
-net_rec_packet_peek(
-                int             fd, 
-                void            *pdata, 
-                unsigned int    data_len, 
-                unsigned int    *prec_len)
+net_rec_packet_peek(int fd, void *pdata, unsigned int data_len, unsigned int *prec_len)
 {
     int recv_num = 0;
 
     if (!prec_len)
     {
-        printf("Parameter is null !\n");
+        printf("Parameter is null !\r\n");
         return MDW_NET_RC_PARAM_NULL;
     }
 
@@ -150,44 +146,37 @@ net_rec_packet_peek(
     }
 
     recv_num = recv(fd, pdata, data_len, MSG_PEEK);
-    if(recv_num <  0)
+    if(recv_num < 0)
     {
-        switch(errno)
-        {
-            case EINTR:
-            case EAGAIN:
-                    //try again
-                    break;
-                    
-            case ETIMEDOUT:
-                    //keepallive error
-                    break;
-                    
-            default: 
-                    printf("AF_INET server bad,ERRNO:%d,errno description:%s\n", errno, strerror(errno));
-                    return MDW_NET_RC_REC_PACKET;
-        }
+      switch(errno)
+      {
+        case EINTR:
+                return MDW_NET_RC_INTR;
 
+        case EAGAIN://EWOULDBLOCK
+                return MDW_NET_RC_RBUFFER_EMPTY;
+
+        default: 
+                printf("AF_INET server bad,ERRNO:%d,errno description:%s\r\n",errno,strerror(errno));
+                return MDW_NET_RC_REC_PACKET;
+      }
     }
     else
     if (0 == recv_num)
     {
-        printf("remote disconnected !\n");  
+        printf("remote disconnected !\r\n");  
         return MDW_NET_RC_REMOTE_DISCONNECT;
     }
     else
     {
-        *prec_len = recv_num;
+      *prec_len = recv_num;
     }
     
     return 0;
 }
 
 unsigned int 
-net_rec_packet_fix_peek(
-                int             fd, 
-                void            *pdata, 
-                unsigned int    data_len)
+net_rec_packet_fix_peek(int fd, void *pdata, unsigned int data_len)
 {
     unsigned int read_len = 0;
     unsigned int rc;
@@ -196,15 +185,37 @@ net_rec_packet_fix_peek(
     do 
     {
         len = 0;
-        rc = net_rec_packet_peek(fd, (char*)pdata + read_len, data_len - read_len, &len);
-        if(rc)  
+        rc = net_rec_packet_peek(fd, ((char*)pdata + read_len), (data_len - read_len), &len);
+        if(rc && ((rc != MDW_NET_RC_INTR) && (rc != MDW_NET_RC_RBUFFER_EMPTY)))
+        {       
+            printf("recv error !\r\n");
+            return rc;
+        }
+         
+        read_len += len;
+    }while(data_len > read_len);
+
+    return 0;
+}
+
+unsigned int 
+net_rec_packet_fix_peek_noblock(int fd, void *pdata, unsigned int data_len)
+{
+    unsigned int read_len = 0;
+    unsigned int rc;
+    unsigned int len;
+  
+    do 
+    {
+        len = 0;
+        rc = net_rec_packet_peek(fd, ((char*)pdata + read_len), (data_len - read_len), &len);
+        if(rc && rc != MDW_NET_RC_INTR)  
         {          
-            printf("read error !\n");
+            printf("recv error !\r\n");
             return rc;  
         }
         
         read_len += len;
-        
     }while(data_len > read_len);
 
     return 0;
@@ -240,7 +251,15 @@ again:
     if (send_size < 0)
     {
         if (errno == EINTR)
+        {
             goto again;
+        }
+        else
+        if (errno == EAGAIN)
+        {
+            net_timewait(0, 10*1000);
+            goto again;
+        }
         else
         {
             printf("sendmsg err %d, %s\r\n", errno, strerror(errno));
@@ -254,12 +273,12 @@ again:
 
 //发送消息
 unsigned int 
-net_send_packet(
+net_sendmsg_packet(
                 int                fd,
                 struct sockaddr_in *p_remote_addr,
                 NET_MSG            *pnet_msg)
 {
-    int                 ret;
+    int              ret;
     NET_MULTI_MSG    msg;
 
     if (NULL == p_remote_addr || NULL == pnet_msg)
@@ -286,34 +305,91 @@ net_send_packet(
     return 0;
 }
 
-unsigned int 
-net_send_alone_packet(
-                int      fd, 
-                NET_MSG  *pnet_msg)
+static unsigned int 
+net_send_packet(int fd, void *pdata, unsigned int data_len, unsigned int *psend_len)
 {
-    int send_size;
+    int send_num = 0;
 
+    if (!psend_len)
+    {
+        printf("Parameter is null !\r\n");
+        return MDW_NET_RC_PARAM_NULL;
+    }
+
+    if (!pdata || 0 == data_len)
+    {
+        //没有需要发送的数据
+        return 0;
+    }
+
+    send_num = send(fd, pdata, data_len, 0);
+    if(send_num < 0)
+    {
+      switch(errno)
+      {
+        case EINTR:
+            return MDW_NET_RC_INTR;
+            
+        case EAGAIN:
+            return MDW_NET_RC_RBUFFER_EMPTY;
+                     
+        default: 
+            printf("AF_INET server bad,ERRNO:%d,errno description:%s\r\n", errno, strerror(errno));
+            return MDW_NET_RC_REC_PACKET;
+      }
+    }
+    else
+    {
+      *psend_len = send_num;
+    }
+    
+    return 0;
+}
+
+static unsigned int 
+cdt_pon_net_send_packet_fix(int fd, void *pdata, unsigned int data_len)
+{
+    unsigned int send_len = 0;
+    unsigned int rc;
+    unsigned int len;
+  
+    do 
+    {
+        len = 0;
+        rc = net_send_packet(fd, ((char*)pdata + send_len), (data_len - send_len), &len);
+        if(rc)  
+        {          
+            switch(rc)
+            {
+                case MDW_NET_RC_INTR:
+                    break;
+                    
+                case MDW_NET_RC_RBUFFER_EMPTY:
+                    net_timewait(0, 1000);
+                    break;
+
+                default:
+                    printf("send error !\r\n");
+                    return rc;
+            }
+        }
+
+        send_len += len;
+    }while(data_len > send_len);
+
+    return 0;
+}
+
+unsigned int 
+net_send_alone_packet(int fd, NET_MSG *pnet_msg)
+{
     if (NULL == pnet_msg)
     {
-        printf("Parameter is null !\n");
+        printf("Parameter is null !\r\n");
         return MDW_NET_RC_PARAM_NULL;
     }
     
-again:
-    send_size = send(fd, pnet_msg, pnet_msg->len, 0);
-    if (send_size < 0)
-    {
-        if (errno == EINTR)
-            goto again;
-        else
-        {
-            printf("send err %d, %s\r\n", errno, strerror(errno));
-
-            return errno;
-        }
-    }   
-
-    return 0;
+    return cdt_pon_net_send_packet_fix(fd, pnet_msg, pnet_msg->len);
 }
 
 static unsigned int 

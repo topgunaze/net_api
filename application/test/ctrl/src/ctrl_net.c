@@ -1518,7 +1518,7 @@ ctrl_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     }
 
     //1. 预读取消息头
-    if ((rc = net_rec_packet_fix_peek(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
+    if ((rc = net_rec_packet_fix_peek_noblock(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
     {
         //断链或者其他
         goto fail;
@@ -1535,7 +1535,7 @@ ctrl_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     }
 
     //4. 预读取消息体
-    if ((rc = net_rec_packet_fix_peek(watcher->fd, msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
+    if ((rc = net_rec_packet_fix_peek_noblock(watcher->fd, msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
     {
         //断链或者其他
         goto fail;

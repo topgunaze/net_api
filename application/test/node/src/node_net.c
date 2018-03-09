@@ -777,7 +777,7 @@ node_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     }
 
     //1. 预读取头
-    if ((rc = net_rec_packet_fix_peek(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
+    if ((rc = net_rec_packet_fix_peek_noblock(watcher->fd, &msg_header, NET_MSG_HEAD_LEN)))
     {
         goto fail;
     }
@@ -821,7 +821,7 @@ node_net_read_cb(EV_P_ struct ev_io *watcher, int revents)
     }
     
     //3. 预读取消息体，消息体的长度为msg的有效长度与头长之差
-    if ((rc = net_rec_packet_fix_peek(watcher->fd, p_msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
+    if ((rc = net_rec_packet_fix_peek_noblock(watcher->fd, p_msg->body, (msg_header.len - NET_MSG_HEAD_LEN))))
     {
         goto fail;
     }

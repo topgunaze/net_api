@@ -353,7 +353,10 @@ unsigned int
 net_rec_packet_fix_peek(int fd, void *pdata, unsigned int data_len);
 
 unsigned int 
-net_send_packet(int fd, struct sockaddr_in *p_remote_addr, NET_MSG *pnet_msg);
+net_rec_packet_fix_peek_noblock(int fd, void *pdata, unsigned int data_len);
+
+unsigned int 
+net_sendmsg_packet(int fd, struct sockaddr_in *p_remote_addr, NET_MSG *pnet_msg);
 
 unsigned int 
 net_send_alone_packet(int fd, NET_MSG *pnet_msg);

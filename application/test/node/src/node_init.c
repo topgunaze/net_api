@@ -260,6 +260,11 @@ main(int argc, char ** argv)
         return -1;
     }
 
+    while(1)
+    {
+        sleep(1);
+    }
+
     //key_t key = ipc_key_get("/etc", 20);
 
 #if 0
