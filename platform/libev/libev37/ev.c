@@ -631,15 +631,25 @@ ev_now (EV_P)
 void
 ev_sleep (ev_tstamp delay)
 {
+  int ret;
+    
   if (delay > 0.)
     {
 #if EV_USE_NANOSLEEP
       struct timespec ts;
+      struct timespec ts_rem;//
 
-      ts.tv_sec  = (time_t)delay;
-      ts.tv_nsec = (long)((delay - (ev_tstamp)(ts.tv_sec)) * 1e9);
+      ts_rem.tv_sec  = (time_t)delay;//ts
+      ts_rem.tv_nsec = (long)((delay - (ev_tstamp)(ts.tv_sec)) * 1e9);//ts
 
-      nanosleep (&ts, 0);
+      do
+      {
+        ts.tv_sec  = ts_rem.tv_sec;//
+        ts.tv_nsec = ts_rem.tv_nsec;//
+        
+        ret = nanosleep (&ts, &ts_rem);//
+      }while(ret < 0 && errno == EINTR);
+
 #elif defined(_WIN32)
       Sleep ((unsigned long)(delay * 1e3));
 #else
@@ -651,7 +661,11 @@ ev_sleep (ev_tstamp delay)
       /* here we rely on sys/time.h + sys/types.h + unistd.h providing select */
       /* something not guaranteed by newer posix versions, but guaranteed */
       /* by older ones */
-      select (0, 0, 0, 0, &tv);
+      do
+      {
+        ret = select (0, 0, 0, 0, &tv);
+      }while(ret < 0 && errno == EINTR)
+
 #endif
     }
 }

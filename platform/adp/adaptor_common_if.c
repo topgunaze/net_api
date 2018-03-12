@@ -19,16 +19,13 @@
 void 
 net_timewait(int sec, int us)
 {
-    struct timeval tv;
+    struct timeval tv = {.tv_sec = sec, .tv_usec = us};
     int            ret;
 
-    tv.tv_sec   = sec;
-    tv.tv_usec  = us;
-    
     do
     {
         ret = select(0, NULL, NULL, NULL, &tv);
-    }while(ret<0 && errno == EINTR);
+    }while(ret < 0 && errno == EINTR);
 
     return ;  
 }

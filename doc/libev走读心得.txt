@@ -1,0 +1,78 @@
+target ：libev框架
+ -> backend_poll -> EV_INVOKE_PENDING -> time_update -> 
+ 
+修正阻塞时间 判决条件：
+同时满足三个条件:
+flags & EVLOOP_NONBLOCK == 0
+idleall == 0
+activecnt != 0
+
+ev_loop 运行判决条件：
+activecnt ！= 0
+loop_done == 0
+flags & (EVLOOP_ONESHOT | EVLOOP_NONBLOCK) == 0
+
+
+固定值：
+backend_fudge 0
+timeout_blocktime
+
+实时值
+mn_now -> get_clock
+
+疑似bug：
+ev_sleep 休眠被EINTR中断场景
+
+框架内事件触发、修改回调
+backend_modify == epoll_modify
+backend_poll == epoll_poll
+
+文件描述符组，每个fd下挂一串watcher链表，每个watcher节点携带对应的关注事件
+anfds
+
+已挂起监视器组，按优先级和挂起的计数记录watcher信息
+pendings
+
+文件描述符修改组， 按照 fdchangecnt 记录 fd
+fdchanges
+reify
+
+epoll 关注事件修改
+epoll_modify -> MOD or ADD
+
+fd_kill -> anfds -> fd2watcher -> ev_io_stop -> ev_feed_event
+
+epoll关注事件触发
+fd_event-> fd_event_nc -> anfds -> fd2watcher -> ev_feed_event -> pendings
+
+epoll关注事件执行
+
+fcntl (backend_fd, F_SETFD, FD_CLOEXEC);
+
+libev epoll_wait 线程
+事件处理线程池 watcher 
+
+EPOLLHUP
+
+EV__IOFDSET 内部使用，events设置标志位，fdchange 后清除
+对于io fd 的事件只能是 EV__IOFDSET | EV_READ | EV_WRITE
+
+调整fd关注事件
+fd_reify -> 遍历 -> fdchanges2anfds -> events更新 or EV__IOFDSET -> backend_modify -> 清 fdchangecnt
+fd_change
+
+事件关联
+EPOLLOUT | EPOLLERR | EPOLLHUP
+EPOLLIN  | EPOLLERR | EPOLLHUP
+
+二叉堆操作
+
+用户操作接口：
+
+epoll关注事件添加
+ev_xxx_init -> watcher [fd] cb events -> ev_xxx_start -> fd_change
+
+epoll关注事件修改
+
+epoll关注事件删除
+ev_io_stop
