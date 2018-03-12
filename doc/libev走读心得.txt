@@ -1,5 +1,15 @@
 target ：libev框架
- -> backend_poll -> EV_INVOKE_PENDING -> time_update -> 
+backend_poll -> EV_INVOKE_PENDING -> time_update -> 
+
+文件描述符组，每个fd下挂一串watcher链表，每个watcher节点携带对应的关注事件
+anfds
+
+已挂起监视器组，按优先级和挂起的计数记录watcher信息
+pendings
+
+文件描述符修改组， 按照 fdchangecnt 记录 fd
+fdchanges
+reify
  
 修正阻塞时间 判决条件：
 同时满足三个条件:
@@ -12,6 +22,31 @@ activecnt ！= 0
 loop_done == 0
 flags & (EVLOOP_ONESHOT | EVLOOP_NONBLOCK) == 0
 
+框架内事件修改、触发、执行回调
+backend_modify == epoll_modify
+backend_poll == epoll_poll
+invoke_cb == ev_invoke_pending
+
+epoll 关注事件修改
+epoll_modify -> MOD or ADD
+
+epoll关注事件触发
+fd_event -> fd_event_nc -> anfds -> fd2watcher -> ev_feed_event -> pendings
+
+epoll关注事件执行，执行监视器的回调
+ev_invoke_pending -> 遍历 pri pendingcnt -> pendings2watcher -> EV_CB_INVOKE -> watcher->cb
+
+优化点：
+监视器分类：
+定时任务 cb -> 定时任务将触发消息送定时任务处理线程
+accept建链事件 -> 建链事件将触发消息送建链任务处理线程
+read读事件 -> 读事件将触发消息送读事件任务处理线程
+write写事件 ->  写事件将触发消息送写事件任务处理线程
+
+线程池处理任务
+
+
+其他项
 
 固定值：
 backend_fudge 0
@@ -23,29 +58,6 @@ mn_now -> get_clock
 疑似bug：
 ev_sleep 休眠被EINTR中断场景
 
-框架内事件触发、修改回调
-backend_modify == epoll_modify
-backend_poll == epoll_poll
-
-文件描述符组，每个fd下挂一串watcher链表，每个watcher节点携带对应的关注事件
-anfds
-
-已挂起监视器组，按优先级和挂起的计数记录watcher信息
-pendings
-
-文件描述符修改组， 按照 fdchangecnt 记录 fd
-fdchanges
-reify
-
-epoll 关注事件修改
-epoll_modify -> MOD or ADD
-
-fd_kill -> anfds -> fd2watcher -> ev_io_stop -> ev_feed_event
-
-epoll关注事件触发
-fd_event-> fd_event_nc -> anfds -> fd2watcher -> ev_feed_event -> pendings
-
-epoll关注事件执行
 
 fcntl (backend_fd, F_SETFD, FD_CLOEXEC);
 
@@ -76,3 +88,151 @@ epoll关注事件修改
 
 epoll关注事件删除
 ev_io_stop
+
+异常处理：
+epoll_modify
+fd_kill -> anfds -> fd2watcher -> ev_io_stop -> ev_feed_event
+
+
+tcpip
+一些有关TCP重传的资料： 
+http://blog.csdn.net/fan_hai_ping/article/details/8352079 
+http://blog.sina.com.cn/s/blog_639d20bb0100whbr.html 
+重传的判断方法，在有很多乱序包的时候，可以： 
+在有数据包经过时，根据seq、包长，计算下一包的expect seq 
+如果再来的包在expect seq之前，则认为是重传，否则认为是乱序。 
+http://blog.csdn.net/mingxinjueyu/article/details/7712052 
+http://blog.jobbole.com/71427/ 
+http://www.cnblogs.com/ggjucheng/archive/2012/02/05/2339228.html
+
+基本概念
+
+四元组：源IP地址、目的IP地址、源端口、目的端口。
+
+五元组：源IP地址、目的IP地址、协议号、源端口、目的端口。
+
+六元组：源MAC地址、源IP地址、源端口号、目的MAC地址、目的IP地址和目的IP地址。
+
+七元组：源MAC地址、源IP地址、源端口号、目的MAC地址、目的IP地址和目的IP地址和协议号。
+
+五元组确定一个会话还是四元组?
+
+五元组通常是指由源IP地址，源端口，目的IP地址，目的端口和传输层协议号这五个量组成的一个集合。例如：192.168.0.1/10000/TCP/121.14.88.76/80就构成了一个五元组。
+其意义是，一个IP地址为192.168.1.1的终端通过端口10000，利用TCP协议，和IP地址为121.14.88.76，端口为80的终端进行连接通讯。
+
+五元组能够唯一确定一个会话。
+
+在TCP会话重组时，使用序列号确定TCP报文顺序可以解决数据报文不按顺序到达及其重传问题，并且利用二维链表对TCP会话进行还原。难点在于解决多连接问题、IP包乱序到达和TCP会话重传的问题。
+
+原因：TCP协议是TCP/IP协议族中一个重要组成部分，TCP数据流的重组是高层协议分析系统设计和实现的基础。TCP协议是面向连接的可靠传输协议，而TCP下层的IP协议却是面向报文的不可靠协议，这回带来问题：IP不能保证TCP报文可靠的、顺序的传输。为了解决这个问题，TCP采取滑动窗口机制、字节流编号机制和快速重传算法机制等。这可以保证数据的可靠传输。
+
+TCP会话(TCP_Session_IDT)可以通过四元组<源IP地址、目的IP地址、源端口号和目的端口号>唯一标识。
+
+使用HASH表快速查找定位的特征，解决多个TCP会话同时处理的问题，快速处理多个会话问题。
+
+在TCP头中Sequence Number是判断该数据包是否重传和包乱序的重要参数。在TCP连接刚建立时，会为后续TCP传输设置一个初始的SequenceNumber，每传送一个包含有效数据的TCP包，后续传送的TCP数据包的Sequence Number会作响应的修改，如果前一个包长度为N，则这个包的Sequence Number为前一个包Sequence Number加N。它是为保证TCP数据包按序传输来设计的，可以有效的实现TCP数据的完整传输，特别是当数据传输出现错误时可以有效进行错误纠正。
+
+TCP重组数据文件写指针的SYN算法如下：
+
+File_Init_Write_Pointer= Init_Sequence Number + 1;
+
+File_write_Pointer= Current Sequence Number – File_init_Write_point;
+
+检查TCP会话中是否存在空洞，可以来确定会话重组成功、失败和超时。
+
+TCP建立连接需要3次握手，而终止一个连接需要4次握手。这是因为一个TCP连接时全双工的，每个方向必须单独的进行关闭。
+
+规则1：六元组<源MAC地址、源IP地址、源端口号、目的MAC地址、目的IP地址和目的IP地址>，协议号是TCP，它应该是唯一的会话。
+
+规则2：TCP头中4元组
+
+这是fcntl的一个Flag标志。
+fcntl(fd, F_SETFD, FD_CLOEXEC);
+	这里设置为FD_CLOEXEC表示当程序执行exec函数时，本fd将被系统自动关闭,表示不传递给exec创建的新进程, 
+	如果设置为fcntl(fd, F_SETFD, 0);那么本fd将保持打开状态复制到exec创建的新进程中，FD_CLOEXEC用来设置文件的close-on-exec状态标准。
+	在exec()调用后，close-on-exec标志为0的情况，此文件不被关闭。非零则在exec()后被关闭。默认close-on-exec状态为0，需要通过FD_CLOEXEC设置。
+---------------------------------------------------------------------------------------------------------------
+int flags;
+int dummy = 0;
+if ((flags = fcntl(fd, F_GETFL, dummy)) < 0){
+    debug(50, 0) ("FD %d: fcntlF_GETFL: %s\n", fd, xstrerror());
+    return;
+}
+if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) <0)
+   debug(50, 0) ("FD %d: setclose-on-exec failed: %s\n", fd, xstrerror());
+---------------------------------------------------------------------------------------------------------------
+
+关于fcntl(fd, F_SETFD, FD_CLOEXEC)设置exec时close的属性
+snd_ctl_hw_open
+#define SNDRV_FILE_CONTROL    ALSA_DEVICE_DIRECTORY "controlC%i"
+sprintf(filename, SNDRV_FILE_CONTROL, card); // 路径/dev/snd/controlC0
+fd = snd_open_device(filename, fmode);
+fcntl(fd, F_SETFD, FD_CLOEXEC); // 这里设置为FD_CLOEXEC表示当程序执行exec函数时本fd将被系统自动关闭,表示不传递给exec创建的新进程, 如果设置为fcntl(fd, F_SETFD, 0);那么本fd将保持打开状态复制到exec创建的新进程中[luther.gliethttp].
+进入内核系统调用
+sys_fcntl
+do_fcntl
+    case F_SETFD:
+        err = 0;
+        set_close_on_exec(fd, arg & FD_CLOEXEC);
+void fastcall set_close_on_exec(unsigned int fd, int flag)
+{
+    struct files_struct *files = current->files;
+    struct fdtable *fdt;
+    spin_lock(&files->file_lock);
+    fdt = files_fdtable(files);
+    if (flag)
+        FD_SET(fd, fdt->close_on_exec);
+    else
+        FD_CLR(fd, fdt->close_on_exec);
+    spin_unlock(&files->file_lock);
+}
+下面是man fcntl看到的对FD_CLOEXEC解释
+File descriptor flags
+   The  following  commands manipulate the flags associated with a file descriptor.  Currently, only one such flag is
+   defined: FD_CLOEXEC, the close-on-exec flag.  If the FD_CLOEXEC bit is 0, the file  descriptor  will  remain  open
+   across an execve(2), otherwise it will be closed.
+   F_GETFD (void)
+          Read the file descriptor flags; arg is ignored.
+   F_SETFD (long)
+          Set the file descriptor flags to the value specified by arg.
+
+fcntl（文件描述词操作）
+相关函数
+open，flock
+表头文件
+#include<unistd.h>
+#include<fcntl.h>
+定义函数
+int fcntl(int fd , int cmd);
+int fcntl(int fd,int cmd,long arg);
+int fcntl(int fd,int cmd,struct flock * lock);
+函数说明
+fcntl()用来操作文件描述词的一些特性。参数fd代表欲设置的文件描述词，参数cmd代表欲操作的指令。
+有以下几种情况:
+F_DUPFD用来查找大于或等于参数arg的最小且仍未使用的文件描述词，并且复制参数fd的文件描述词。执行成功则返回新复制的文件描述词。
+请参考dup2()。F_GETFD取得close-on-exec旗标。若此旗标的FD_CLOEXEC位为0，代表在调用exec()相关函数时文件将不会关闭。
+F_SETFD 设置close-on-exec 旗标。该旗标以参数arg 的FD_CLOEXEC位决定。
+F_GETFL 取得文件描述词状态旗标，此旗标为open（）的参数flags。
+F_SETFL设置文件描述词状态旗标，参数arg为新旗标，但只允许O_APPEND、O_NONBLOCK和O_ASYNC位的改变，其他位的改变将不受影响。
+F_GETLK 取得文件锁定的状态。
+F_SETLK 设置文件锁定的状态。此时flcok 结构的l_type值必须是F_RDLCK、F_WRLCK或F_UNLCK。如果无法建立锁定，则返回-1，错误代码为EACCES或EAGAIN。
+F_SETLKW F_SETLK作用相同，但是无法建立锁定时，此调用会一直等到锁定动作成功为止。若在等待锁定的过程中被信号中断时，会立即返回-1，错误代码为EINTR。参数lock指针为flock结构指针，定义如下
+struct flcok
+{
+short int l_type;
+short int l_whence;
+off_t l_start;
+off_t l_len;
+pid_t l_pid;
+};
+l_type 有三种状态:
+F_RDLCK 建立一个供读取用的锁定
+F_WRLCK 建立一个供写入用的锁定
+F_UNLCK 删除之前建立的锁定
+l_whence 也有三种方式:
+SEEK_SET 以文件开头为锁定的起始位置。
+SEEK_CUR 以目前文件读写位置为锁定的起始位置
+SEEK_END 以文件结尾为锁定的起始位置。
+返回值
+成功则返回0，若有错误则返回-1，错误原因存于errno.
+成功则返回0，若有错误则返回-1，错误原因存于errno.
