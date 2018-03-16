@@ -217,14 +217,11 @@ main(void)
     }
 #endif
 
-    return 0;
-
-#if 0        
+//#if 0        
 
     struct thread_master *master;
-    struct thread thread;
-
-    UINT8 module;
+    struct thread        thread;
+    UINT8                module;
 
     /* 1.Prepare master thread. */
     master = thread_master_create ();
@@ -237,7 +234,7 @@ main(void)
 
     // Create a server, if you want to telnet vtyport
     /* Create VTY's socket .;VTY_TEST_PORT*/
-#if 0
+#if 1
 
     vty_serv_sock (NULL, 0, GVTYSH_PATH);
 #else
@@ -245,9 +242,9 @@ main(void)
     //vty_serv_sock (NULL, 5678, GVTYSH_PATH);
 #endif
 
-    vty_set_config_write(gdistributed_config_write);
+    //vty_set_config_write(gdistributed_config_write);
 
-    TELL_MONITOR("tfdevctrl");
+    //TELL_MONITOR("tfdevctrl");
 
     /* Execute each thread. */
     while (thread_fetch (master, &thread))
@@ -265,7 +262,7 @@ main(void)
 
     /* Not reached. */
     exit(1);
-#endif
+//#endif
 }
 
 

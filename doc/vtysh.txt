@@ -1,0 +1,162 @@
+vtysh
+
+vtysh 进程
+vtysh 代理
+
+代理
+1. 编译
+2. 框架
+
+数据结构：
+thread
+thread_list
+thread_master
+cpu_thread_history
+
+hash
+
+登陆
+listnode
+list
+host
+
+命令字串处理
+_vector
+cmd_token
+cmd_element
+cmd_node
+format_parser_state
+
+vtysh代理
+vty_iactive
+vty
+vtysh_client_info_t
+
+
+thread_master_create -> cmd_init -> vty_init -> vty_read_config -> vty_serv_sock -> thread_fetch -> thread_call
+
+cmd_init -> vector_init[cmdvec] -> install_node -> install_element
+
+install_node -> vector_set_index -> node2cmdvec -> vector_init[cmd_vector]
+
+install_element -> vector_slot -> type2node -> vector_set -> cmd2node -> cmd_parse_format -> cmdstr&helper2tokens
+vector_set -> vector_empty_slot -> vector_ensure
+cmd_parse_format -> char_process -> 
+'\0' -> format_parser_error
+'{' -> format_parser_begin_keyword -> in_keyword | in_multiple -> keyword_vector2tocken_keyword -> token2state_curvect -> 
+'(' -> format_parser_begin_multiple -> in_multiple | just_read_word -> intvect | curvect
+'}' -> format_parser_end_keyword
+')' -> format_parser_end_multiple -> in_multiple  | just_read_word -> curvect
+'|' -> format_parser_handle_pipe -> in_multiple | in_keyword -> curvect
+format_parser_read_word -> format_parser_desc_str
+
+string + dsp -> token -> state->curvect 
+
+in_keyword 标志位
+in_multiple
+just_read_word
+
+vty_init -> vty_save_cwd | vtyvec | master | Vvty_serv_thread | g_exec_daemon[vtysh_execute_func_to_daemon] -> vty_command_read_data_thread -> install_element
+
+vty_iactive_init -> g_active :
+g_active.fd = -1;
+g_active.flag = FALSE;
+g_active.vtysh_flag = 0;
+
+vty_command_read_data_thread -> condition -> read[g_active.fd] -> send[g_daemon_send_fd]
+condition:
+g_active.flag
+g_active.fd != -1 
+wait.tv_sec < 10
+
+
+
+g_active.fd 何处赋值 
+g_vtysh_flag
+g_daemon_send_fd
+g_daemon_send_flag
+
+vty_read_config -> vty_use_backup_config -> vty_read_file -> host_config_set 	
+
+vty_read_file -> vty_new -> config_from_file -> buffer_flush_all -> vty_out_line
+
+vty_serv_sock -> g_vtysh_flag -> vty_serv_sock_addrinfo | vty_serv_sock_family | vty_serv_un -> vty_event
+vty_event -> vty_serv_thread -> vtysh_accept2master -> vector_set_index -> vty_serv_thread2Vvty_serv_thread
+
+
+cmd_execute_command_real -> g_exec_daemon ??
+
+
+vty_login_show -> vtyvec
+vty_out_to_all -> vtyvec
+alarm_to_vty -> vtyvec
+vty_create
+msg_print
+msg_flush
+
+vtysh_accept
+
+vty_event master
+
+vtysh_config_xxx
+
+g_exec_daemon 接口调用时机：
+vtysh_execute_func_to_daemon -> vtysh_client_daemon_execute
+vtysh_client_daemon_execute -> send -> select -> read -> 
+
+vclient_close
+
+if(buf[0] == 0xff && buf[1] == 0x55 && buf[2] == 0xff){
+     //printf("active recive specify data.\n");
+     //stephen.liu 20151029, for send data to daemons
+     g_active.fd = vty->fd;
+     g_active.flag = TRUE;
+	 
+if(buf[nbytes-3] == 0xff && buf[nbytes-2] == 0x55 && buf[nbytes-1] == 0xff){
+    //printf("active recive specify data.end \n");
+    g_active.fd = vty->fd;
+    g_active.flag = TRUE;
+    buf[nbytes-3] = '\0';
+    buf[nbytes-2] = '\0';
+    buf[nbytes-1] = '\0';
+
+g_active.fd 相关接口：
+vtysh_client_daemon_execute
+
+
+排除：
+vty_command_get_data XXX
+vtysh_command_get_data XXX
+vty_get_data -> vtysh_command_get_data -> vty_command_get_data XXX
+
+VTY_SHELL_SERV 相关接口
+
+
+vty_command_read_data_thread
+
+vtysh_accept
+
+g_daemon_send_fd
+
+1. vtysh
+2. mib
+3. gemport
+4. 
+
+
+一对多：
+cmdvec -> node -> cmd
+
+cmd_element.tokens
+
+疑点
+srand (time (NULL)) 作用
+
+记录
+cpp
+105 132 133
+jz
+49
+
+1. outbound 
+2. multi ser

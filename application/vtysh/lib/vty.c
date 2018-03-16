@@ -5556,33 +5556,33 @@ void vty_command_read_data_thread(void)
                 continue;
             }
 
-            #if 1
+#if 1
             rBytes = read(g_active.fd , &g_active.buffer[g_active.size], DEFALUT_BUFFER_SIZE - g_active.size);
-            #else
+#else
             rBytes = read(g_active.fd , g_active.buffer, DEFALUT_BUFFER_SIZE);
-            #endif
+#endif
             if(rBytes <= 0){
                 /*usleep(1000);*/
                 //printf("ddddddrBytes=%d\n", rBytes);
                 continue;
             }
-            #if 1
+#if 1
             g_active.size += rBytes;
-            #else
+#else
             g_active.size = rBytes;
-            #endif
+#endif
             g_active.buffer[g_active.size%DEFALUT_BUFFER_SIZE] = '\0';
             /*fprintf(stderr, "pid[%d] recive get  input data.fd=%d,buf[0]=%s,rbytes=%d\r\n"
                 , getpid(), g_active.fd, g_active.buffer, rBytes);*/
             //must check if vtysh process
-            #if 1
+#if 1
             if (strchr((char*)g_active.buffer, '\n') == NULL
                 && strchr((char*)g_active.buffer, '\r') == NULL)
             {
                 continue;
             }
             g_active.flag = FALSE;
-            #endif
+#endif
 
             if(g_vtysh_flag){
                 if(g_daemon_send_flag){
