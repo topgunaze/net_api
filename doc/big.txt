@@ -1,0 +1,188 @@
+主从通信适配层 olt_msc_main.c
+MSC_Init
+msc_module_env_init -> MSC_GlobalInit
+msc_module_task_init -> osal_taskSpawn -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+
+主从通信基本接口 msc_main.c
+MSC_GlobalInit -> osal_msgQCreate[OSAL_MSG_Q_FIFO | OSAL_MSG_Q_FIFO] -> osal_semMCreate[OSAL_SEM_Q_FIFO] ->
+MSC_InitCmdRegList
+MSC_InitAddErrInfo
+MSC_InitDmGloabalValue
+MSC_ModuleRegister[MSC_PktDMCallBack]
+MSC_InstallCliCm
+
+osal_taskSpawn 接口实现 ？
+dm 模块 ？
+
+MSC_ServerSetup
+MSC_MsgProcessTask -> osal_msgQReceive -> MSC_ProcHswCmd
+MSC_MsgSendTask -> osal_msgQReceive -> MSC_SendToHsw
+MSC_PktDMCallBack -> osal_msgQSend
+
+MSC_SendToHsw -> osal_semTake[g_mscSemServerSend] -> MSC_ServerSend
+
+MSC_SendToMscTask -> osal_msgQSend][g_mscMsgQSndId]
+
+MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
+
+MSC_RegProcGswCmdFunToManager -> g_mscCmdRegList -> pon_system_dispatch_msc
+
+MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> 
+
+MSC_FindCmdRegNode -> 
+
+MSC_TransOptType
+
+
+
+主从通信模块服务器端 msc_server.c
+
+MSC_ServerSetup -> accept -> fd -> MSC_ServerRecv
+
+MSC_ServerRecv -> MSC_ReadPacket
+
+MSC_ServerSend -> MSC_Send -> 
+
+
+
+主从通信模块
+msc_common.c
+MSC_ModuleRegister -> g_mscModuleRegArr -> type | cb
+MSC_ReadPacket -> recv -> MSC_ProcessPacket
+MSC_ProcessPacket -> g_mscModuleRegArr -> type2cb
+MSC_Send -> write -> 
+
+
+xdu端
+
+c++接口
+CPonSystem
+
+OLT主模块 olt_main_service_cinterface.cpp
+
+类 
+CPonSystem
+CObjectBase -> CServiceObject -> COltMainServiceObject -> 
+olt_main_service_object
+
+map< int, OLT_MAIN_CHIP_READY_HANDLE_FUNC >::const_iterator it
+
+CServiceObject
+
+继承关系：
+CCommandObject -> CMscCommandObject
+CConfigCommandObject
+CEventCommandObject
+
+基本类
+具备锁功能接口，抽象类
+ILockable
+
+pon系统基类
+ILockable -> CObjectBase
+
+互斥锁类
+CObjectBase -> CMutexLock
+CObjectBase -> CSyncLock
+
+LockHelper
+
+互斥锁
+CObjectBase -> CMutexLock
+同步锁
+CObjectBase -> CSyncLock
+带有超时的锁
+
+信号量锁
+CObjectBase -> CSemaphoreLock
+配置基类
+CObjectBase -> CConfigObject
+配置数据基类
+CObjectBase -> CConfigData
+用于配置对象
+
+工作类：
+卡端口配置ONU类
+CConfigObject -> CCardPortConfigObject
+
+PON卡配置类
+CConfigObject -> CCardConfigObject
+
+单例模式 _instance
+
+
+configdata 与 configobject
+配置对象 CConfigObject
+配置数据 CConfigData
+
+
+卡端口配置ONU类
+CConfigData -> CCardPortConfigData
+pon端口配置与管理
+
+
+卡端口配置的对象即为ONU
+
+onu 节点信息
+ONU_ID_INFO_ST
+
+
+
+
+ONU配置类
+CConfigObject -> COnuConfigObject
+
+ONU端口类
+CConfigObject -> COnuPortConfigObject
+COnuPortConfigObject -> COnuPonPortConfigObject
+COnuPortConfigObject -> COnuLanPortConfigObject
+COnuPortConfigObject -> COnuVoipPortConfigObject
+COnuStatusObject
+
+公共接口：
+内存池：
+提供库，没有接口实现
+BUFFER_POOL
+
+测试套如何运行
+
+消息队列
+CObjectBase -> CMessageQueue
+list实现
+
+
+CObjectBase -> Object
+线程类:
+IRunnable -> CThread
+
+new delete 重载 
+
+CCommandObject
+
+
+pon卡类
+pon卡端口类
+onu类
+onu端口类
+
+
+_command_flag_map
+_command_flag_map
+
+类内部inline
+容器:
+vector
+map
+
+模板类
+pair
+
+PON_CREATE_CONFIGDATA_HANDLE
+
+备注：
+1. const 函数 const func const
+2. 虚析构函数
+3. 虚函数是否具有继承性
+4. template <class Type> 用法 模板类
+5. explicit 如何使用
+6. 重载
