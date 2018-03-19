@@ -41,6 +41,92 @@ ctrl_process_msg_task(
  * Æä           Ëü:
 **************************************************************/
 
+typedef struct treenode
+{
+    int  v;
+    struct treenode *p_left;
+    struct treenode *p_right;
+}treenode;
+
+int treedeep(treenode *p_root)
+{
+    if (p_root == NULL)
+    {
+        return 0;
+    }
+
+    int left, right;
+    left = treedeep(p_root->p_left);
+    right = treedeep(p_root->p_right);
+
+    return 1 + (left > right ? left : right);
+}
+
+int isbalance(treenode *p_root, int *deep)
+{
+    if (p_root == NULL)
+    {
+        *deep = 0;
+        return NODE_CTRL_RC_OK;
+    }
+
+    int left, right;
+    if (isbalance(p_root->p_left, &left) && isbalance(p_root->p_right, &right))
+    {
+        int diff = left - right;
+        if (diff >= 1 && diff < -1)
+        {
+            *deep = 1 + (left > right ? left : right);
+            return NODE_CTRL_RC_OK;
+        }
+
+        return APP_CTRL_RC_ERROR;
+    }
+
+    return APP_CTRL_RC_ERROR;
+}
+
+int numberget(int *p_array, int len, int *p_num)
+{
+    if (len < 1 && !p_array)
+    {
+        return APP_CTRL_RC_ERROR;
+    }
+
+    int i;
+    for (i = 0; i<len;i++)
+    {
+        *p_num ^= p_array[i];
+    }
+
+    return NODE_CTRL_RC_OK;
+}
+
+int bitis1(int num)
+{
+    
+}
+
+int numberget(int *p_array, int len, int *p_num1, int *p_num2)
+{
+    if (len < 2 && !p_array)
+    {
+        return APP_CTRL_RC_ERROR;
+    }
+
+    int i, xor_num, bit;
+    for (i = 0; i < len; ++i)
+    {
+        xor_num ^= p_array[i];
+    }
+
+    bit = bitis1(xor_num);
+
+    
+    
+    return NODE_CTRL_RC_OK;
+}
+
 int
 main(void)
 {
@@ -58,6 +144,24 @@ main(void)
     if (ctrl_net_task_init() || ctrl_net_ev_init())
     {
         exit(1);
+    }
+
+    treenode t7 = {7, NULL, NULL};
+    treenode t6 = {6, NULL, NULL};
+    treenode t5 = {5, &t7, NULL};
+    treenode t4 = {4, NULL, NULL};
+    treenode t3 = {3, NULL, &t6};
+    treenode t2 = {2, &t4, &t5};
+    treenode t1 = {1, &t2, &t3};
+
+    int deep;
+
+    deep = treedeep(&t1);
+    printf("t1 deep %d\r\n", deep);
+
+    if (isbalance(&t1, &deep))
+    {
+      printf("t is balanse deep %d\r\n", deep);  
     }
 
     while(1)
@@ -217,7 +321,7 @@ main(void)
     }
 #endif
 
-//#if 0        
+#if 0        
 
     struct thread_master *master;
     struct thread        thread;
@@ -262,7 +366,6 @@ main(void)
 
     /* Not reached. */
     exit(1);
-//#endif
+#endif
 }
-
 

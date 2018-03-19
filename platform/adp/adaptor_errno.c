@@ -84,7 +84,7 @@ info2rc_convert(unsigned int *p_rc_val, rc_info *p_rc_info)
             }
             break;
         
-        case OBJ_APP_ZK:
+        case OBJ_APP_CTRL:
            {
                *p_rc_val += p_rc_info->sub_obj_id.olt_id * RETURNCODE_BASE;
            }

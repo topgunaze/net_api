@@ -44,11 +44,11 @@ typedef struct
 
 //请求消息处理错误返回码
 //没有传参
-#define NODE_NET_PROCESS_REQ_NO_PARAM_VERIFY()               NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,NODE_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define NODE_NET_PROCESS_REQ_NO_PARAM_VERIFY()               NET_PROCESS_REQ_NO_PARAM_STRUCT(p_msg,rc_info,rc,NODE_CTRL_RC_PARAM_OUT_OF_RANGE,ack)
 //有传参
-#define NODE_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,NODE_ZK_RC_PARAM_OUT_OF_RANGE,ack)
+#define NODE_NET_PROCESS_REQ_PARAM_STRUCT(type,p_name)       NET_PROCESS_REQ_PARAM_STRUCT(type,p_name,p_msg,rc_info,rc,NODE_CTRL_RC_PARAM_OUT_OF_RANGE,ack)
 //有回传参数
-#define NODE_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_node_net_msg_mp,p_buf,len,rc_info,rc,NODE_ZK_RC_MEM_ALLOCATION,ack)
+#define NODE_NET_PROCESS_ACK_PARAM_STRUCT(type,p_name)       NET_PROCESS_ACK_PARAM_STRUCT(type,p_name,g_node_net_msg_mp,p_buf,len,rc_info,rc,NODE_CTRL_RC_MEM_ALLOCATION,ack)
 
 #define NODE_NET_ERR_INFO2RC(obj,sub_obj,err_no)             ERR_INFO2RC(rc_info,obj,sub_obj,err_no,rc)
 

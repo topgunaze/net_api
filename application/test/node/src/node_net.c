@@ -292,7 +292,7 @@ node_net_tx_mq_put(NET_MSG *data)
     {
         net_safe_free(data);
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
-        return NODE_ZK_RC_MEM_ALLOCATION;
+        return NODE_CTRL_RC_MEM_ALLOCATION;
     }
 
     //data 字段存储板间消息体
@@ -348,7 +348,7 @@ node_net_conn_msg_list_alloc(NET_CONN *conn)
                         sizeof(NET_CONN_MSG));
    
     if (!conn->msg_array)
-        return NODE_ZK_RC_MEM_ALLOCATION;
+        return NODE_CTRL_RC_MEM_ALLOCATION;
 
     ptmsg = conn->msg_array;
     for (i = 0; i < conn->msg_num; i++, ptmsg++)
@@ -376,7 +376,7 @@ node_net_conn_init(uint32_t slot_id, NET_CONN **pconn)
     if (!conn)
     {
         net_mutex_unlock(&g_node_conn_lock);
-        return NODE_ZK_RC_MEM_ALLOCATION;
+        return NODE_CTRL_RC_MEM_ALLOCATION;
     }
 
     snprintf(conn->name, sizeof(conn->name), "2tfctrl_slot_%u", slot_id);
@@ -403,12 +403,12 @@ node_net_conn_get_any(uint32_t slot_id, NET_CONN **pconn)
 
     if (!pconn)
     {
-        return NODE_ZK_RC_PARAM_NULL;
+        return NODE_CTRL_RC_PARAM_NULL;
     }
     
     if (slot_id >= CTRL_SUPPORT_MAX_SLOT)
     {
-        return NODE_ZK_RC_PARAM_OUT_OF_RANGE;
+        return NODE_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
     
     *pconn = g_node_conn[slot_id];
@@ -436,7 +436,7 @@ node_net_msg_syn_send(NET_MSG *pmsg)
 {
     if (!pmsg)
     {
-        return NODE_ZK_RC_PARAM_NULL;
+        return NODE_CTRL_RC_PARAM_NULL;
     }
     
     NET_CONN_MSG *pcmsg;
@@ -459,7 +459,7 @@ node_net_msg_syn_send(NET_MSG *pmsg)
     {
         net_mutex_unlock(&pconn->mutex);
         printf( "node_net_conn_msg_get_free error!!!\r\n");
-        return NODE_ZK_RC_PARAM_GET;
+        return NODE_CTRL_RC_PARAM_GET;
     }
 
     //时间戳作为接收校验魔术字
@@ -471,7 +471,7 @@ node_net_msg_syn_send(NET_MSG *pmsg)
     {
         printf( "%s %s %d net_malloc error!!!\r\n", __FILE__, __FUNCTION__, __LINE__);
         net_conn_msg_free(pcmsg, &pconn->free_req_list);
-        return NODE_ZK_RC_MEM_ALLOCATION;
+        return NODE_CTRL_RC_MEM_ALLOCATION;
     }
     
     memcpy(p_autofree_msg, pmsg, pmsg->len);
@@ -506,7 +506,7 @@ node_net_msg_syn_send(NET_MSG *pmsg)
         
         net_mutex_unlock(&pconn->mutex);
         
-        return NODE_ZK_RC_MSG_SYN_WAITE;
+        return NODE_CTRL_RC_MSG_SYN_WAITE;
     }
 
     //正常得到回应入空闲队列
@@ -543,19 +543,19 @@ node_net_syn_operation(
     //判断与控制面的通信是否已经建立
     if (!node_net_state_is_work())
     {
-        return OBJ_DRV_OLT_RC_OFFSET + NODE_ZK_RC_NET_NOT_WORK;
+        return OBJ_DRV_OLT_RC_OFFSET + NODE_CTRL_RC_NET_NOT_WORK;
     }
   
     if (!state)
     {
-        ERRNO_INFO2RC(rc_info, rc, NODE_ZK_RC_PARAM_NULL);
+        ERRNO_INFO2RC(rc_info, rc, NODE_CTRL_RC_PARAM_NULL);
         return rc;
     }
     
     if ((param && 0 == param_len) || (NULL == param && param_len))
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        ERRNO_INFO2RC(rc_info, rc, NODE_ZK_RC_PARAM_OUT_OF_RANGE);
+        ERRNO_INFO2RC(rc_info, rc, NODE_CTRL_RC_PARAM_OUT_OF_RANGE);
         return rc;
     }
     
@@ -573,7 +573,7 @@ node_net_syn_operation(
     if (!p_msg)
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        ERRNO_INFO2RC(rc_info, rc, NODE_ZK_RC_MEM_ALLOCATION);
+        ERRNO_INFO2RC(rc_info, rc, NODE_CTRL_RC_MEM_ALLOCATION);
         return rc;
     }
     
@@ -703,7 +703,7 @@ node_net_msg_send(
     if (!ptmsg)
     {
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        return NODE_ZK_RC_MSG_PACK;
+        return NODE_CTRL_RC_MSG_PACK;
     }
     
      ptmsg->msg_type  = pmsg->msg_type;
@@ -732,7 +732,7 @@ node_net_init(int *p_fd, NET_PARA *p_net_param)
     
     if (!p_fd || !p_net_param)
     {
-        return NODE_ZK_RC_PARAM_NULL;
+        return NODE_CTRL_RC_PARAM_NULL;
     }
     
     if ((rc = net_init(&sin, &fd)))
@@ -749,7 +749,7 @@ node_net_init(int *p_fd, NET_PARA *p_net_param)
     {
         close(fd);
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        return NODE_ZK_RC_NET_BIND;
+        return NODE_CTRL_RC_NET_BIND;
     }
 
     *p_fd = fd;
@@ -1020,7 +1020,7 @@ node_net_connect(EV_P)
     {
         printf( "%s %s %d errorno %d\r\n", __FILE__, __FUNCTION__, __LINE__, errno);
         close(fd);
-        return NODE_ZK_RC_NET_CONNCET;
+        return NODE_CTRL_RC_NET_CONNCET;
     }
     
     client_read = (struct ev_io*)net_malloc(&g_node_watcher_mp, sizeof(struct ev_io));
@@ -1029,7 +1029,7 @@ node_net_connect(EV_P)
     {
         close(fd);
         printf( "%s %s %d param error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        return NODE_ZK_RC_MEM_ALLOCATION;
+        return NODE_CTRL_RC_MEM_ALLOCATION;
     }
 
     node_net_state_set(NODE_NET_CONNECTION_COMPLETED);
@@ -1128,7 +1128,7 @@ node_net_work_init(void)
     if (pthread_create(&tid, &attr, (void *)node_net_work_main, NULL))
     {
         printf( "%s %s %d error %d %s\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return NODE_ZK_RC_TASK_CREATE;
+        return NODE_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1380,13 +1380,13 @@ node_net_rx_syn_req_task_init(void)
         if (rc)
         {
             printf( "drv create rx syn req mq error %d idx %d\r\n", rc, idx);
-            return NODE_ZK_RC_MSG_QUEUE_CREATE;
+            return NODE_CTRL_RC_MSG_QUEUE_CREATE;
         }
 
         if (pthread_create(&tid, &attr, (void *)node_net_rx_syn_req_task, (void*)idx))
         {
             printf( "fk create rx syn req task error %d %s idx %d!!! \r\n", errno, strerror(errno), idx);
-            return NODE_ZK_RC_TASK_CREATE;
+            return NODE_CTRL_RC_TASK_CREATE;
         }
     }
     
@@ -1405,7 +1405,7 @@ node_net_rx_syn_ack_task_init(void)
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return NODE_ZK_RC_MSG_QUEUE_CREATE;
+        return NODE_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     pthread_attr_init(&attr);
@@ -1415,7 +1415,7 @@ node_net_rx_syn_ack_task_init(void)
     if (pthread_create(&tid, &attr, (void *)node_net_rx_syn_ack_task, NULL))
     {
         printf( "%s %s %d error %d %s!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return NODE_ZK_RC_TASK_CREATE;
+        return NODE_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1433,7 +1433,7 @@ node_net_rx_asyn_req_task_init(void)
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return NODE_ZK_RC_MSG_QUEUE_CREATE;
+        return NODE_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     pthread_attr_init(&attr);
@@ -1443,7 +1443,7 @@ node_net_rx_asyn_req_task_init(void)
     if (pthread_create(&tid, &attr, (void *)node_net_rx_asyn_req_task, NULL))
     {
         printf( "%s %s %d error %d %s!!! \r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return NODE_ZK_RC_TASK_CREATE;
+        return NODE_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1461,7 +1461,7 @@ node_net_rx_asyn_ack_task_init(void)
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return NODE_ZK_RC_MSG_QUEUE_CREATE;
+        return NODE_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     pthread_attr_init(&attr);
@@ -1471,7 +1471,7 @@ node_net_rx_asyn_ack_task_init(void)
     if (pthread_create(&tid, &attr, (void *)node_net_rx_asyn_ack_task, NULL))
     {
         printf( "%s %s %d error %d %s!!!\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return NODE_ZK_RC_TASK_CREATE;
+        return NODE_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1522,7 +1522,7 @@ node_net_tx_task_init(void)
     if (rc)
     {
         printf( "%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return NODE_ZK_RC_MSG_QUEUE_CREATE;
+        return NODE_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     pthread_attr_init(&attr);
@@ -1532,7 +1532,7 @@ node_net_tx_task_init(void)
     if (pthread_create(&tid, &attr, (void *)node_net_tx_task, NULL))
     {
         printf( "%s %s %d error %d %s!!!\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return NODE_ZK_RC_TASK_CREATE;
+        return NODE_CTRL_RC_TASK_CREATE;
     }
 
     return 0;  
@@ -1646,7 +1646,7 @@ node_net_req_asyn_hb_load(void)
     if (!body)
     {
          printf( "%s %s %d error !!!\r\n", __FILE__, __FUNCTION__, __LINE__);
-         return NODE_ZK_RC_MEM_ALLOCATION;
+         return NODE_CTRL_RC_MEM_ALLOCATION;
     }
     
     memset(body, 0xff, MSG_BODY_LEN_TEST_PC);
@@ -1818,7 +1818,7 @@ node_net_syn_req_olt_set_process(NET_MSG *p_msg)
 #endif
 
         default:
-            ERRNO_INFO2RC(rc_info, rc, NODE_ZK_RC_MSG_CMD_UNKNOWN);
+            ERRNO_INFO2RC(rc_info, rc, NODE_CTRL_RC_MSG_CMD_UNKNOWN);
             break;
     }
 
@@ -1887,7 +1887,7 @@ node_net_syn_req_olt_get_process(NET_MSG *p_msg)
 #endif
 
         default:
-            ERRNO_INFO2RC(rc_info, rc, NODE_ZK_RC_MSG_CMD_UNKNOWN);
+            ERRNO_INFO2RC(rc_info, rc, NODE_CTRL_RC_MSG_CMD_UNKNOWN);
             break;
     }
 

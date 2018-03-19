@@ -110,7 +110,7 @@ ctrl_net_cfg_valid_set(
 {  
     if (type_idx >= NET_CFG_TYPE_NUM_OF || item_idx >= NET_CFG_ITEM_NUM)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
     
     net_mutex_lock(&g_ctrl_gbl_cfg_state.mutex);
@@ -128,7 +128,7 @@ ctrl_net_cfg_valid_clear(
 {  
     if (type_idx >= NET_CFG_TYPE_NUM_OF || item_idx >= NET_CFG_ITEM_NUM)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
     
     net_mutex_lock(&g_ctrl_gbl_cfg_state.mutex);
@@ -205,7 +205,7 @@ ctrl_net_map_used_set(
 {  
     if (idx >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
     
     net_mutex_lock(&g_ctrl_net_map[idx].mutex);
@@ -223,7 +223,7 @@ ctrl_net_map_slot_set(
 {  
     if (idx >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
 
     net_mutex_lock(&g_ctrl_net_map[idx].mutex);
@@ -241,7 +241,7 @@ ctrl_net_map_time_stamp_set(
 {  
     if (idx >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
 
     net_mutex_lock(&g_ctrl_net_map[idx].mutex);
@@ -259,7 +259,7 @@ ctrl_net_map_net_param_set(
 {  
     if (idx >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
 
     net_mutex_lock(&g_ctrl_net_map[idx].mutex);
@@ -277,7 +277,7 @@ ctrl_net_map_free_id_get(uint32_t *p_idx)
 
     if (!p_idx)
     {
-        return APP_ZK_RC_PARAM_NULL;
+        return APP_CTRL_RC_PARAM_NULL;
     }
     
     //记录板间连接fd
@@ -291,7 +291,7 @@ ctrl_net_map_free_id_get(uint32_t *p_idx)
 
     if (idx >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_NET_MAP_IS_FULL;
+        return APP_CTRL_RC_NET_MAP_IS_FULL;
     }
 
     *p_idx = idx;
@@ -313,7 +313,7 @@ ctrl_net_map_net_param_init(
 
     if (map_id >= NET_MANAGE_MAX_SLOT || !p_addr)
     {
-        return APP_ZK_RC_PARAM_INVALID;
+        return APP_CTRL_RC_PARAM_INVALID;
     }
 
     net_param.loop    = loop;
@@ -360,7 +360,7 @@ ctrl_net_state_set(
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
@@ -378,7 +378,7 @@ ctrl_net_state_clear(
 {     
     if (slot_id >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
@@ -407,7 +407,7 @@ static unsigned int
 ctrl_net_port_onu_online_add(const uint8_t slot_id, const uint8_t port_id)
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT || port_id >= SYS_MAX_EXIST_PORT_NUM)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
         
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     ++g_ctrl_state[slot_id].online_num[port_id];
@@ -433,7 +433,7 @@ static unsigned int
 ctrl_net_port_onu_online_dec(const uint8_t slot_id, const uint8_t port_id)
 {
     if (slot_id >= NET_MANAGE_MAX_SLOT || port_id >= SYS_MAX_EXIST_PORT_NUM)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     --g_ctrl_state[slot_id].online_num[port_id];
@@ -449,7 +449,7 @@ ctrl_net_hb_cnt_set(
                             const uint8_t cnt)
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     g_ctrl_state[slot_id].hb_timeout_cnt = cnt;
@@ -463,7 +463,7 @@ static unsigned int
 ctrl_net_hb_cnt_add(const uint8_t slot_id)
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     ++g_ctrl_state[slot_id].hb_timeout_cnt;
@@ -487,7 +487,7 @@ static unsigned int
 ctrl_net_map_id_set(const uint8_t slot_id, const uint8_t map_id)
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
         
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     g_ctrl_state[slot_id].map_id = map_id;
@@ -505,7 +505,7 @@ ctrl_net_cfg_sync_valid_set(
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT || type_id >= NET_CFG_TYPE_NUM_OF
         || item_id >= NET_CFG_ITEM_NUM)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     //bitListSet(g_ctrl_state[slot_id].cfg_sync[type_id].valid, item_id);
@@ -523,7 +523,7 @@ ctrl_net_cfg_sync_valid_clear(
 {  
     if (slot_id >= NET_MANAGE_MAX_SLOT || type_id >= NET_CFG_TYPE_NUM_OF
         || item_id >= NET_CFG_ITEM_NUM)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
 
     net_mutex_lock(&g_ctrl_state[slot_id].mutex);
     //bitListClr(g_ctrl_state[slot_id].cfg_sync[type_id].valid, item_id);
@@ -626,7 +626,7 @@ ctrl_net_map_id_get_by_connect(const uint32_t fd, uint8_t *p_map_id)
     }
 
     //not match fd, no record impossibility!!!
-    return APP_ZK_RC_IMPOSSIBLE_ERROR; 
+    return APP_CTRL_RC_IMPOSSIBLE_ERROR; 
 }
 
 //已经完成认证的连接信息
@@ -640,7 +640,7 @@ ctrl_net_map_info_get_by_connect(
 
     if (!p_slot_id || !p_map_id)
     {
-        return APP_ZK_RC_PARAM_NULL;
+        return APP_CTRL_RC_PARAM_NULL;
     }
     
     for (idx = 0; idx < NET_MANAGE_MAX_SLOT; idx++)
@@ -655,17 +655,17 @@ ctrl_net_map_info_get_by_connect(
     }
     
     //not match fd, no record impossibility!!!
-    return APP_ZK_RC_IMPOSSIBLE_ERROR;
+    return APP_CTRL_RC_IMPOSSIBLE_ERROR;
 }
 
 static uint32_t
 ctrl_net_map_conflict_check(const uint8_t slot_id)
 {
     if (slot_id >= NET_MANAGE_MAX_SLOT)
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
         
     if (g_ctrl_state[slot_id].map_id != NET_COM_PARAM_INVALID)
-        return APP_ZK_RC_NET_MAP_ALREADY_EXIST;
+        return APP_CTRL_RC_NET_MAP_ALREADY_EXIST;
         
     return 0;
 }
@@ -695,7 +695,7 @@ ctrl_net_work_synch_process(const NET_MSG *pmsg, const uint8_t slot_id)
 
     if(!pmsg)
     {
-        rc = APP_ZK_RC_PARAM_INVALID;
+        rc = APP_CTRL_RC_PARAM_INVALID;
         goto syn_fail;
     }
 
@@ -703,7 +703,7 @@ ctrl_net_work_synch_process(const NET_MSG *pmsg, const uint8_t slot_id)
 
     if (slot_id >= NET_MANAGE_MAX_SLOT)
     {
-        rc = APP_ZK_RC_PARAM_INVALID;
+        rc = APP_CTRL_RC_PARAM_INVALID;
         goto syn_fail;
     }
       
@@ -993,7 +993,7 @@ ctrl_net_rx_asyn_req_task_init()
     if (rc)
     {
         printf("%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return APP_ZK_RC_MSG_QUEUE_CREATE;
+        return APP_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     //rx task
@@ -1004,7 +1004,7 @@ ctrl_net_rx_asyn_req_task_init()
     if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_req_task, NULL))
     {
         printf("%s %s %d error %d %s\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return APP_ZK_RC_TASK_CREATE;
+        return APP_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1023,7 +1023,7 @@ ctrl_net_rx_asyn_ack_task_init()
     if (rc)
     {
         printf("%s %s %d error %d\r\n", __FILE__, __FUNCTION__, __LINE__, rc);
-        return APP_ZK_RC_MSG_QUEUE_CREATE;
+        return APP_CTRL_RC_MSG_QUEUE_CREATE;
     }
 
     //rx task
@@ -1034,7 +1034,7 @@ ctrl_net_rx_asyn_ack_task_init()
     if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_asyn_ack_task, NULL))
     {
         printf("%s %s %d error %d %s\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return APP_ZK_RC_TASK_CREATE;
+        return APP_CTRL_RC_TASK_CREATE;
     }
 
     return 0;
@@ -1171,13 +1171,13 @@ ctrl_net_rx_syn_req_task_init()
         if (rc)
         {
             printf("ctrl create rx syn req mq error %d slot %d\r\n", rc, slot_id);
-            return APP_ZK_RC_MSG_QUEUE_CREATE;
+            return APP_CTRL_RC_MSG_QUEUE_CREATE;
         }
 
         if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_req_task, (void *)slot_id))
         {
             printf("ctrl create rx syn req task error %d %s, slot %d\r\n", errno, strerror(errno), slot_id);
-            return APP_ZK_RC_TASK_CREATE;
+            return APP_CTRL_RC_TASK_CREATE;
         }
     }
      
@@ -1207,13 +1207,13 @@ ctrl_net_rx_syn_ack_task_init()
         if (rc)
         {
             printf("ctrl create rx syn ack mq error %d slot %d\r\n", rc, slot_id);
-            return APP_ZK_RC_MSG_QUEUE_CREATE;
+            return APP_CTRL_RC_MSG_QUEUE_CREATE;
         }
 
         if (pthread_create(&tid, &attr, (void *)ctrl_net_rx_syn_ack_task, (void *)slot_id))
         {
             printf("ctrl create rx syn ack task error %d %s, slot %d\r\n", errno, strerror(errno), slot_id);
-            return APP_ZK_RC_TASK_CREATE;
+            return APP_CTRL_RC_TASK_CREATE;
         }
     }
  
@@ -1283,13 +1283,13 @@ ctrl_net_tx_task_init()
         if (rc)
         {
             printf("ctrl create tx mq error %d slot %d!!!\n", rc, slot_id);
-            return APP_ZK_RC_MSG_QUEUE_CREATE;
+            return APP_CTRL_RC_MSG_QUEUE_CREATE;
         }
 
         if (pthread_create(&tid, &attr, (void *)ctrl_net_tx_task, (void *)slot_id) < 0)
         {
             printf("ctrl create tx task error %d %s, slot %d!!!\n", errno, strerror(errno), slot_id);
-            return APP_ZK_RC_TASK_CREATE;
+            return APP_CTRL_RC_TASK_CREATE;
         }
     }
     
@@ -1404,7 +1404,7 @@ ctrl_net_tx_mq_put(NET_MSG *p_data)
     {
         net_safe_free(p_data);
         printf("%s %s %d error\r\n", __FILE__, __FUNCTION__, __LINE__);
-        return APP_ZK_RC_MEM_ALLOCATION;
+        return APP_CTRL_RC_MEM_ALLOCATION;
     }
 
     //data 字段存储板间消息体
@@ -1444,7 +1444,7 @@ ctrl_net_msg_send(  NET_MSG         *pmsg,
     if (!ptmsg)
     {
          printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
-         return APP_ZK_RC_PARAM_NULL;
+         return APP_CTRL_RC_PARAM_NULL;
     }
     
     ptmsg->msg_type  = pmsg->msg_type;
@@ -1470,7 +1470,7 @@ ctrl_net_init(int *p_fd)
 
     if (!p_fd)
     {
-        return APP_ZK_RC_PARAM_NULL;
+        return APP_CTRL_RC_PARAM_NULL;
     }
     
     //建立网络fd，获取本板地址信息
@@ -1494,7 +1494,7 @@ ctrl_net_init(int *p_fd)
     
 fail:
     printf("%s %s %d error %d\n", __FILE__, __FUNCTION__, __LINE__, errno);
-    return APP_ZK_RC_NET_INIT;
+    return APP_CTRL_RC_NET_INIT;
 }
 
 //read 数据事件回调
@@ -1846,7 +1846,7 @@ ctrl_net_ev_init(void)
     if (pthread_create(&tid, &attr, (void *)ctrl_net_work_main, NULL))
     {
         printf("%s %s %d error %d %s\r\n", __FILE__, __FUNCTION__, __LINE__, errno, strerror(errno));
-        return APP_ZK_RC_TASK_CREATE;
+        return APP_CTRL_RC_TASK_CREATE;
     }
     
     return 0;
@@ -2291,7 +2291,7 @@ ctrl_net_syn_req_drv_pull_process(NET_MSG *p_msg)
 {
     /*参数名称和标志msg,rc,rc_info,p_buf,len,ack涉及宏，慎重修改*/
     unsigned int        rc;
-    rc_info          rc_info = {.obj_id = OBJ_APP_ZK, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
+    rc_info          rc_info = {.obj_id = OBJ_APP_CTRL, .sub_obj_id.olt_id = MSG2SLOT(p_msg)};
     void                *p_buf = NULL;
     unsigned int        len = 0;
     
@@ -2324,7 +2324,7 @@ ctrl_net_syn_req_drv_pull_process(NET_MSG *p_msg)
             break;
 
         default:
-            ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
+            ERRNO_INFO2RC(rc_info, rc, APP_CTRL_RC_PARAM_OUT_OF_RANGE);
             break;      
     }
 
@@ -2360,7 +2360,7 @@ ctrl_net_asyn_operation(IN const NET_MSG_TYPE   msg_type,
     if (!msg)
     {
         printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
-        return APP_ZK_RC_MEM_ALLOCATION;
+        return APP_CTRL_RC_MEM_ALLOCATION;
     }
     
     msg->msg_type  = msg_type;
@@ -2389,7 +2389,7 @@ ctrl_net_conn_msg_list_alloc(NET_CONN *conn)
                         sizeof(NET_CONN_MSG));
    
     if (!conn->msg_array)
-        return APP_ZK_RC_MEM_ALLOCATION;
+        return APP_CTRL_RC_MEM_ALLOCATION;
 
     ptmsg = conn->msg_array;
     for (i = 0; i < conn->msg_num; i++, ptmsg++)
@@ -2417,7 +2417,7 @@ ctrl_net_conn_init(INT32 slot_id, NET_CONN **pconn)
     if (!conn)
     {
         net_mutex_unlock(&g_ctrl_conn_lock);
-        return APP_ZK_RC_MEM_ALLOCATION;
+        return APP_CTRL_RC_MEM_ALLOCATION;
     }
 
     snprintf(conn->name, sizeof(conn->name), "slot_%u", slot_id);
@@ -2444,12 +2444,12 @@ ctrl_net_conn_get_any(INT32 slot_id, NET_CONN **pconn)
 
     if (!pconn)
     {
-        return APP_ZK_RC_PARAM_NULL;
+        return APP_CTRL_RC_PARAM_NULL;
     }
     
     if (slot_id >= NET_MANAGE_MAX_SLOT)
     {
-        return APP_ZK_RC_PARAM_OUT_OF_RANGE;
+        return APP_CTRL_RC_PARAM_OUT_OF_RANGE;
     }
     
     *pconn = g_ctrl_conn[slot_id];
@@ -2477,7 +2477,7 @@ ctrl_net_msg_syn_send(NET_MSG *pmsg)
 {
     if (!pmsg)
     {
-        return APP_ZK_RC_PARAM_NULL;
+        return APP_CTRL_RC_PARAM_NULL;
     }
     
     NET_CONN_MSG *pcmsg;
@@ -2500,7 +2500,7 @@ ctrl_net_msg_syn_send(NET_MSG *pmsg)
     {
         net_mutex_unlock(&pconn->mutex);
         printf("ctrl_net_conn_msg_get_free error!!!\n");
-        return APP_ZK_RC_PARAM_GET;
+        return APP_CTRL_RC_PARAM_GET;
     }
 
     //时间戳作为接收校验魔术字
@@ -2512,7 +2512,7 @@ ctrl_net_msg_syn_send(NET_MSG *pmsg)
     {
         printf("%s %s %d net_malloc error!!!\r\n", __FILE__, __FUNCTION__, __LINE__);
         net_conn_msg_free(pcmsg, &pconn->free_req_list);
-        return APP_ZK_RC_MEM_ALLOCATION;
+        return APP_CTRL_RC_MEM_ALLOCATION;
     }
     
     memcpy(p_autofree_msg, pmsg, pmsg->len);
@@ -2547,7 +2547,7 @@ ctrl_net_msg_syn_send(NET_MSG *pmsg)
         
         net_mutex_unlock(&pconn->mutex);
         
-        return APP_ZK_RC_MSG_SYN_WAITE;
+        return APP_CTRL_RC_MSG_SYN_WAITE;
     }
 
     //正常得到回应入空闲队列
@@ -2577,25 +2577,25 @@ ctrl_net_syn_operation( IN const  NET_MSG_TYPE msg_type,
     UINT32      syn_ack_len;
     NET_MSG *p_msg;
     UINT32      rc;
-    rc_info rc_info = {.obj_id = OBJ_APP_ZK, .sub_obj_id.olt_id = (vif_info & 0xff)};
+    rc_info rc_info = {.obj_id = OBJ_APP_CTRL, .sub_obj_id.olt_id = (vif_info & 0xff)};
 
     //首先判断链接是否存在
     if (!ctrl_net_state_working(vif_info & 0xff))
     {
         printf("ctrl remote slot %llu state is not working\r\n", vif_info & 0xff);
-        return OBJ_APP_ZK_RC_OFFSET + APP_ZK_RC_NET_NOT_CONNECT;
+        return OBJ_APP_CTRL_RC_OFFSET + APP_CTRL_RC_NET_NOT_CONNECT;
     }
     
     if (!state)
     {
-        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_NULL);
+        ERRNO_INFO2RC(rc_info, rc, APP_CTRL_RC_PARAM_NULL);
         return rc;
     }
     
     if ((param && 0 == param_len) || (NULL == param && param_len))
     {
         printf("%s %s %d param error\n", __FILE__, __FUNCTION__, __LINE__);
-        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_PARAM_OUT_OF_RANGE);
+        ERRNO_INFO2RC(rc_info, rc, APP_CTRL_RC_PARAM_OUT_OF_RANGE);
         return rc;
     }
     
@@ -2613,7 +2613,7 @@ ctrl_net_syn_operation( IN const  NET_MSG_TYPE msg_type,
     if (!p_msg)
     {
         printf("%s %s %d error\n", __FILE__, __FUNCTION__, __LINE__);
-        ERRNO_INFO2RC(rc_info, rc, APP_ZK_RC_MEM_ALLOCATION);
+        ERRNO_INFO2RC(rc_info, rc, APP_CTRL_RC_MEM_ALLOCATION);
         return rc;
     }
     

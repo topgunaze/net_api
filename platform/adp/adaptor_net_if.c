@@ -843,7 +843,7 @@ net_conn_msg_syn_ack_process(NET_CONN *pconn, NET_MSG *pmsg)
     {
         printf("net_conn_msg_syn_varify error!!!\n");
         net_mutex_unlock(&pconn->mutex);
-        return APP_ZK_RC_MSG_SYN_VARIFY;
+        return APP_CTRL_RC_MSG_SYN_VARIFY;
     }
 
     //AR msg copy 到syn send 接口申请的内存中

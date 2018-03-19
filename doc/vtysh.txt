@@ -152,11 +152,4 @@ cmd_element.tokens
 疑点
 srand (time (NULL)) 作用
 
-记录
-cpp
-105 132 133
-jz
-49
 
-1. outbound 
-2. multi ser
