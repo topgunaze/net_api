@@ -317,6 +317,7 @@ MSC_MsgProcessTask -> g_mscMsgQRcvId -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -
 注册命令的执行元素
 g_mscCmdRegList
 pon_system.set_msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
+msc_register_func
 接收消息触发
 MSC_PktDMCallBack -> g_mscMsgQRcvId -> MSC_MsgProcessTask
 
@@ -335,6 +336,10 @@ g_mscModuleRegArr 业务盘报文类型回调
 MSC_PKT_xxx 	  业务盘报文类型
 
 MSC_ProcessPacket
+
+注册命令处理
+olt_config_service_msc_init -> 
+
 库：
 1. 消息队列、信号量、线程
 2. 链表
