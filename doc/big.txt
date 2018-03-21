@@ -1,7 +1,8 @@
 主从通信适配层 olt_msc_main.c
 MSC_Init
 msc_module_env_init -> MSC_GlobalInit
-msc_module_task_init -> osal_taskSpawn -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+
+
 
 主从通信基本接口 msc_main.c
 MSC_GlobalInit -> osal_msgQCreate[OSAL_MSG_Q_FIFO | OSAL_MSG_Q_FIFO] -> osal_semMCreate[OSAL_SEM_Q_FIFO] ->
@@ -53,26 +54,50 @@ MSC_ProcessPacket -> g_mscModuleRegArr -> type2cb
 MSC_Send -> write -> 
 
 
+MSC_PKT_CHKCONN
+MscInitPtkPoccess()
+
+ADP_SUBTYPE_FETCH
+
+msc_ServerSetup()
+
+MSC_PKT_CHKCONN
+
+RegisterEventCommandObject
+
+chk_hook
+Msc_PktDMCallBack()
+
 xdu端
 
-c++接口
 CPonSystem
 
 OLT主模块 olt_main_service_cinterface.cpp
 
-类 
-CPonSystem
-CObjectBase -> CServiceObject -> COltMainServiceObject -> 
+pon系统业务 
+CObjectBase -> CPonSystem
+业务模块
+CObjectBase -> CServiceObject 
+CServiceObject -> COltMainServiceObject ***
 olt_main_service_object
 
-map< int, OLT_MAIN_CHIP_READY_HANDLE_FUNC >::const_iterator it
 
-CServiceObject
+单例模式：
+类对象作为类的成员
 
 继承关系：
+主从通信
 CCommandObject -> CMscCommandObject
+配置下发onu
+CCommandObject -> CConfigCommandObject
+事件解析与处理
+CCommandObject -> CEventCommandObject
+
+主从通信命令解析器
+CObjectBase -> CMscCommandParse
+单例模式
+
 CConfigCommandObject
-CEventCommandObject
 
 基本类
 具备锁功能接口，抽象类
@@ -102,8 +127,7 @@ CObjectBase -> CConfigData
 用于配置对象
 
 工作类：
-卡端口配置ONU类
-CConfigObject -> CCardPortConfigObject
+
 
 PON卡配置类
 CConfigObject -> CCardConfigObject
@@ -179,10 +203,159 @@ pair
 
 PON_CREATE_CONFIGDATA_HANDLE
 
+状态类
+CObjectBase -> CStatusObject
+pon卡状态
+CStatusObject -> CCardStatusObject
+卡端口配置ONU类
+CConfigObject -> CCardPortConfigObject
+
+onu状态
+CStatusObject -> COnuStatusObject
+
+CStatusObject -> COnuPortStatusObject
+
+COnuPortStatusObject -> COnuPonPortStatusObject
+COnuPortStatusObject -> COnuLanPortStatusObject
+COnuPortStatusObject -> COnuVoipPortStatusObject
+
+状态数据
+CObjectBase -> CStatusData
+
+common_gpon:
+
+pon卡配置数据基类
+CConfigData -> CCardConfigData
+gpon卡配置数据
+CCardConfigData -> CGPONCardConfigData
+
+CConfigData -> CCardPortConfigData
+
+宏？
+#define synchronized(M)  for(LockHelper M##_lock(M, __FUNCTION__, __LINE__); M##_lock; M##_lock.SetUnlock())
+
+olt_main:
+**
+config_module_cinterface:
+cfg_mode_get|set|delete|create|modify|clear|insert|compare|save|add|del
+
+
+get
+set 0<
+
+config_module:
+CMscCommandObject_0x9001::operator() ->
+igmp_config_process_client_packet_binding -> cfg_mod_add_onu_port_binding_channel_config -> cfg_mod_set_command_flag
+
+
+get 接口 -> 类对象 -> 
+set -> 
+
+配属对象数据
+card：
+gponcard:
+onu:
+onuport：
+
+omci 操作实例：
+UpgradeCommitState::Operate -> link_configtable_get_onu_auto_upgrade_restart
+
+CConfigData -> COnuConfigData
+COnuConfigData -> COnuSFUConfigData
+COnuConfigData -> COnuMDUConfigData
+COnuConfigData -> COnuHGUConfigData
+
+COnuPortConfigData
+COnuVoipPortConfigData
+COnuLanPortConfigData
+COnuPonPortConfigData
+
+接口：
+onu_db_traffic
+
+主从通信
+
+CMscServiceObject::Start -> MSC_Init
+
+
+业务模块任务初始化
+MSC_Init -> 
+g_mscSvrInitDone 标示MSC初始化结果  MSC_MsgProcessTask MSC_MsgSendTask
+
+msc_module_env_init -> MSC_GlobalInit -> 
+全局信息：变量、消息收发队列、发包信号量
+MSC_PKT_DM 处理回调 MSC_PktDMCallBack 
+msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+pon卡与主控之间连接与接收消息任务
+MSC_ServerSetup ->
+1. pon卡作为服务端，等待主控连接
+2. 主控连接pon卡后，启动接收消息任务 MSC_ServerRecv
+
+MSC_ServerRecv -> MSC_ReadPacket -> MSC_ProcessPacket -> g_mscModuleRegArr
+流式接口与粘包处理*
+
+pon卡内部发送消息处理任务
+
+pon卡内部接收消息处理任务
+MSC_MsgProcessTask -> g_mscMsgQRcvId -> MSC_ProcHswCmd -> 
+
+MSC 内部消息队列处理流程：
+接收队列处理
+MSC_PktDMCallBack -> g_mscMsgQRcvId -> MSC_MsgProcessTask -> 
+1. 消息头部处理，命令id2cmdnode MSC_CMD_NODE
+2. 
+
+发送队列处理
+MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
+
+
+分包信息缓存 ？
+错误码信息链 tagMSC_ERROR_LIST_INFO
+类型报文注册处理回调 
+MSC_ModuleRegister
+g_mscModuleRegArr 业务盘报文类型回调
+MSC_PKT_xxx 	  业务盘报文类型
+
+
+MSC_ProcessPacket
+库：
+1. 消息队列、信号量、线程
+2. 链表
+
+olt_config:
+olt_config_register_msc_command
+
+olt_config_service_xxx:
+CMscCommandObject_xxx ? 
+COltConfigServiceObject::Init
+
+olt_main_service：
+
+
+COltMainServiceObject::Init **
+
+olt_main_msc_register
+
+CEventCommandObject_PONCHIP_READY
+
+收发包接口：
+olt_main_tx_mgmt_packets_out_band
+olt_main_rx_mgmt_packets_out_band
+
+
+全局：
+g_olt_card_info
+g_olt_chip_ready
+
+
 备注：
-1. const 函数 const func const
+1. const 函数 const func const *
 2. 虚析构函数
-3. 虚函数是否具有继承性
+3. 虚函数是否具有继承性 *
 4. template <class Type> 用法 模板类
 5. explicit 如何使用
-6. 重载
+6. 重载 operator 使用
+7. static 函数 *
+8. cast 类型转换, dynamic_cast rtti 
+9 TDD 开发模式
+10 
