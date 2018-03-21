@@ -34,6 +34,12 @@ MSC_FindCmdRegNode ->
 
 MSC_TransOptType
 
+报文压缩与解压缩
+MSC_PreHandleRecvPkt
+
+命令节点
+g_mscCmdRegList 2node -> MSC_REG_ELEMENT_NODE -> regInfo.pFun 
+
 
 
 主从通信模块服务器端 msc_server.c
@@ -273,16 +279,21 @@ COnuPonPortConfigData
 接口：
 onu_db_traffic
 
+CMscServiceObject::Init
+msc_service_cli_init
+
 主从通信
 
-CMscServiceObject::Start -> MSC_Init
+msc_register_event_command 命令注册接口
+msc_register_config_command 配置注册接口
 
+CMscServiceObject::Start -> MSC_Init
 
 业务模块任务初始化
 MSC_Init -> 
 g_mscSvrInitDone 标示MSC初始化结果  MSC_MsgProcessTask MSC_MsgSendTask
 
-msc_module_env_init -> MSC_GlobalInit -> 
+msc_module_env_init -> MSC_GlobalInit -> MSC_InitCmdRegList
 全局信息：变量、消息收发队列、发包信号量
 MSC_PKT_DM 处理回调 MSC_PktDMCallBack 
 msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
@@ -294,20 +305,27 @@ MSC_ServerSetup ->
 MSC_ServerRecv -> MSC_ReadPacket -> MSC_ProcessPacket -> g_mscModuleRegArr
 流式接口与粘包处理*
 
-pon卡内部发送消息处理任务
-
 pon卡内部接收消息处理任务
-MSC_MsgProcessTask -> g_mscMsgQRcvId -> MSC_ProcHswCmd -> 
+数据结构：
+MSC_CMD_NODE | MSC_REG_ELEMENT_NODE
 
-MSC 内部消息队列处理流程：
-接收队列处理
-MSC_PktDMCallBack -> g_mscMsgQRcvId -> MSC_MsgProcessTask -> 
-1. 消息头部处理，命令id2cmdnode MSC_CMD_NODE
-2. 
+MSC_MsgProcessTask -> g_mscMsgQRcvId -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> pRegElement.regInfo.pFun
+1. buffer2cmdid
+2. cmdnode compare
+3. 遍历 cmdnode 下的 element
 
-发送队列处理
-MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
+注册命令的执行元素
+g_mscCmdRegList
+pon_system.set_msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
+接收消息触发
+MSC_PktDMCallBack -> g_mscMsgQRcvId -> MSC_MsgProcessTask
 
+
+pon卡内部发送消息处理任务
+MSC_MsgSendTask -> g_mscMsgQSndId -> MSC_SendToHsw -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send
+发送消息触发
+MSC_SendPktToHsw -> MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
+olt_main_send_packet_to_hsw 触发 **
 
 分包信息缓存 ？
 错误码信息链 tagMSC_ERROR_LIST_INFO
@@ -316,11 +334,11 @@ MSC_ModuleRegister
 g_mscModuleRegArr 业务盘报文类型回调
 MSC_PKT_xxx 	  业务盘报文类型
 
-
 MSC_ProcessPacket
 库：
 1. 消息队列、信号量、线程
 2. 链表
+3. 日志接口
 
 olt_config:
 olt_config_register_msc_command
@@ -350,12 +368,12 @@ g_olt_chip_ready
 
 备注：
 1. const 函数 const func const *
-2. 虚析构函数
+2. 虚析构函数 *
 3. 虚函数是否具有继承性 *
 4. template <class Type> 用法 模板类
-5. explicit 如何使用
+5. explicit 如何使用 *
 6. 重载 operator 使用
 7. static 函数 *
-8. cast 类型转换, dynamic_cast rtti 
+8. cast 类型转换, dynamic_cast rtti *
 9 TDD 开发模式
 10 
