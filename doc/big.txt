@@ -1,21 +1,7 @@
 pon卡：
-主从通信适配层 olt_msc_main.c
-MSC_Init
-msc_module_env_init -> MSC_GlobalInit
+主从通信适配层 		olt_msc_main.c
+主从通信基本接口 	msc_main.c
 
-
-
-主从通信基本接口 msc_main.c
-MSC_GlobalInit -> osal_msgQCreate[OSAL_MSG_Q_FIFO | OSAL_MSG_Q_FIFO] -> osal_semMCreate[OSAL_SEM_Q_FIFO] ->
-MSC_InitCmdRegList
-MSC_InitAddErrInfo
-MSC_InitDmGloabalValue
-
-
-MSC_InstallCliCm
-
-osal_taskSpawn 接口实现 ？
-dm 模块 ？
 
 MSC_ServerSetup
 MSC_MsgProcessTask -> osal_msgQReceive -> MSC_ProcHswCmd
@@ -314,9 +300,7 @@ MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
 MSC_MsgSendTask -> g_mscMsgQSndId -> 出 -> MSC_SendToHsw -> MSC_PKT_DM -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send(write)
 发送消息触发
 MSC_SendPktToHsw -> MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
-olt_main_send_packet_to_hsw 触发 **
-
-pon_system._msc_pkt_send_func
+pon_system._msc_pkt_send_func == olt_main_send_packet_to_hsw ?
 
 
 流程：
@@ -331,20 +315,11 @@ MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
 3. 消息入内部接收队列
 4. 任务取内部接收队列按命令节点遍历执行元素
 
-pon卡内部消息处理机制
-
-命令节点添加执行元素
+PON卡内部消息命令节点添加执行元素
 1. g_mscCmdRegList
 2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
 pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
-
 外部如何注册？
-
-命令节点
-g_mscCmdRegList 2node -> MSC_REG_ELEMENT_NODE -> regInfo.pFun 
-
-MSC_RegProcGswCmdFunToManager -> g_mscCmdRegList -> 
-
 1. 注册命令节点
 2. 命令节点下挂接执行元素
 elementHasInit
@@ -362,7 +337,26 @@ CMscCommandObject -> CMscCommandObject_0x602B
 CMD_CODE
 
 PON卡初始化
-fh_maple_init_stage2
+fh_maple_init -> fh_maple_init_stage1 -> fh_maple_init_stage2
+fh_maple_init_stage2 ->
+
+
+RegisterServiceObject -> _service_object_list -> 
+
+业务对象
+Init
+SortConfigCommand
+SortEventCommand
+
+CMscServiceObject
+COltConfigServiceObject
+
+fhdrv_olt_common_ponapi_init 实现
+
+pon_system.hpp 对应cpp 无
+
+
+standTbl
 
 
 库：
