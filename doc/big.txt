@@ -10,7 +10,8 @@ MSC_GlobalInit -> osal_msgQCreate[OSAL_MSG_Q_FIFO | OSAL_MSG_Q_FIFO] -> osal_sem
 MSC_InitCmdRegList
 MSC_InitAddErrInfo
 MSC_InitDmGloabalValue
-MSC_ModuleRegister[MSC_PktDMCallBack]
+
+
 MSC_InstallCliCm
 
 osal_taskSpawn 接口实现 ？
@@ -27,8 +28,6 @@ MSC_SendToMscTask -> osal_msgQSend][g_mscMsgQSndId]
 
 MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
 
-MSC_RegProcGswCmdFunToManager -> g_mscCmdRegList -> pon_system_dispatch_msc
-
 MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> 
 
 MSC_FindCmdRegNode -> 
@@ -37,11 +36,6 @@ MSC_TransOptType
 
 报文压缩与解压缩
 MSC_PreHandleRecvPkt
-
-命令节点
-g_mscCmdRegList 2node -> MSC_REG_ELEMENT_NODE -> regInfo.pFun 
-
-
 
 主从通信模块服务器端 msc_server.c
 
@@ -55,11 +49,8 @@ MSC_ServerSend -> MSC_Send ->
 
 主从通信模块
 msc_common.c
-MSC_ModuleRegister -> g_mscModuleRegArr -> type | cb
-MSC_ReadPacket -> recv -> MSC_ProcessPacket
-MSC_ProcessPacket -> g_mscModuleRegArr -> type2cb
-MSC_Send -> write -> 
 
+MSC_Send -> write -> 
 
 MSC_PKT_CHKCONN
 MscInitPtkPoccess()
@@ -283,65 +274,96 @@ onu_db_traffic
 CMscServiceObject::Init
 msc_service_cli_init
 
-主从通信
+
 
 g++ 编译 makefile
+1. gcc -lstdc++
+2. g++ 
 
-msc_register_event_command 命令注册接口
+没有使用接口：
+msc_register_event_command 命令注册接口 
 msc_register_config_command 配置注册接口
 
+PON卡主从通信模块
 CMscServiceObject::Start -> MSC_Init
 
-业务模块任务初始化
-MSC_Init -> 
-g_mscSvrInitDone 标示MSC初始化结果  MSC_MsgProcessTask MSC_MsgSendTask
+1. g_mscSvrInitDone 标示MSC初始化结果，初始化完毕可进行板间消息的收发即 MSC_MsgProcessTask | MSC_MsgSendTask
 
-msc_module_env_init -> MSC_GlobalInit -> MSC_InitCmdRegList
+2. msc_module_env_init -> MSC_GlobalInit -> 
 全局信息：变量、消息收发队列、发包信号量
+MSC_InitCmdRegList -> g_mscCmdListInit 命令行链表
+MSC_InitAddErrInfo -> MSC_AddErrInfo -> MSC_ERROR_LIST_INFO 错误码链表
 MSC_PKT_DM 处理回调 MSC_PktDMCallBack 
-msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
-pon卡与主控之间连接与接收消息任务
+
+2. msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+2.1. pon卡与主控之间连接与接收消息任务
 MSC_ServerSetup ->
-1. pon卡作为服务端，等待主控连接
-2. 主控连接pon卡后，启动接收消息任务 MSC_ServerRecv
+2.1.1. pon卡作为服务端，等待主控连接
+2.1.2. 主控连接pon卡后，启动接收消息任务 MSC_ServerRecv
+	MSC_ServerRecv -> MSC_ReadPacket
 
-MSC_ServerRecv -> MSC_ReadPacket -> MSC_ProcessPacket -> g_mscModuleRegArr
-流式接口与粘包处理*
+2.2. pon卡内部消息处理任务
+MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> pRegElement.regInfo.pFun -> pon_system_dispatch_msc ?
+2.1. buffer2cmdid
+2.2. cmdnode compare
+2.3. 遍历 cmdnode 下的 element， exe
+DM消息触发
+MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
 
-pon卡内部接收消息处理任务
-数据结构：
-MSC_CMD_NODE | MSC_REG_ELEMENT_NODE
-
-MSC_MsgProcessTask -> g_mscMsgQRcvId -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> pRegElement.regInfo.pFun
-1. buffer2cmdid
-2. cmdnode compare
-3. 遍历 cmdnode 下的 element
-
-注册命令的执行元素
-g_mscCmdRegList
-pon_system.set_msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
-msc_register_func
-接收消息触发
-MSC_PktDMCallBack -> g_mscMsgQRcvId -> MSC_MsgProcessTask
-
-
-pon卡内部发送消息处理任务
-MSC_MsgSendTask -> g_mscMsgQSndId -> MSC_SendToHsw -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send
+2.3 pon卡内部发送消息处理任务
+MSC_MsgSendTask -> g_mscMsgQSndId -> 出 -> MSC_SendToHsw -> MSC_PKT_DM -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send(write)
 发送消息触发
 MSC_SendPktToHsw -> MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
 olt_main_send_packet_to_hsw 触发 **
 
-分包信息缓存 ？
-错误码信息链 tagMSC_ERROR_LIST_INFO
-类型报文注册处理回调 
-MSC_ModuleRegister
-g_mscModuleRegArr 业务盘报文类型回调
-MSC_PKT_xxx 	  业务盘报文类型
+pon_system._msc_pkt_send_func
 
-MSC_ProcessPacket
+
+流程：
+板间消息按类型注册处理回调机制 
+注册板间消息：
+MSC_ModuleRegister -> type | cb -> g_mscModuleRegArr
+回调触发：
+MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
+
+1. pon卡接收来自主控消息，
+2. 消息类型执行回调，
+3. 消息入内部接收队列
+4. 任务取内部接收队列按命令节点遍历执行元素
+
+pon卡内部消息处理机制
+
+命令节点添加执行元素
+1. g_mscCmdRegList
+2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
+pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
+
+外部如何注册？
+
+命令节点
+g_mscCmdRegList 2node -> MSC_REG_ELEMENT_NODE -> regInfo.pFun 
+
+MSC_RegProcGswCmdFunToManager -> g_mscCmdRegList -> 
+
+1. 注册命令节点
+2. 命令节点下挂接执行元素
+elementHasInit
 
 注册命令处理
-olt_config_service_msc_init -> 
+olt_config_service_msc_init -> olt_config_register_msc_command -> 
+单例 CPonSystem -> kServiceModuleOltConfig -> CServiceObject -> RegisterMscCommandObject ？
+
+set_msc_register_func
+pon_system
+msc_register_func
+单例模式注册命令执行元素
+CMscCommandObject -> CMscCommandObject_0x602B 
+
+CMD_CODE
+
+PON卡初始化
+fh_maple_init_stage2
+
 
 库：
 1. 消息队列、信号量、线程
