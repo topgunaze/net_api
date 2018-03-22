@@ -88,9 +88,621 @@ hash算法：
 进制换算：
 1. A~Z表示1~26， 一串字符求对应数字
 
-算法：
+查找算法：
 二分查找
-快速排序
-归并排序
+二分查找，必须条件是有序数组，然后不断折半，几乎每次循环都可以降低一半左右的数据量。
+因此是O(lgN)的方法，要注意的是二分查找要能够退出，不能陷入死循环。
+二分查找用到的一个重要定义就是循环不变式，就是在循环中不会改变这么一个性质。举个例子，插入排序，不断的循环到新的索引，但保持前面的排序性质不变。
+其实就是数学归纳法，具体的定义不用管。
+注意点：
+数组是非递增还是非递减；
+结束条件，即while (condition) 应当是<还是<=；
+当元素个数为偶数时求mid应当是偏向左还是右，即 mid = (left + right) » 1, 还是 mid = (left + right + 1) » 1；
+如何得到循环不变式
+while结束后是否需要判断一次条件
+应用场景：
+1. 查找值key的下标，如果不存在返回-1.
+2. 查找值key第一次出现的下标x，如果不存在返回-1.
+3. 查找值key最后一次出现的下标x，如果不存在返回-1.
+4. 查找刚好小于key的元素下标x，如果不存在返回-1.
+5. 查找刚好大于key的元素下标x，如果不存在返回-1,等价于std::upper_bound.
+6. 查找第一个>=key的下标，如果不存在返回-1,等价于std::lower_bound.
+leetcode上 Search a 2D Matrix
+1. 查找值为key的下标，如果不存在返回-1.
 
-g++ 编译 makefile
+while left <= right
+    if array[mid] > key:
+        right = left - 1
+    else if array[mid] < key:
+        left = mid + 1
+    else
+        return mid
+return -1
+
+这里面包含怎样的循环不变式？
+如果中间值比key大，那么[mid, right]的值都可以忽略掉了，这些值都比key要大。只要在[left, mid-1]里查找就是了。
+相反，如果中间值比key小，那么[left, mid]的值可以忽略掉，这些值都比key要小，只要在[mid+1, right]里查找就可以了。
+如果相等，表示找到了，可以直接返回。
+因此，循环不变式就是在每次循环里，都可以保证要找的index在新构造的区间里。如果最后这个区间没有，那么就确实是没有
+
+注意mid的求法，可能会int越界，但我们先不用考虑这个问题，要记住的是这点：***
+
+mid是偏向left的，即如果left=1,right=2,则mid=1。
+
+int BS(const VecInt& vec, int key)
+{
+    int left = 0, right = vec.size() - 1;
+    while (left <= right)
+    {
+        if (vec[mid] > key)
+            right = mid - 1;
+        else if (vec[mid] < key)
+            left = mid + 1;
+        else
+            return mid;
+     }
+     return -1;
+}
+
+2. 查找值key第一次出现的下标x，如果不存在返回-1.
+
+仍然考虑中间值与key的关系：
+如果array[mid]<key，那么x一定在[mid+1, right]区间里。
+如果array[mid]>key，那么x一定在[left, mid-1]区间里。
+如果array[mid]≤key，那么不能推断任何关系。 比如对key=1,数组{0,1,1,2,3},{0,0,0,1,2},array[mid] = array[2] ≤ 1，但一个在左半区间，一个在右半区间。
+如果array[mid]≥key，那么x一定在[left, mid]区间里。
+综合上面的结果，我们可以采用1,4即<和≥的组合判断来实现循环不变式，即循环过程中一直满足key在区间里。
+
+这里需要注意两个问题：
+循环能否退出,我们注意到4的区间改变里是令right = mid，如果left=right=mid时，循环是无法退出的。 换句话说，第一个问题始终在减小着区间，而在这个问题里，某种情况下区间是不会减小的，
+循环退出后的判断问题，再看下条件1,4组合，只是使得最后的区间满足了≥key，是否=key，还需要再判断一次。
+
+int BS_First(const VecInt& vec, int key)
+{
+ int left = 0, right = vec.size() - 1;
+ while (left < right)//问题1，left < right时继续，相等就break.
+ {
+   int mid = (left + right) >> 1;
+   if (vec[mid] < key)
+     left = mid + 1;
+   else
+     right = mid;
+ }
+ 
+ if (vec[left] == key)//问题2,再判断一次。
+   return left;
+
+ return -1;
+}
+
+3. 查找值key最后一次出现的下标x，如果不存在返回-1.
+循环不变式：
+条件1 如果array[mid]>key，那么x一定在[left, mid-1]区间里。
+条件2 如果array[mid]≤key, 那么x一定在[mid, right]区间里。
+这里需要注意个问题：
+在条件2里，实际上是令left=mid，但是如前面提到的，如果left=1,right=2,那么mid=left=1， 同时又进入到条件2,left=mid=1，即使在while设定了left < right仍然无法退出循环，解决的办法很简单： mid = (left + right + 1) >> 1 ，向右偏向就可以了。
+
+int BS_Last(const VecInt& vec, int key)
+{
+ int left = 0, right = vec.size() - 1;
+ while (left < right)
+ {
+   int mid = (left + right + 1) >> 1;
+   if (vec[mid] > key)
+     right = mid - 1;
+   else
+     left = mid;
+ }
+
+ if (vec[left] == key)
+   return left;
+
+ return -1;
+}
+
+4. 查找刚好小于key的元素下标x，如果不存在返回-1.
+
+如果array[mid]<key，那么x在区间[mid, right]
+如果array[mid]≥key，那么x在区间[left, mid-1]
+
+int BS_Last_Less(const VecInt& vec, int key)
+{
+ int left = 0, right = vec.size() - 1;
+ while (left < right)
+ {
+   int mid = (left + right + 1) >> 1;
+   if (vec[mid] < key)
+     left = mid;
+   else
+     right = mid - 1;
+ }
+ 
+ if (vec[left] < key)
+   return left;
+
+ return -1;
+}
+
+5. 查找刚好大于key的元素下标x，如果不存在返回-1,等价于std::upper_bound.
+
+如果array[mid]>key，那么x在区间[left, mid]
+如果array[mid]≤key，那么x在区间[mid + 1, right]
+
+int BS_First_Greater(const VecInt& vec, int key)
+{
+ int left = 0, right = vec.size() - 1;
+ while (left < right)
+ {
+   int mid = (left + right) >> 1;
+   if (vec[mid] > key)
+     right = mid;
+   else
+     left = mid + 1;
+ }
+ 
+ if (vec[left] > key)
+   return left;
+
+ return -1;
+}
+
+6. 查找第一个>=key的下标，如果不存在返回-1,等价于std::lower_bound.
+
+如果array[mid]<key，那么x在区间[mid + 1, right]
+如果array[mid]≥key，那么x在区间[left, mid]
+参考代码：
+
+
+int BS_First_Greater_Or_Equal(const VecInt& vec, int key)
+{
+ int left = 0, right = vec.size() - 1;
+ while (left < right)
+ {
+   int mid = (left + right) >> 1;
+   if (vec[mid] < key)
+     left = mid +1;
+   else
+     right = mid;
+ }
+ if (vec[left] >= key)
+   return left;
+
+ return -1;
+}
+
+算法动图
+https://visualgo.net/en
+排序
+快速排序（Quick Sort）
+
+快速排序快，效率高，处理大数据最快的排序算法之一。
+快速排序的基本思想：通过一趟排序将待排记录分隔成独立的两部分，其中一部分记录的关键字均比另一部分的关键字小，则可分别对这两部分记录继续进行排序，以达到整个序列有序。
+快速排序使用分治法来把一个串（list）分为两个子串（sub-lists）
+1. 从数列中挑出一个元素，称为 “基准”（pivot）；
+2. 重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边），
+在这个分区退出之后，该基准就处于数列的中间位置。这个称为分区（partition）操作；
+3. 递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序。
+http://blog.jobbole.com/100531/
+#include <stdio.h>
+int a[101],n;//定义全局变量，这两个变量需要在子函数中使用
+void quicksort(int left,int right)
+{
+    int i,j,t,temp;
+	
+    if(left>right)
+       return;
+                                    
+    temp=a[left]; //temp中存的就是基准数
+    i=left;
+    j=right;
+    while(i!=j)
+    {
+		//顺序很重要，要先从右边开始找
+		while(a[j]>=temp && i<j)
+			j--;
+		//再找右边的
+		while(a[i]<=temp && i<j)
+			i++;
+		//交换两个数在数组中的位置
+		if(i<j)
+		{
+			t=a[i];
+			a[i]=a[j];
+			a[j]=t;
+		}
+	}
+	
+    //最终将基准数归位
+    a[left]=a[i];
+    a[i]=temp;
+                                 
+    quicksort(left,i-1);//继续处理左边的，这里是一个递归的过程
+    quicksort(i+1,right);//继续处理右边的 ，这里是一个递归的过程
+}
+
+int main()
+{
+    int i,j,t;
+    //读入数据
+    scanf("%d",&n);
+    for(i=1;i<=n;i++)
+		scanf("%d",&a[i]);
+    quicksort(1,n); //快速排序调用
+                                 
+    //输出排序后的结果
+    for(i=1;i<=n;i++)
+        printf("%d ",a[i]);
+		
+    getchar();
+	getchar();
+    return 0;
+}
+
+最佳情况：T(n) = O(nlogn)
+最差情况：T(n) = O(n2)
+平均情况：T(n) = O(nlogn)
+
+归并排序
+和选择排序一样，归并排序的性能不受输入数据的影响，但表现比选择排序好的多，因为始终都是O(n log n）的时间复杂度。代价是需要额外的内存空间。
+归并排序是建立在归并操作上的一种有效的排序算法。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。
+归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并。
+
+1. 把长度为n的输入序列分成两个长度为n/2的子序列；
+2. 对这两个子序列分别采用归并排序；
+3. 将两个排序好的子序列合并成一个最终的排序序列。
+
+题目：
+
+给出两个数组，进行归并排序，把第二个数组数值保存到第一个数组中。
+
+示例：
+
+array1=[145],array2=[36],array1=[13456]
+
+思路：
+
+总体来讲，还是从后往前，如果比较的时刻两个数组谁大，谁就存到那个位置。至于最后还有多余的，另当别论。
+
+需要重新考虑，如果数组2有多余，直接全部复制到1,1有多余，不需进行任何操作。
+
+代码：
+
+
+class Solution {
+public:
+//https://leetcode.com/problems/merge-sorted-array/
+    void merge(vector<int>& nums1 , int m , vector<int>& nums2 , int n) {
+        //假设是升序排列的了。
+        int i=m-1,j=n-1;
+        int k=m+n-1;//新的长度
+        while(i>=0&&j>=0){
+            if(nums1[i]>=nums2[j]){
+                nums1[k--]=nums1[i--];
+            }else{
+                nums1[k--]=nums2[j--];
+            }
+        }
+        //i不为0 不要紧，反正就存在自己的数组里面。
+        while(j>=0){
+            nums1[k--]=nums2[j--];
+        }
+    }
+};
+
+class Solution {
+public:
+//https://leetcode.com/problems/merge-sorted-array/
+    void merge(vector<int>& nums1 , int m , vector<int>& nums2 , int n) {
+        //假设是升序排列的了。
+        int i=m-1,j=n-1;
+        int k=m+n-1;//新的长度
+        while(i>=0&&j>=0){
+            if(nums1[i]>=nums2[j]){
+                nums1[k--]=nums1[i--];
+            }else{
+                nums1[k--]=nums2[j--];
+            }
+        }
+        //i不为0 不要紧，反正就存在自己的数组里面。
+        while(j>=0){
+            nums1[k--]=nums2[j--];
+        }
+    }
+};
+
+(3)算法分析
+
+最佳情况：T(n) = O(n)
+最差情况：T(n) = O(nlogn)
+平均情况：T(n) = O(nlogn)
+
+
+归并过程为：
+比较a[i]和a[j]的大小，若a[i]≤b[j]，则将第一个有序表中的元素a[i]复制到r[k]中，并令i和k分别加上1；
+否则将第二个有序表中的元素b[j]复制到r[k]中，并令j和k分别加上1，
+如此循环下去，直到其中一个有序表取完，然后再将另一个有序表中剩余的元素复制到r中从下标k到下标t的单元。
+归并排序的算法通常用递归实现，先把待排序区间[s,t]以中点二分，接着把左边子区间排序，再把右边子区间排序，最后把左区间和右区间用一次归并操作合并成有序的区间[s,t]。
+
+Python
+
+def merge(left, right):
+    i, j = 0, 0
+    result = []
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result += left[i:]
+    result += right[j:]
+    return result
+
+def merge_sort(lists):
+    # 归并排序
+    if len(lists) <= 1:
+        return lists
+    num = len(lists) / 2
+    left = merge_sort(lists[:num])
+    right = merge_sort(lists[num:])
+    return merge(left, right)
+
+合并方法：
+设r[i…n]由两个有序子表r[i…m]和r[m+1…n]组成，两个子表长度分别为m-i +1、n-m
+1. j=m+1；k=i；i=i; //置两个子表的起始下标及辅助数组的起始下标
+2. 若i>m 或j>n，转⑷ //其中一个子表已合并完，比较选取结束
+//选取r[i]和r[j]较小的存入辅助数组rf
+3. 如果r[i] 否则，rf[k]=r[j]； j++； k++； 转⑵
+//将尚未处理完的子表中元素存入rf
+4. 如果i 如果j
+合并结束。
+
+归并的迭代算法
+1个元素的表总是有序的。所以对n个元素的待排序列，每个元素可看成1 个有序子表。
+对子表两两合并生成n/2个子表，所得子表除最后一个子表长度可能为1外，其余子表长度均为2。再进行两两合并，直到生成n个元素按关键码有序的表。
+
+void print(int a[], int n)
+{
+	for(int j= 0; j<n; j++)
+	{
+		cout<<a[j] <<"  ";
+	}
+	
+	cout<<endl;
+}
+
+//将r[i…m]和r[m +1 …n]归并到辅助数组rf[i…n]
+void Merge(ElemType *r, ElemType *rf, int i, int m, int n)
+{
+	int j,k;
+	
+	for(j=m+1,k=i; i<=m && j <=n; ++k)
+	{
+		if(r[j] < r[i]) 
+			rf[k] = r[j++];
+		else 
+			rf[k] = r[i++];
+	}
+	
+	while(i <= m)  rf[k++] = r[i++];
+	while(j <= n)  rf[k++] = r[j++];
+}
+
+void MergeSort(ElemType *r, ElemType *rf, int lenght)
+{ 
+	int len = 1;
+	ElemType *q = r;
+	ElemType *tmp;
+	
+	while(len < lenght) 
+	{
+		int s = len;
+		len = 2 * s ;
+		int i = 0;
+		
+		while(i+ len <lenght)
+		{
+			Merge(q, rf,  i, i+ s-1, i+ len-1 ); //对等长的两个子表合并
+			i = i+ len;
+		}
+		
+		if(i + s < lenght)
+		{
+			Merge(q, rf,  i, i+ s -1, lenght -1); //对不等长的两个子表合并
+		}
+		
+		tmp = q; 
+		q = rf; 
+		rf = tmp; //交换q,rf，以保证下一趟归并时，仍从q 归并到rf
+	}
+}
+
+int main(){
+	int a[10] = {3,1,5,7,2,4,9,6,10,8};
+	int b[10];
+	MergeSort(a, b, 10);
+	print(b,10);
+	cout<<"结果：";
+	print(a,10);
+
+}
+
+两路归并的递归算法
+void MSort(ElemType *r, ElemType *rf, int s, int t)
+{ 
+	ElemType *rf2;
+	
+	if(s==t) 
+		r[s] = rf[s];
+	else
+	{ 
+		int m=(s+t)/2;				/*平分*p 表*/
+		MSort(r, rf2, s, m);		/*递归地将p[s…m]归并为有序的p2[s…m]*/
+		MSort(r, rf2, m+1, t);		/*递归地将p[m+1…t]归并为有序的p2[m+1…t]*/
+		Merge(rf2, rf, s, m+1,t);	/*将p2[s…m]和p2[m+1…t]归并到p1[s…t]*/
+	}
+}
+
+void MergeSort_recursive(ElemType *r, ElemType *rf, int n)
+{   /*对顺序表*p 作归并排序*/
+	MSort(r, rf,0, n-1);
+}
+
+http://python.jobbole.com/82270/
+http://blog.jobbole.com/103456/
+
+对于二叉树，有深度遍历和广度遍历，深度遍历有前序、中序以及后序三种遍历方法，广度遍历即我们寻常所说的层次遍历。
+由于树的定义本身就是递归定义，因此採用递归的方法去实现树的三种遍历不仅easy理解并且代码非常简洁，而对于广度遍历来说，须要其他数据结构的支撑。
+比方堆了。
+四种基本的遍历思想为：
+前序遍历：根结点 ---> 左子树 ---> 右子树
+中序遍历：左子树---> 根结点 ---> 右子树
+后序遍历：左子树 ---> 右子树 ---> 根结点
+层次遍历：仅仅需按层次遍历就可以
+比如。求以下二叉树的各种遍历
+一、前序遍历
+
+1）依据上文提到的遍历思路：根结点 ---> 左子树 ---> 右子树，非常easy写出递归版本号：
+2）非递归的版本：
+依据前序遍历的顺序，优先訪问根结点。然后在訪问左子树和右子树。所以。对于随意结点node。第一部分即直接訪问之，之后在推断左子树是否为空，不为空时即反复上面的步骤，直到其为空。若为空。则须要訪问右子树。注意。在訪问过左孩子之后。须要反过来訪问其右孩子。所以，须要栈这样的数据结构的支持。对于随意一个结点node，详细过程例如以下：
+
+a)訪问之，并把结点node入栈。当前结点置为左孩子；
+
+b)推断结点node是否为空，若为空。则取出栈顶结点并出栈，将右孩子置为当前结点；否则反复a)步直到当前结点为空或者栈为空（能够发现栈中的结点就是为了訪问右孩子才存储的）
+
+public void preOrderTraverse2(TreeNode root) {  
+        LinkedList<TreeNode> stack = new LinkedList<>();  
+        TreeNode pNode = root;  
+        while (pNode != null || !stack.isEmpty()) {  
+            if (pNode != null) {  
+                System.out.print(pNode.val+"  ");  
+                stack.push(pNode);  
+                pNode = pNode.left;  
+            } else { //pNode == null && !stack.isEmpty()  
+                TreeNode node = stack.pop();  
+                pNode = node.right;  
+            }  
+        }  
+    }  
+
+二、中序遍历
+
+[java] view plain copy
+public void inOrderTraverse1(TreeNode root) {  
+        if (root != null) {  
+            inOrderTraverse1(root.left);  
+            System.out.print(root.val+"  ");  
+            inOrderTraverse1(root.right);  
+        }  
+    }  
+
+2）非递归实现，有了上面前序的解释，中序也就比較简单了。同样的道理。仅仅只是訪问的顺序移到出栈时。代码例如以下：
+[java] view plain copy
+public void inOrderTraverse2(TreeNode root) {  
+        LinkedList<TreeNode> stack = new LinkedList<>();  
+        TreeNode pNode = root;  
+        while (pNode != null || !stack.isEmpty()) {  
+            if (pNode != null) {  
+                stack.push(pNode);  
+                pNode = pNode.left;  
+            } else { //pNode == null && !stack.isEmpty()  
+                TreeNode node = stack.pop();  
+                System.out.print(node.val+"  ");  
+                pNode = node.right;  
+            }  
+        }  
+    }  
+
+三、后序遍历
+后序遍历的非递归实现是三种遍历方式中最难的一种。由于在后序遍历中，要保证左孩子和右孩子都已被訪问而且左孩子在右孩子前訪问才干訪问根结点，这就为流程的控制带来了难题。以下介绍两种思路。
+第一种思路：对于任一结点P，将其入栈，然后沿其左子树一直往下搜索。直到搜索到没有左孩子的结点，此时该结点出如今栈顶，可是此时不能将其出栈并訪问，因此其右孩子还为被訪问。
+所以接下来依照同样的规则对其右子树进行同样的处理，当訪问完其右孩子时。该结点又出如今栈顶，此时能够将其出栈并訪问。这样就保证了正确的訪问顺序。能够看出，在这个过程中，每一个结点都两次出如今栈顶，仅仅有在第二次出如今栈顶时，才干訪问它。因此须要多设置一个变量标识该结点是否是第一次出如今栈顶。
+
+void postOrder2(BinTree *root)    //非递归后序遍历
+{
+    stack<BTNode*> s;
+    BinTree *p=root;
+    BTNode *temp;
+    while(p!=NULL||!s.empty())
+    {
+        while(p!=NULL)              //沿左子树一直往下搜索。直至出现没有左子树的结点 
+        {
+            BTNode *btn=(BTNode *)malloc(sizeof(BTNode));
+            btn->btnode=p;
+            btn->isFirst=true;
+            s.push(btn);
+            p=p->lchild;
+        }
+        if(!s.empty())
+        {
+            temp=s.top();
+            s.pop();
+            if(temp->isFirst==true)     //表示是第一次出如今栈顶 
+             {
+                temp->isFirst=false;
+                s.push(temp);
+                p=temp->btnode->rchild;    
+            }
+            else                        //第二次出如今栈顶 
+             {
+                cout<<temp->btnode->data<<" ";
+                p=NULL;
+            }
+        }
+    }    
+} 
+另外一种思路：要保证根结点在左孩子和右孩子訪问之后才干訪问，因此对于任一结点P。先将其入栈。假设P不存在左孩子和右孩子。则能够直接訪问它；或者P存在左孩子或者右孩子。可是其左孩子和右孩子都已被訪问过了。则相同能够直接訪问该结点。若非上述两种情况。则将P的右孩子和左孩子依次入栈。这样就保证了每次取栈顶元素的时候，左孩子在右孩子前面被訪问。左孩子和右孩子都在根结点前面被訪问。
+
+void postOrder3(BinTree *root)     //非递归后序遍历
+{
+    stack<BinTree*> s;
+    BinTree *cur;                      //当前结点 
+    BinTree *pre=NULL;                 //前一次訪问的结点 
+    s.push(root);
+    while(!s.empty())
+    {
+        cur=s.top();
+        if((cur->lchild==NULL&&cur->rchild==NULL)||
+           (pre!=NULL&&(pre==cur->lchild||pre==cur->rchild)))
+        {
+            cout<<cur->data<<" ";  //假设当前结点没有孩子结点或者孩子节点都已被訪问过 
+              s.pop();
+            pre=cur; 
+        }
+        else
+        {
+            if(cur->rchild!=NULL)
+                s.push(cur->rchild);
+            if(cur->lchild!=NULL)    
+                s.push(cur->lchild);
+        }
+    }    
+}
+
+四、层次遍历
+
+层次遍历的代码比較简单。仅仅须要一个队列就可以。先在队列中增加根结点。之后对于随意一个结点来说。在其出队列的时候，訪问之。同一时候假设左孩子和右孩子有不为空的。入队列。代码例如以下：
+
+
+[java] view plain copy
+public void levelTraverse(TreeNode root) {  
+        if (root == null) {  
+            return;  
+        }  
+        LinkedList<TreeNode> queue = new LinkedList<>();  
+        queue.offer(root);  
+        while (!queue.isEmpty()) {  
+            TreeNode node = queue.poll();  
+            System.out.print(node.val+"  ");  
+            if (node.left != null) {  
+                queue.offer(node.left);  
+            }  
+            if (node.right != null) {  
+                queue.offer(node.right);  
+            }  
+        }  
+    }  
+
+五、深度优先遍历
+事实上深度遍历就是上面的前序，中序和后序

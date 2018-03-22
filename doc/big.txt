@@ -1,3 +1,4 @@
+pon卡：
 主从通信适配层 olt_msc_main.c
 MSC_Init
 msc_module_env_init -> MSC_GlobalInit
@@ -284,6 +285,8 @@ msc_service_cli_init
 
 主从通信
 
+g++ 编译 makefile
+
 msc_register_event_command 命令注册接口
 msc_register_config_command 配置注册接口
 
@@ -365,10 +368,14 @@ CEventCommandObject_PONCHIP_READY
 olt_main_tx_mgmt_packets_out_band
 olt_main_rx_mgmt_packets_out_band
 
-
-全局：
 g_olt_card_info
 g_olt_chip_ready
+
+主控：
+
+
+全局：
+
 
 
 备注：
@@ -382,3 +389,7 @@ g_olt_chip_ready
 8. cast 类型转换, dynamic_cast rtti *
 9 TDD 开发模式
 10 
+
+业务虚端口 上行匹配 uservlan _ pri
+gemprot
+最多8条

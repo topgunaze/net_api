@@ -41,6 +41,7 @@ ctrl_process_msg_task(
  * 其           它:
 **************************************************************/
 
+#if 0
 typedef struct treenode
 {
     int  v;
@@ -126,6 +127,162 @@ int numberget(int *p_array, int len, int *p_num1, int *p_num2)
     
     return NODE_CTRL_RC_OK;
 }
+#endif
+
+typedef int ElemType;
+
+void Merge(ElemType *r, ElemType *rf, int i, int m, int n)
+{
+	int j,k;
+	
+	for(j=m+1,k=i; i<=m && j <=n; ++k)
+	{
+		if(r[j] < r[i]) 
+			rf[k] = r[j++];
+		else 
+			rf[k] = r[i++];
+	}
+	
+	while(i <= m)  rf[k++] = r[i++];
+	while(j <= n)  rf[k++] = r[j++];
+}
+
+void MSort(ElemType *r, ElemType *rf, int s, int t)
+{ 
+	ElemType rf2[100];
+	
+	if(s==t) 
+		r[s] = rf[s];
+	else
+	{ 
+		int m=(s+t)/2;				/*平分*p 表*/
+		MSort(r, rf2, s, m);		/*递归地将p[s…m]归并为有序的p2[s…m]*/
+		MSort(r, rf2, m+1, t);		/*递归地将p[m+1…t]归并为有序的p2[m+1…t]*/
+		Merge(rf2, rf, s, m+1,t);	/*将p2[s…m]和p2[m+1…t]归并到p1[s…t]*/
+	}
+}
+
+void MergeSort_recursive(ElemType *r, ElemType *rf, int n)
+{   /*对顺序表*p 作归并排序*/
+	MSort(r, rf,0, n-1);
+}
+
+void print(int a[], int n)
+{
+    int j;
+    
+	for(j = 0; j<n; j++)
+	{
+		printf("%d ", a[j]);
+	}
+	
+	printf("\r\n");
+}
+
+/* 定义数据类型 */
+typedef int TypeData ;
+
+/* 定义二叉树 */
+typedef struct stBiTreeNode
+{
+    TypeData            data;
+    struct stBiTreeNode *lchild, *rchild;
+}BITREENODE;
+
+/* 初始化二叉树 */
+BITREENODE* createBiTree()
+{
+    char chTempData = 0;
+
+    BITREENODE *pstNewNode = NULL;
+
+    printf("input char\r\n");
+    scanf("%c", &chTempData);
+    printf("ok\r\n");
+    //if(chTempData == '#')
+    if(chTempData == '\r')
+    {
+        pstNewNode = NULL;
+    }
+    else
+    {
+        /* 分配内存 */
+        pstNewNode = (BITREENODE*)malloc(sizeof(BITREENODE));
+        pstNewNode->data = chTempData;
+
+        /* 递归调用产生二叉树 */
+        pstNewNode->lchild = createBiTree();
+        pstNewNode->rchild = createBiTree();
+    }
+
+    return pstNewNode;
+}
+
+/*递归方式*/
+/* 前序遍历二叉树 */
+int preVisitBiTree(BITREENODE* InRoot)
+{
+    if(InRoot)
+    {
+        /* 先遍历根节点 */
+        printf("%d ",InRoot->data);
+
+        /* 遍历左子树 */
+        preVisitBiTree(InRoot->lchild);
+
+        /* 遍历右子树 */
+        preVisitBiTree(InRoot->rchild);
+
+    }
+    return 0;
+}
+
+/* 中序遍历二叉树 */
+int inVisitBiTree(BITREENODE* InRoot)
+{
+    if(InRoot)
+    {
+        /* 遍历左子树 */
+        inVisitBiTree(InRoot->lchild);
+
+
+        /* 先遍历根节点 */
+        printf("%d ",InRoot->data);
+
+        /* 遍历右子树 */
+        inVisitBiTree(InRoot->rchild);
+
+    }
+    return 0;
+}
+
+/* 后序遍历二叉树 */
+int postVisitBiTree(BITREENODE* InRoot)
+{
+    if(InRoot)
+    {
+        /* 遍历左子树 */
+        postVisitBiTree(InRoot->lchild);
+
+
+        /* 遍历右子树 */
+        postVisitBiTree(InRoot->rchild);
+
+
+        /* 先遍历根节点 */
+        printf("%d ",InRoot->data);
+
+    }
+    return 0;
+}
+
+/*非递归方式*/
+
+/*
+1 2 4 5 7 3 6 
+4 2 7 5 1 3 6 
+4 7 5 2 6 3 1
+*/
 
 int
 main(void)
@@ -146,6 +303,7 @@ main(void)
         exit(1);
     }
 
+#if 0
     treenode t7 = {7, NULL, NULL};
     treenode t6 = {6, NULL, NULL};
     treenode t5 = {5, &t7, NULL};
@@ -163,12 +321,48 @@ main(void)
     {
       printf("t is balanse deep %d\r\n", deep);  
     }
+#endif
+
+#if 0
+    int a[10] = {2, 13, 4, 8, 9, 32, 3, 5, 9, 21};
+    int b[10] = {0};
+
+    MergeSort_recursive(a, b, 10);
+
+    print(b, 10);
+#endif
+
+    //BITREENODE* pstRoot;
+    BITREENODE t7 = {7, NULL, NULL};
+    BITREENODE t6 = {6, NULL, NULL};
+    BITREENODE t5 = {5, &t7, NULL};
+    BITREENODE t4 = {4, NULL, NULL};
+    BITREENODE t3 = {3, NULL, &t6};
+    BITREENODE t2 = {2, &t4, &t5};
+    BITREENODE t1 = {1, &t2, &t3};
+
+    /* 构造一个二叉树 */
+    //pstRoot = createBiTree();
+
+
+    /* 前序遍历左子树 */
+    preVisitBiTree(&t1);
+
+    printf("\n");
+
+    /* 中序遍历左子树 */
+    inVisitBiTree(&t1);
+
+    printf("\n");
+
+    /* 后序遍历左子树 */
+    postVisitBiTree(&t1);
 
     while(1)
     {
         sleep(1);
     }
-
+    
     //key_t key = ipc_key_get("/etc", 20);
 
 #if 0
