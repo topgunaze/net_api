@@ -2,6 +2,7 @@ pon卡：
 主从通信适配层 		 olt_msc_main.c
 主从通信基本接口 	 msc_main.c
 主从通信模块服务器端 msc_server.c
+msc_common.c
 
 MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
 
@@ -9,19 +10,54 @@ msc功能接口：
 报文压缩与解压缩
 MSC_PreHandleRecvPkt
 
-主从通信模块
-msc_common.c
+发包：
 
-MSC_Send -> write -> 
+事件
 
-MSC_PKT_CHKCONN
-MscInitPtkPoccess()
+pon芯片准备好：
+CEventCommandObject_PONCHIP_READY::operator()
 
-ADP_SUBTYPE_FETCH
+以太网消息处理
+CEventCommandObject_ETH_FRAME::operator()
+UOS_E_IGMP | UOS_E_MLD | UOS_E_ARP | UOS_E_LAYER2 | 
 
-msc_ServerSetup()
+UOS_E_LAYER2 -> MSC_RecvAdpEtherPkt -> ADP_SUBTYPE_SETIP | ADP_SUBTYPE_FETCH | 
+ADP_SUBTYPE_FETCH -> MSC_SndAdpPkt -> MSC_WrapAdpPkt -> MSC_DrvSndAdpPkt -> ether_send_pkt
 
-MSC_PKT_CHKCONN
+事件注册
+olt_main_service_event_init - 》
+UOS_EVENT_ID_T
+ -> olt_main_register_event_command 实现 ？
+
+事件对象
+
+事件类型 
+
+olt_main_register_event_command
+事件id对象注册
+
+pon_system_register_event_type
+事件类型资源申请
+
+pon_system_register_event_id
+事件类型关联id
+
+1. 每个eventid 对应 一个event object
+2. event object 需要注册
+3. 注册event type为其申请资源
+4. eventid 注册到event type中 
+
+缺失文件：
+pon_system_cinterface.hpp 对应cpp
+
+服务模块
+SERVICE_MODULE_ID ->
+kServiceModuleOltMain
+
+
+pon芯片初始化完毕
+g_olt_chip_ready
+
 
 RegisterEventCommandObject
 
