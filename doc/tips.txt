@@ -1,0 +1,1289 @@
+swp 文件恢复
+vi -r xxxx
+
+man
+System Calls  2
+Library Calls 3
+exp:
+man 2 accept 
+
+编译静态库和动态库
+静态库
+1. 编译待编译成库的文件
+gcc -c xx.c xxx.c xxxx.c
+2. 链接
+ar -r libxxx.a xx.o xxx.o xxxx.o
+3. 拷贝到共享库目录
+cp libxxx.a /usr/lib
+4. 使用
+gcc -o xxx xxx.c -lxxx
+
+动态库
+1. gcc -c -fpic xx.c xxx.c
+2. gcc -shared xx.o xxx.o -o xx.so
+3. cp xx.so /usr/lib
+4. gcc -o xx xx.c xx.so
+
+环境不变量：
+echo $xxx
+
+编译进程头文件和库包含
+1.头文件
+gcc 在编译时寻找所需要的头文件 ：
+※搜寻会从-I开始
+※然后找gcc的环境变量 C_INCLUDE_PATH,CPLUS_INCLUDE_PATH,OBJC_INCLUDE_PATH
+※再找内定目录
+/usr/include 
+/usr/local/include
+/usr/lib/gcc-lib/i386-linux/2.95.2/include
+/usr/lib/gcc-lib/i386-linux/2.95.2/include/g++-3
+/usr/lib/gcc-lib/i386-linux/2.95.2/i386-linux/include
+  
+库文件但是如果装gcc的时候，是有给定的prefix的话，那么就是
+/usr/include 
+
+prefix/include
+prefix/xxx-xxx-xxx-gnulibc/include
+prefix/lib/gcc-lib/xxxx-xxx-xxx-gnulibc/2.8.1/include
+  
+2.库文件
+编译的时候:
+※gcc会去找-L
+※再找gcc的环境变量LIBRARY_PATH
+※再找内定目录 /lib：/usr/lib： /usr/local/lib：这是当初compile gcc时写在程序内的
+
+3.运行时动态库的搜索路径
+3.1.在配置文件/etc/ld.so.conf中指定动态库搜索路径
+3.2.通过环境变量LD_LIBRARY_PATH指定动态库搜索路径（当通过该环境变量指定多个动态库搜索路径时，路径之间用冒号"："分隔）
+3.3.在编译目标代码时指定该程序的动态库搜索路径（还可以在编译目标代码时指定程序的动态库搜索路径。
+这是通过gcc 的参数"-Wl,-rpath,"指定。当指定多个动态库搜索路径时，路径之间用冒号"："分隔
+3.4.默认的动态库搜索路径/lib    /usr/lib
+可以通过执行可执行文件pos得到的结果不同获知其搜索到了哪个动态库，从而获得第1个动态库搜索顺序，然后删除该动态库，
+再执行程序pos，获得第2个动态库搜索路径，再删除第2个被搜索到的动态库，
+如此往复，将可得到Linux搜索动态库的先后顺序。
+程序pos执行的输出结果和搜索到的动态库的对应关系如表1所示
+  
+程序pos输出结果 使用的动态库 对应的动态库搜索路径指定方式
+./ ./libpos.so 编译目标代码时指定的动态库搜索路径
+/root/test/env/lib /root/test/env/lib/libpos.so 环境变量LD_LIBRARY_PATH指定的动态库搜索路径
+/root/test/conf/lib /root/test/conf/lib/libpos.so 配置文件/etc/ld.so.conf中指定的动态库搜索路径
+/lib /lib/libpos.so 默认的动态库搜索路径/lib
+/usr/lib /usr/lib/libpos.so 默认的动态库搜索路径/usr/lib
+  
+动态库的搜索路径搜索的先后顺序是：
+1.编译目标代码时指定的动态库搜索路径；
+2.环境变量 LD_LIBRARY_PATH 指定的动态库搜索路径；
+3.配置文件/etc/ld.so.conf中指定的动态库搜索路径；
+4.默认的动态库搜索路径/lib    /usr/lib。
+
+对所有用户有效修改/etc/profile文件
+对个人有效则修改~/.bashrc文件
+ 
+#在PATH中找到可执行文件程序的路径。
+export PATH =$PATH:$HOME/bin (可一次指定多个搜索路径，":"用于分隔它们)
+ 
+#gcc找到头文件的路径
+C_INCLUDE_PATH=/usr/include/libxml2:/MyLib
+export C_INCLUDE_PATH
+ 
+#g++找到头文件的路径
+CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/include/libxml2:/MyLib
+export CPLUS_INCLUDE_PATH
+ 
+#找到动态链接库的路径
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/MyLib 
+export LD_LIBRARY_PATH
+ 
+#找到静态库的路径
+LIBRARY_PATH=$LIBRARY_PATH:/MyLib
+export LIBRARY_PATH
+ 
+下面是在gcc命令中手动设置搜索路径：
+#添加头文件搜索路径
+# gcc foo.c -I /home/xiaowp/include -o foo
+ #添加动态库搜索路径
+
+# gcc foo.c -L /home/xiaowp/lib -lfoo -o foo
+ #添加静态库搜索路径
+
+# gcc foo.c -L /home/xiaowp/lib -static -lfoo -o foo
+ 库文件安装
+
+sudo apt-cache search  库文件名
+sudo apt-get install 下载搜索到的，后缀是-dev的那个包就可以了。
+或者
+①进入/usr/local/cppunit/lib，把找不到的动态链接库【libcppunit.so.1.12...】copy到根目录的/lib下。
+②编辑自己个人目录下的配置文件.bashrc。通过修改LD_LIBRARY_PATH解决。
+LD_LIBRARY_PATH=/usr/local/cppunit/lib:LD_LIBRARY_PATH 
+make
+这个头文件在你的文件夹里面存在不存在，如果存在，在makefile里面添加路径
+如果不存在，那你看看那个函数不是系统函数，可以用系统函数代替的就换掉，然后把这个头文件去掉好了
+
+make clean 		仅仅是清除之前编译的可执行文件及配置文件。 
+make distclean  要清除所有生成的文件。
+
+make
+
+根据Makefile编译源代码，连接，生成目标文件，可执行文件。
+
+make clean
+
+清除上次的make命令所产生的object文件（后缀为“.o”的文件）及可执行文件。
+
+make install
+
+将编译成功的可执行文件安装到系统目录中，一般为/usr/local/bin目录。
+
+make dist
+
+产生发布软件包文件（即distribution package）。这个命令将会将可执行文件及相关文件打包成一个tar.gz压缩的文件用来作为发布软件的软件包。
+它会在当前目录下生成一个名字类似“PACKAGE-VERSION.tar.gz”的文件。PACKAGE和VERSION，是我们在configure.in中定义的AM_INIT_AUTOMAKE(PACKAGE, VERSION)。
+make distcheck
+生成发布软件包并对其进行测试检查，以确定发布包的正确性。这个操作将自动把压缩包文件解开，然后执行configure命令，并且执行make，来确认编译不出现错误，最后提示你软件包已经准备好，可以发布了。
+make distclean类似make clean，但同时也将configure生成的文件全部删除掉，包括Makefile。
+
+
+
+varlid
+http://www.cnblogs.com/findumars/p/5087306.html
+
+top  -p pid -H
+
+ps -ef | grep 进程找到进程号
+
+top -H -p 进城号
+
+ifconfig -a
+ifconfig eth0 up
+
+查看软件版本
+rpm -qa|grep xxxx
+xxx --version
+
+查看库文件函数
+nm 库
+readelf -a 库
+readeff -h 库头信息
+
+objdump -p xxx 
+
+gcc -shared -o test -Wl,--start-group -lblahlib -Wl,--end-group
+-Wl in gcc is to call “ld” from gcc
+
+ –start-group and –end-group are for repeatedly search lib for circular dependency.
+
+      注： Wl 和--start-group / --end-group 之间不能有空格。
+
+更详细的说明：
+
+-( archives -) or --start-group archives --end-group
+
+The archives should be a list of archive files. They may be either explicit file names, or -l options.
+
+The specified archives are searched repeatedly until no new undefined references are created. Normally, an archive is searched only once in the order that it is specified on the command line. If a symbol in that archive is needed to resolve an undefined symbol referred to by an object in an archive that appears later on the command line, the linker would not be able to resolve that reference. By grouping the archives, they all be searched repeatedly until all possible references are resolved.
+
+Using this option has a significant performance cost. It is best to use it only when there are unavoidable circular references between two or more archives.
+
+
+a label can only be part of a statement and a declaration is not a statement :
+此块代码不能再声明变量，如果你声明变量就会报错，除非用括号括起来，这是编译器的问题，也可以说是C语言的规定。写代码的时候注意就成了。就像C语言再声明的时候不能赋值一样，
+
+module:
+lsmod
+insmod
+rmmod
+
+解压：
+bzip2 -d
+tar -xvf
+
+查看系统栈空间
+ulimit -s
+
+时间获取：
+Clock_realtime 
+代表机器上可以理解为当前的我们所常看的时间，其当time-of-day 被修改的时候而改变，这包括NTP对它的修改
+（NTP:Network Time Protocol（NTP）是用来使计算机时间同步化的一种协议，它可以使计算机对其服务器或时钟源（如石英钟，GPS等等)做同步化，
+它可以提供高精准度的时间校正（LAN上与标准间差小于1毫秒，WAN上几十毫秒），且可介由加密确认的方式来防止恶毒的协议攻击。）
+CLOCK_MONOTONIC 
+代表从过去某个固定的时间点开始的绝对的逝去时间，它不受任何系统time-of-day时钟修改的影响，如果你想计算出在一台计算机上不受重启的影响，
+两个事件发生的间隔时间的话，那么它将是最好的选择。
+
+在Linux环境下开发经常会碰到很多错误(设置errno)，其中EAGAIN是其中比较常见的一个错误(比如用在非阻塞操作中)。
+    从字面上来看，是提示再试一次。这个错误经常出现在当应用程序进行一些非阻塞(non-blocking)操作(对文件或socket)的时候。例如，以 O_NONBLOCK的标志打开文件/socket/FIFO，如果你连续做read操作而没有数据可读。此时程序不会阻塞起来等待数据准备就绪返回，read函数会返回一个错误EAGAIN，提示你的应用程序
+	现在没有数据可读请稍后再试。
+    又例如，当一个系统调用(比如fork)因为没有足够的资源(比如虚拟内存)而执行失败，返回EAGAIN提示其再调用一次(也许下次就能成功)。
+Linux - 非阻塞socket编程处理EAGAIN错误
+　在linux进行非阻塞的socket接收数据时经常出现Resource temporarily unavailable，errno代码为11(EAGAIN)，这是什么意思？
+　这表明你在非阻塞模式下调用了阻塞操作，在该操作没有完成就返回这个错误，这个错误不会破坏socket的同步，不用管它，下次循环接着recv就可以。对非阻塞socket而言，EAGAIN不是一种错误。在VxWorks和Windows上，EAGAIN的名字叫做EWOULDBLOCK。
+　另外，如果出现EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+　最后，如果recv的返回值为0，那表明连接已经断开，我们的接收操作也应该结束。
+  iReadSizeOnce=read(iOpenCom,RxBuf+iReadSize,1024);
+    if (iReadSizeOnce != ZERO)
+    {
+        if (iReadSizeOnce != EAGAIN)
+        {
+            continue;
+        }
+        else
+        {
+            //stCComApiLog.LogError("读串口操作错误");
+            return(FUN_ERROR);
+        }
+    }
+	
+	
+linux send与recv函数详解
+
+1 #include <sys/socket.h>
+2 ssize_t recv(int sockfd, void *buff, size_t nbytes, int flags);
+3 ssize_t send(int sockfd, const void *buff, size_t nbytes, int flags);
+recv 和send的前3个参数等同于read和write。
+
+flags参数值为0或：
+
+ 
+flags	说明	recv	send
+ MSG_DONTROUTE	绕过路由表查找 	 	  •
+ MSG_DONTWAIT	仅本操作非阻塞 	  •    	  •
+ MSG_OOB　　　　	发送或接收带外数据	  •	  •
+ MSG_PEEK　　	窥看外来消息	  •	 
+ MSG_WAITALL　　	等待所有数据 	  •	 
+ 1. send解析
+
+ sockfd：指定发送端套接字描述符。
+
+ buff：    存放要发送数据的缓冲区
+
+ nbytes:  实际要改善的数据的字节数
+
+ flags：   一般设置为0
+
+ 1) send先比较发送数据的长度nbytes和套接字sockfd的发送缓冲区的长度，如果nbytes > 套接字sockfd的发送缓冲区的长度, 该函数返回SOCKET_ERROR;
+
+ 2) 如果nbtyes <= 套接字sockfd的发送缓冲区的长度，那么send先检查协议是否正在发送sockfd的发送缓冲区中的数据，如果是就等待协议把数据发送完，如果协议还没有开始发送sockfd的发送缓冲区中的数据或者sockfd的发送缓冲区中没有数据，那么send就比较sockfd的发送缓冲区的剩余空间和nbytes
+
+ 3) 如果 nbytes > 套接字sockfd的发送缓冲区剩余空间的长度，send就一起等待协议把套接字sockfd的发送缓冲区中的数据发送完
+
+ 4) 如果 nbytes < 套接字sockfd的发送缓冲区剩余空间大小，send就仅仅把buf中的数据copy到剩余空间里(注意并不是send把套接字sockfd的发送缓冲区中的数据传到连接的另一端的，而是协议传送的，send仅仅是把buf中的数据copy到套接字sockfd的发送缓冲区的剩余空间里)。
+
+ 5) 如果send函数copy成功，就返回实际copy的字节数，如果send在copy数据时出现错误，那么send就返回SOCKET_ERROR; 如果在等待协议传送数据时网络断开，send函数也返回SOCKET_ERROR。
+
+ 6) send函数把buff中的数据成功copy到sockfd的改善缓冲区的剩余空间后它就返回了，但是此时这些数据并不一定马上被传到连接的另一端。如果协议在后续的传送过程中出现网络错误的话，那么下一个socket函数就会返回SOCKET_ERROR。（每一个除send的socket函数在执行的最开始总要先等待套接字的发送缓冲区中的数据被协议传递完毕才能继续，如果在等待时出现网络错误那么该socket函数就返回SOCKET_ERROR）
+
+ 7) 在unix系统下，如果send在等待协议传送数据时网络断开，调用send的进程会接收到一个SIGPIPE信号，进程对该信号的处理是进程终止。
+
+2.recv函数
+
+sockfd: 接收端套接字描述符
+
+buff：   用来存放recv函数接收到的数据的缓冲区
+
+nbytes: 指明buff的长度
+
+flags:   一般置为0
+
+ 1) recv先等待s的发送缓冲区的数据被协议传送完毕，如果协议在传送sock的发送缓冲区中的数据时出现网络错误，那么recv函数返回SOCKET_ERROR
+
+ 2) 如果套接字sockfd的发送缓冲区中没有数据或者数据被协议成功发送完毕后，recv先检查套接字sockfd的接收缓冲区，如果sockfd的接收缓冲区中没有数据或者协议正在接收数据，那么recv就一起等待，直到把数据接收完毕。当协议把数据接收完毕，recv函数就把s的接收缓冲区中的数据copy到buff中（注意协议接收到的数据可能大于buff的长度，所以在这种情况下要调用几次recv函数才能把sockfd的接收缓冲区中的数据copy完。recv函数仅仅是copy数据，真正的接收数据是协议来完成的）
+
+ 3) recv函数返回其实际copy的字节数，如果recv在copy时出错，那么它返回SOCKET_ERROR。如果recv函数在等待协议接收数据时网络中断了，那么它返回0。
+
+ 4) 在unix系统下，如果recv函数在等待协议接收数据时网络断开了，那么调用 recv的进程会接收到一个SIGPIPE信号，进程对该信号的默认处理是进程终止。
+
+路由表
+1. cmd -> route print |more (会显示本地的全部路由表)
+
+1.登入：http://61.178.127.9:8080/rewriter/CNKI/http/0Z9Z9Z912Z/kns55/这个网址
+2.然后输入账号密码即可使用！
+
+http://pan.baidu.com/share/link?shareid=2998887385&uk=2552407513#list/path=%2F
+http://www.panduoduo.net/r/16157150
+www.mfhk8.com
+
+http://www.panduoduo.net/r/34025064
+
+1. cocos2d 架构 系统架构 -> 外部库 -> cpp应用编程
+单线程异步架构
+
+2.6内核引入了event poll(epoll)机制。
+poll()和select()每次调用都需要所有被监听的文件描述符。内核必须遍历所有被监视的文件描述符。
+当这个表变得很大时，成千上百的文件描述符，每次调用时的遍历就成为了明显的瓶颈。
+1、创建一个新的epoll实例
+使用epoll_create()或者epoll_cerate1()创建一个epoll上下文。这里epoll_cerate1()是epoll_cerate()的扩展版本。
+#include <sys/epoll.h>
+int epoll_create (int size)
+调用成功后,epoll_create()创建一个epoll实例，返回与该实例关联的文件描述符。
+这个文件描述符和真正的文件没有关系，仅仅是为了后续调用使用epoll而创建的。
+size参数告诉内核需要监听的文件描述符数目，但不是最大值。传递一个适当的近似值会带来性能的提升，但不需要给出确切的数字。
+出错时，返回-1，设置errno为下列值之一：
+EINVAL   size不是正数
+ENFILE    系统达到打开文件数的上限
+ENOMEN    没有足够内存完成该次操作。
+标准调用如下：
+int epfd;
+epfd = epoll_create (100); 
+if (epfd <0 )perror("epoll_create");
+epoll_create返回的文件描述符需要用close()关闭。
+2、控制 epoll
+epoll_ctl 可以向指定的epoll上下文加入或删除文件描述符：
+#include <sys/epoll.h>
+int epoll_ctl (int epfd, int op, int fd, struct epoll_event *event);
+头文件<sys/epoll.h>中定义了epoll event结构体
+struct epoll_event 
+{_
+u32 events;
+union {void * ptr;int fd;_u32 u32;_u64 u64;}data;};
+epoll_ctl()成功调用将关联epoll实例和epfd。参数op指定对fd要进行的操作。
+event参数描述epoll更具体的行为以下是参数op的有效值：
+EPOLL_CTL_ADD 把fd指定的文件添加到epfd指定的epoll实例监听集中，监听event中定义的事件。
+EPOLL_CTL_DEL 把fd指定的文件从epfd指定的epoll监听集中删除。
+EPOLL_CTL_MOD 使用 event 改变在已有fd上的监听行为。
+    epoll_event结构体中的event参数列出了在给定文件描述符上监听的事件。多个事件可以使用位或运算同时指定。以下是有效值：
+EPOLLERR 文件出错。即使不设置这个标志，这个事件也是被监听的。
+EPOLLET 使用边沿触发。默认是水平触发。
+EPOLLHUP 文件被挂起。即使不设置这个标志，这个事件也是被监听的。
+EPOLLIN 文件未阻塞，可读。
+EPOLLONESHOT 在一次事件产生被处理之后，文件不在被监听。必须不再被监听。必须使用EPOLL_CTL_MOD指定新的事件，以便重新监听文件。
+EPOLLOUT 文件未阻塞，可写。
+EPOLLPRI 高优先级的带外数据可读。
+    event_poll中的data字段由用户使用。确认监听事件后，data会被返回给用户。通常将event.data.fd设定为fd，这样就可以知道那个文件描述符触发事件。
+    成功后，epoll_ctl()返回0.失败返回-1，并设置errno为下列值：
+EBADF epfd不是一个有效的epoll实例，或者fd不是有效文件描述符。
+EEXIST op为EPOLL_CTL_ADD，但是fd已经与epfd关联。
+EINVAL epfd不是一个epoll实例，epfd和fd相同，或者op无效。
+ENOENT op是EPOLL_CTL_MOD或者是EPOLL_CTL_DEL，但是fd没有与epfd关联。
+ENOMEN 没有足够内存完成进程的请求。
+EPERM fd不支持epoll。
+     在epfd实例中加入一个fd指定的监听文件，使用如下代码：
+struct epoll_event event;
+int ret;
+event.data.fd = fd;/*return the fd to us later*/
+event.events = EPOLLIN|EPOLLOUT  ;
+ret = epoll_ctl (epfd,EPOLL_CTL_MOD,fd,&event);
+if (ret)perror ("epoll_ctl");
+    修改epfd实例中的fd上的一个监听事件,可以使用如下代码:
+struct epoll_event event;
+int ret;
+event.data.fd = fd;/*return the fd to us later*/
+event.events = EPOLLIN ;
+ret = epoll_ctl (epfd,EPOLL_CTL_MOD,fd,&event);
+if (ret)perror ("epoll_ctl");
+    删除一个fd监听事件,可以使用如下代码:
+struct epoll_event event;
+int ret;
+event.data.fd = fd;/*return the fd to us later*/
+event.events = EPOLLIN ;
+ret = epoll_ctl (epfd,EPOLL_CTL_DEL,fd,&event);
+if (ret)perror ("epoll_ctl");
+3、等待Epoll事件
+epoll_wait()等待给定epoll实例关联的文件描述符上的事件：
+#include <sys/epoll.h>
+int epoll_wait (int epfd, struct epoll_event * * events, int maxevents, int timeout);
+对epoll_wait()的调用等待epoll实例epfd中的文件fd上的事件，时限为timeout毫秒。成功返回，events指向包含epoll_event结构体（该结构体描述了每个事件）的内存，
+且最多可以有maxevents个事件。返回值是事件数，出错返回-1，并将errno设置为以下值
+EBADF epfd是无效文件描述符
+EFAULT 进程对events指向的内存无写权限
+EINTR 系统调用在完成前被信号中断
+EINVAL epfd不是有效的epoll实例，或者maxevents小于等于0
+    如果 timeout 为0.即使没有事件发生，调用也立即发生，此时调用返回0.如果timeout为-1，调用将一直等待到有事件发生。
+    当调用epoll_wait()返回，epoll_event结构体中的events数组描述了一次等待发生的事件，最多返回maxevents个事件。data字段包含了用户在调用epoll_ctl前的设置，
+如文件的句柄，用来区分那个文件所发生的事件。
+    一个完整的epoll_wait()例子如下：
+#define MAX_EVENTS   64
+struct epoll_event * events = NULL;
+int nr_events, i, epfd;
+events = malloc (sizeof(struct epoll_event) * MAX_EVENTS);
+if (! events ){perror("malloc");exit(-1);}
+nr_events = epoll_wait (epfd,events,MAX_EVENTS,-1);
+if (nr_events < 0){perror("epoll_wait");
+free(events);
+exit (-1);}
+for (int i=0; i<nr_eventsl i++)
+printf("event = %d on fd = %d \n",events[i].events,events[i].data.fd);
+ 
+4、边沿触发时间和水平触发事件
+EPOLL事件有两种模型 Level Triggered (LT) 和 Edge Triggered (ET)：
+LT(level triggered，水平触发模式)是缺省的工作方式，并且同时支持 block 和 non-block socket。
+在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。
+如果你不作任何操作，内核还是会继续通知你的，所以，这种模式编程出错误可能性要小一点。
+ET(edge-triggered，边缘触发模式)是高速工作方式，只支持no-block socket。
+在这种模式下，当描述符从未就绪变为就绪时，内核通过epoll告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，等到下次有新的数据进来的时候才会再次出发就绪事件。
+5、man epoll 中的实例
+setnonblocking()函数将socket文件设置为非阻塞，因为使用的是ET模式。
+do_use_fd()是对此文件做出一定的处理，如读写等。
+#define MAX_EVENTS 10
+struct epoll_event ev, events[MAX_EVENTS];
+int listen_sock, conn_sock, nfds, epollfd;/* Set up listening socket, 'listen_sock' (socket(),    bind(), listen()) */
+epollfd = epoll_create(10);
+if (epollfd == -1) 
+{    
+perror("epoll_create");    
+exit(EXIT_FAILURE);
+}
+ev.events = EPOLLIN;
+ev.data.fd = listen_sock;
+if (
+epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1)
+ {    
+ perror("epoll_ctl: listen_sock");   
+ exit(EXIT_FAILURE);}
+ for (;;) 
+ {    
+ nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+ if (nfds == -1) 
+ {        
+ perror("epoll_pwait");        
+ exit(EXIT_FAILURE);    }    
+ for (n = 0; n < nfds; ++n) 
+ {        
+ if (events[n].data.fd == listen_sock) 
+ {            
+ conn_sock = accept(listen_sock,                            (struct sockaddr *) &local, &addrlen);
+ if (conn_sock == -1) 
+ {                perror("accept");                exit(EXIT_FAILURE);            }            setnonblocking(conn_sock);            ev.events = EPOLLIN | EPOLLET;            ev.data.fd = conn_sock;            if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock,                        &ev) == -1) {                perror("epoll_ctl: conn_sock");                exit(EXIT_FAILURE);            }        } else {            do_use_fd(events[n].data.fd);        }    }}
+ 
+syscall 间接系统调用，需要调用id
+SYS_clock_gettime CLOCK_REALTIME CLOCK_MONOTONIC
+1.精确级别,纳秒级别
+原型
+long sys_clock_gettime (clockid_t which_clock, struct timespec *tp);
+which_clock 参数解释
+CLOCK_REALTIME:系统实时时间,随系统实时时间改变而改变,即从UTC1970-1-1 0:0:0开始计时,中间时刻如果系统时间被用户该成其他,则对应的时间相应改变
+CLOCK_MONOTONIC:从系统启动这一刻起开始计时,不受系统时间被用户改变的影响
+CLOCK_PROCESS_CPUTIME_ID:本进程到当前代码系统CPU花费的时间
+CLOCK_THREAD_CPUTIME_ID:本线程到当前代码系统CPU花费的时间
+ 
+//test9.c
+#include 
+#include
+int main()
+{
+struct timespec time1 = {0, 0};
+clock_gettime(CLOCK_REALTIME, &time1);
+printf("CLOCK_REALTIME: %d, %d", time1.tv_sec, time1.tv_nsec);
+clock_gettime(CLOCK_MONOTONIC, &time1);
+printf("CLOCK_MONOTONIC: %d, %d", time1.tv_sec, time1.tv_nsec);
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+printf("CLOCK_PROCESS_CPUTIME_ID: %d, %d", time1.tv_sec, time1.tv_nsec);
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &time1);
+printf("CLOCK_THREAD_CPUTIME_ID: %d, %d", time1.tv_sec, time1.tv_nsec);
+printf("\n%d\n", time(NULL));
+sleep(1);
+}
+如果无法编译,默认没有加入该库,请用gcc test9.c -lrt运行
+测试 #time ./a.out
+
+tea算法
+在安全学领域，TEA(Tiny Encryption Algorithm)是一种分组加密算法，它的实现非常简单，通常只需要很精短的几行代码。
+TEA 算法最初是由剑桥计算机实验室的 David Wheeler 和 Roger Needham 在 1994 年设计的。
+TEA算法使用64位的明文分组和128位的密钥，它使用Feistel分组加密框架，需要进行 64 轮迭代，尽管作者认为 32 轮已经足够了。该算法使用了一个神秘常数δ作为倍数，它来源于黄金比率，以保证每一轮加密都不相同。但δ的精确值似乎并不重要，这里 TEA 把它定义为 δ=「(√5 - 1)231」(也就是程序中的 0×9E3779B9)。
+之后 TEA 算法被发现存在缺陷，作为回应，设计者提出了一个 TEA 的升级版本--XTEA(有时也被称为"tean")。XTEA 跟 TEA 使用了相同的简单运算，但它采用了截然不同的顺序，为了阻止密钥表攻击，四个子密钥(在加密过程中，原 128 位的密钥被拆分为 4 个 32 位的子密钥)采用了一种不太正规的方式进行混合，但速度更慢了。
+
+网络字节序定义：
+    大端处理器收到的第一个字节被当作高位看待，这就要求发送端发送的第一个字节应当是高位。而在发送端发送数据时，发送的第一个字节是该数字在内存中起始地址对应的字节。
+可见小端处理器多字节数值在发送前，在内存中数值应该以大端法存放。
+
+网络传输
+发送一片内存|接收一片内存 
+字节按 低地址 -> 高地址 组织
+
+多字节数据结构表示时，大小端处理器从内存取出数据后对高低位的处理存在差异
+Little-endian模式的CPU对操作数的存放方式是从低字节到高字节，而Big-endian模式对操作数的存放方式是从高字节到低字节。
+
+字节序测试程序 
+不同cpu平台上字节序通常也不一样，下面写个简单的C程序，它可以测试不同平台上的字节序。
+BOOL IsLittleEndian(void) 
+{ 
+int wValue = 0x5678; 
+return (*((char*)&wValue) == 0x78); 
+} 
+
+常见的CPU、操作系统上使用的字节顺序 
+CPU 操作系统 字节顺序 
+x86 (Intel、AMD等) 所有 little-endian 
+DEC Alpha 所有 little-endian 
+HP-PA NT little-endian 
+HP-PA UNIX big-endian 
+SUN SPARC 所有 big-endian 
+MIPS NT little-endian 
+MIPS UNIX big-endian 
+PowerPC NT little-endian 
+PowerPC 非NT big-endian 
+RS/6000 UNIX big-endian 
+Motorola m68k 所有 big-endian 
+
+
+talnet
+http://baike.so.com/doc/5504434-5740178.html
+acl
+http://blog.csdn.net/codestart/article/details/1576537
+
+ssh
+
+正则表达式处理：
+http://c.biancheng.net/cpp/html/1428.html
+
+varlgrind
+http://www.linuxidc.com/Linux/2012-06/63754p2.htm
+
+http://www.xker.com/page/e2008/0329/51432.html
+
+system 与 popen
+http://blog.csdn.net/liuxingen/article/details/47057539
+
+ntp服务器
+http://blog.csdn.net/scorpio3k/article/details/49645219
+
+buildroot
+http://blog.csdn.net/ongoingcre/article/details/52262079
+http://blog.csdn.net/zdhliang/article/details/8518121
+http://www.cnitblog.com/gouzhuang/archive/2010/09/29/buildroot.html
+http://blog.chinaunix.net/uid-21501855-id-5119409.html  一个完整的流程
+http://buildroot.org/downloads/manual/manual.html 官网
+http://blog.csdn.net/zhou_chenz/article/details/52346134 制作工具链
+http://blog.csdn.net/zhou_chenz/article/details/52295674
+
+
+
+工具链
+http://blog.sina.com.cn/s/blog_602f87700100nyda.html
+
+bc xldk制作
+http://blog.csdn.net/davion_zhang/article/details/50534680
+bc 开发平台
+http://blog.chinaunix.net/uid-20846214-id-3222537.html
+http://www.voidcn.com/blog/tianming5202/article/p-1330987.html
+
+initramfs
+http://blog.sina.com.cn/s/blog_6b0d19e80100kvq9.html
+uclibc与glibc
+http://blog.163.com/huangnan0727%40126/blog/static/30626184201042022011225/
+http://bbs.chinaunix.net/thread-3762882-1-1.html
+
+uboot启动
+http://www.cnblogs.com/heaad/archive/2010/07/17/1779829.html
+
+ｒｏｏｔ　ｆｉｌｅｓｙｓｔｅｍ　与 filesystem
+http://denyyuhui.blog.163.com/blog/static/5489202520119861955948/
+http://www.crifan.com/what_is_root_filesystem/
+
+initramfs 介绍
+http://blog.csdn.net/linuxtoys/article/details/7525000
+http://blog.csdn.net/laohuang1122/article/details/8240451
+
+makefile
+http://wiki.ubuntu.org.cn/跟我一起写Makefile:make运行
+http://www.cnblogs.com/mydomain/archive/2011/08/12/2136085.html
+http://blog.163.com/zcym925@126/blog/static/534279222007101061757452/
+http://blog.csdn.net/liang13664759/article/details/1771246
+http://blog.163.com/zcym925@126/blog/static/534279222007101061757452/
+
+http://blog.csdn.net/zhou_chenz/article/details/52295674
+
+http://blog.csdn.net/ustc_dylan/article/details/6963248
+http://www.cnitblog.com/gouzhuang/archive/2010/09/29/buildroot.html
+
+xconfig 与 内核编译
+http://blog.163.com/thinki_cao/blog/static/83944875201422102335272/
+
+shell:
+http://www.runoob.com/linux/linux-shell-passing-arguments.html
+
+busybox：
+http://blog.csdn.net/linuxarmsummary/article/details/12612269
+
+initrd：
+http://blog.chinaunix.net/uid-20798761-id-1840135.html
+
+initramfs
+http://blog.csdn.net/laohuang1122/article/details/8241398
+
+initab：
+http://baike.so.com/doc/7782608-8056703.html
+
+内存泄漏：
+ purify  mtrace
+makefile
+http://www.cnblogs.com/mydomain/archive/2011/08/12/2136083.html
+
+http://192.168.2.252/svn/gpon/olt/FD1616GS
+
+
+ftell：
+函数 ftell 用于得到文件位置指针当前位置相对于文件首的偏移字节数。在随机方式存取文件时，由于文件位置频繁的前后移动，程序不容易确定文件的当前位置。
+该函数对大于2-1文件，即:2.1G以上的文件操作时可能出错。
+char *fgets(char *buf, int bufsize, FILE *stream);
+从文件结构体指针stream中读取数据，每次读取一行。读取的数据保存在buf指向的字符数组中，每次最多读取bufsize-1个字符(第bufsize个字符赋'\0')，如果文件中的该行，
+不足bufsize个字符，则读完该行就结束。如若该行(包括最后一个换行符)的字符数超过bufsize-1，则fgets只返回一个不完整的行，但是，缓冲区总是以NULL字符结尾，
+对fgets的下一次调用会继续读该行。函数成功将返回buf，失败或读到文件结尾返回NULL。因此我们不能直接通过fgets的返回值来判断函数是否是出错而终止的，
+应该借助feof函数或者ferror函数来判断。
+
+
+http://blog.chinaunix.net/uid-20788636-id-1841428.html
+http://blog.chinaunix.net/uid-305141-id-2133783.html
+
+popen
+#include <stdio.h>
+
+FILE * popen(const char *command , const char *type );
+int pclose(FILE *stream);
+函数说明
+
+　　popen()函数通过创建一个管道，调用fork()产生一个子进程，执行一个shell以运行命令来开启一个进程。这个管道必须由pclose()函数关闭，而不是fclose()函数。
+pclose()函数关闭标准I/O流，等待命令执行结束，然后返回shell的终止状态。如果shell不能被执行，则pclose()返回的终止状态与shell已执行exit一样。
+　　type参数只能是读或者写中的一种，得到的返回值（标准I/O流）也具有和type相应的只读或只写类型。如果type是"r"则文件指针连接到command的标准输出；
+如果type是"w"则文件指针连接到command的标准输入。
+　　command参数是一个指向以NULL结束的shell命令字符串的指针。这行命令将被传到bin/sh并使用-c标志，shell将执行这个命令。
+　　popen()的返回值是个标准I/O流，必须由pclose来终止。前面提到这个流是单向的（只能用于读或写）。向这个流写内容相当于写入该命令的标准输入，
+命令的标准输出和调用popen()的进程相同；与之相反的，从流中读数据相当于读取命令的标准输出，命令的标准输入和调用popen()的进程相同。
+返回值
+　　如果调用fork()或pipe()失败，或者不能分配内存将返回NULL，否则返回标准I/O流。popen()没有为内存分配失败设置errno值。如果调用fork()或pipe()时出现错误，errno被设为相应
+的错误类型。如果type参数不合法，errno将返回EINVAL。
+
+附上一个例子：
+
+//execute shell command
+//执行一个shell命令，输出结果逐行存储在resvec中，并返回行数
+int32_t myexec(const char *cmd, vector<string> &resvec) {
+    resvec.clear();
+    FILE *pp = popen(cmd, "r"); //建立管道
+    if (!pp) {
+        return -1;
+    }
+    char tmp[1024]; //设置一个合适的长度，以存储每一行输出
+    while (fgets(tmp, sizeof(tmp), pp) != NULL) {
+        if (tmp[strlen(tmp) - 1] == '\n') {
+            tmp[strlen(tmp) - 1] = '\0'; //去除换行符
+        }
+        resvec.push_back(tmp);
+    }
+    pclose(pp); //关闭管道
+    return resvec.size();
+}
+
+export用法：
+export
+功能说明：设置或显示环境变量。
+
+语　　法：export [-fnp][变量名称]=[变量设置值]
+
+补充说明：在shell中执行程序时，shell会提供一组环境变量。export可新增，修改或删除环境变量，供后续执行的程序使用。
+export的效力仅及于该此登陆操作。
+
+参　　数：
+　-f 　代表[变量名称]中为函数名称。 
+　-n 　删除指定的变量。变量实际上并未删除，只是不会输出到后续指令的执行环境中。 
+　-p 　列出所有的shell赋予程序的环境变量。
+
+
+
+tree -L N 显示第n层目录
+
+valgrind
+wget http://valgrind.org/downloads/valgrind-3.9.0.tar.bz2
+
+tar xvf valgrind-3.9.0.tar.bz2
+
+cd valgrind-3.9.0
+
+apt-get install automake
+
+./autogen.sh
+
+2. 
+修改configure
+armv7*) 改成 armv7*|arm)
+3. 
+./configure --host=arm-linux CC=arm-none-linux-gnueabi-gcc CPP=arm-none-linux-gnueabi-cpp CXX=arm-none-linux-gnueabi-g++ --prefix=./valgrind
+
+4.
+make
+make install
+注意：--prefix=/opt/Valgrind指定的目录要与开发板上放置的目录一致，不然运行valgrind时可能会出现“valgrind: failed to start tool 'memcheck' for platform 'arm-Linux': No such file or directory”错误。
+
+修改终端参数
+
+为了便于通过程序来获得和修改终端参数，Linux还提供了tcgetattr函数和tcsetattr函数。tcgetattr用于获取终端的相关参数，而tcsetattr函数用于设置终端参数。这两个函数的具体信息如表6.2所示。
+
+表6.2 tcgetattr函数和tcsetattr函数
+
+头文件
+
+ 
+函数形式
+
+int tcgetattr(int fd, struct termios *termios_p);
+
+int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
+
+返回值
+
+成功
+
+失败
+
+是否设置errno
+
+0
+
+−1
+
+是
+
+说明：tcgetattr函数用于获取与终端相关的参数。参数fd为终端的文件描述符，返回的结果保存在termios结构体中，该结构体一般包括如下的成员：
+tcflag_t c_iflag;        
+tcflag_t c_oflag;        
+tcflag_t c_cflag;        
+tcflag_t c_lflag;       
+cc_t     c_cc[NCCS];
+
+其具体意义如下。
+ 
+c_iflag：输入模式标志，控制终端输入方式，具体参数如表6.3所示。
+
+表6.3 c_iflag参数表
+
+键    值
+
+说    明
+
+IGNBRK
+
+忽略BREAK键输入
+
+BRKINT
+
+如果设置了IGNBRK，BREAK键的输入将被忽略，如果设置了BRKINT ，将产生SIGINT中断
+
+IGNPAR
+
+忽略奇偶校验错误
+
+PARMRK
+
+标识奇偶校验错误
+
+INPCK
+
+允许输入奇偶校验
+
+ISTRIP
+
+去除字符的第8个比特
+
+INLCR
+
+将输入的NL（换行）转换成CR（回车）
+
+IGNCR
+
+忽略输入的回车
+
+ICRNL
+
+将输入的回车转化成换行（如果IGNCR未设置的情况下）
+
+IUCLC
+
+将输入的大写字符转换成小写字符（非POSIX）
+
+IXON
+
+允许输入时对XON/XOFF流进行控制
+
+IXANY
+
+输入任何字符将重启停止的输出
+
+IXOFF
+
+允许输入时对XON/XOFF流进行控制
+
+IMAXBEL
+
+当输入队列满的时候开始响铃，Linux在使用该参数而是认为该参数总是已经设置
+
+c_oflag：输出模式标志，控制终端输出方式，具体参数如表6.4所示。
+
+表6.4 c_oflag参数
+
+键    值
+
+说    明
+
+OPOST
+
+处理后输出
+
+OLCUC
+
+将输入的小写字符转换成大写字符（非POSIX）
+
+ONLCR
+
+将输入的NL（换行）转换成CR（回车）及NL（换行）
+
+OCRNL
+
+将输入的CR（回车）转换成NL（换行）
+
+ONOCR
+
+第一行不输出回车符
+
+ONLRET
+
+不输出回车符
+
+OFILL
+
+发送填充字符以延迟终端输出
+
+OFDEL
+
+以ASCII码的DEL作为填充字符，如果未设置该参数，填充字符将是NUL（‘\0’）（非POSIX）
+
+NLDLY
+
+换行输出延时，可以取NL0（不延迟）或NL1（延迟0.1s）
+
+CRDLY
+
+回车延迟，取值范围为：CR0、CR1、CR2和 CR3
+
+TABDLY
+
+水平制表符输出延迟，取值范围为：TAB0、TAB1、TAB2和TAB3
+
+BSDLY
+
+空格输出延迟，可以取BS0或BS1
+
+VTDLY
+
+垂直制表符输出延迟，可以取VT0或VT1
+
+FFDLY
+
+换页延迟，可以取FF0或FF1
+
+c_cflag：控制模式标志，指定终端硬件控制信息，具体参数如表6.5所示。
+
+
+LINUX 使用tcgetattr函数与tcsetattr函数控制终端二
+2009-11-24 15:30
+表6.5 c_oflag参数
+
+键    值
+
+说    明
+
+CBAUD
+
+波特率（4+1位）（非POSIX）
+
+CBAUDEX
+
+附加波特率（1位）（非POSIX）
+
+CSIZE
+
+字符长度，取值范围为CS5、CS6、CS7或CS8
+
+CSTOPB
+
+设置两个停止位
+
+CREAD
+
+使用接收器
+
+PARENB
+
+使用奇偶校验
+
+PARODD
+
+对输入使用奇偶校验，对输出使用偶校验
+
+HUPCL
+
+关闭设备时挂起
+
+CLOCAL
+
+忽略调制解调器线路状态
+
+CRTSCTS
+
+使用RTS/CTS流控制
+
+c_lflag：本地模式标志，控制终端编辑功能，具体参数如表6.6所示。
+
+
+表6.6 c_lflag参数
+
+键    值
+
+说    明
+
+ISIG
+
+当输入INTR、QUIT、SUSP或DSUSP时，产生相应的信号
+
+ICANON
+
+使用标准输入模式
+
+XCASE
+
+在ICANON和XCASE同时设置的情况下，终端只使用大写。如果只设置了XCASE，则输入字符将被转换为小写字符，除非字符使用了转义字符（非POSIX，且Linux不支持该参数）
+
+ECHO
+
+显示输入字符
+
+ECHOE
+
+如果ICANON同时设置，ERASE将删除输入的字符，WERASE将删除输入的单词
+
+ECHOK
+
+如果ICANON同时设置，KILL将删除当前行
+
+ECHONL
+
+如果ICANON同时设置，即使ECHO没有设置依然显示换行符
+
+ECHOPRT
+
+如果ECHO和ICANON同时设置，将删除打印出的字符（非POSIX）
+
+TOSTOP
+
+向后台输出发送SIGTTOU信号
+
+c_cc[NCCS]：控制字符，用于保存终端驱动程序中的特殊字符，如输入结束符等。c_cc中定义了如表6.7所示的控制字符。
+
+表6.7 c_cc支持的控制字符
+
+宏
+
+说    明
+
+宏
+
+说    明
+
+VINTR
+
+Interrupt字符
+
+VEOL
+
+附加的End-of-file字符
+
+VQUIT
+
+Quit字符
+
+VTIME
+
+非规范模式读取时的超时时间
+
+VERASE
+
+Erase字符
+
+VSTOP
+
+Stop字符
+
+VKILL
+
+Kill字符
+
+VSTART
+
+Start字符
+
+VEOF
+
+End-of-file字符
+
+VSUSP
+
+Suspend字符
+
+VMIN
+
+非规范模式读取时的最小字符数
+
+ 	 
+tcsetattr函数用于设置终端的相关参数。参数fd为打开的终端文件描述符，参数optional_actions用于控制修改起作用的时间，而结构体termios_p中保存了要修改的参数。
+optional_actions可以取如下的值。
+ 
+TCSANOW：不等数据传输完毕就立即改变属性。
+TCSADRAIN：等待所有数据传输结束才改变属性。
+TCSAFLUSH：清空输入输出缓冲区才改变属性。
+
+错误信息：
+EBADF：非法的文件描述符。
+EINTR：tcsetattr函数调用被信号中断。
+EINVAL：参数optional_actions使用了非法值，或参数termios中使用了非法值。
+ENCTTY：非终端的文件描述符。
+
+实例演练：
+程序p6.2.c通过修改终端控制字符，将终端输入结束符由“Ctrl+D”，修改成了“Ctrl+G”。首先，程序调用tcgetattr函数获得标准 输入的termios信息，将termios结构体中的c_cc[VEOF]控制字符的修改成0x07（即Ctrl+G）；然后，使用tcsetattr 函数将修改后的termios参数设置到终端中。具体代码如下所示：
+
+[objc] view plain copy  在CODE上查看代码片派生到我的代码片
+//p6.2.c 修改终端控制字符示例  
+#include  
+#include  
+#include  
+#include  
+  
+int main(void){  
+//term用于存储获得的终端参数信息  
+struct termios term;  
+int err;  
+  
+//获得标准输入的终端参数，将获得的信息保存在term变量中  
+if(tcgetattr(STDIN_FILENO,&term)==-1){  
+perror("Cannot get standard input description");  
+return 1;  
+}  
+  
+//修改获得的终端信息的结束控制字符  
+term.c_cc[VEOF]=(cc_t)0x07;  
+  
+//使用tcsetattr函数将修改后的终端参数设置到标准输入中  
+//err用于保存函数调用后的结果  
+err=tcsetattr(STDIN_FILENO,TCSAFLUSH,&term);  
+  
+//如果err为-1或是出现EINTR错误（函数执行被信号中断），  
+//给出相关出错信息  
+if(err==-1 && err==EINTR){  
+perror("Failed to change EOF character");  
+return 1;  
+}  
+  
+return 0;  
+}  
+
+
+使用gcc编译p6.2.c程序，得到名为p6.2的可执行程序。在执行p6.2程序前，按“Ctrl+D”可以使终端结束。执行p6.2程序后，按“Ctrl+D”失去了作用，而输入“Ctrl+G”实现了原来“Ctrl+D”的功能
+
+ulimit -a.png
+或者查看core file size： ulimit -c
+
+core file size：
+unlimited：core文件的大小不受限制
+0：程序出错时不会产生core文件
+1024：代表1024k，core文件超出该大小就不能生成了
+
+设置core文件大小： ulimit -c fileSize
+
+注意：
+
+尽量将这个文件大小设置得大一些，程序崩溃时生成Core文件大小即为程序运行时占用的内存大小。可能发生堆栈溢出的时候，占用更大的内存
+
+2.设置core文件的名称和文件路径
+
+默认生成路径：输入可执行文件运行命令的同一路径下
+默认生成名字：默认命名为core。新的core文件会覆盖旧的core文件
+
+a.设置pid作为文件扩展名
+
+1：添加pid作为扩展名，生成的core文件名称为core.pid
+0：不添加pid作为扩展名，生成的core文件名称为core
+修改 /proc/sys/kernel/core_uses_pid 文件内容为: 1
+修改文件命令： echo "1" > /proc/sys/kernel/core_uses_pid
+或者
+sysctl -w kernel.core_uses_pid=1 kernel.core_uses_pid = 1
+
+b. 控制core文件保存位置和文件名格式
+
+修改文件命令： echo "/corefile/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+或者：
+sysctl -w kernel.core_pattern=/corefile/core-%e-%p-%t kernel.core_pattern = /corefile/core-%e-%p-%t
+可以将core文件统一生成到/corefile目录下，产生的文件名为core-命令名-pid-时间戳
+以下是参数列表:
+%p - insert pid into filename 添加pid(进程id)
+%u - insert current uid into filename 添加当前uid(用户id)
+%g - insert current gid into filename 添加当前gid(用户组id)
+%s - insert signal that caused the coredump into the filename 添加导致产生core的信号
+%t - insert UNIX time that the coredump occurred into filename 添加core文件生成时的unix时间
+%h - insert hostname where the coredump happened into filename 添加主机名
+%e - insert coredumping executable name into filename 添加导致产生core的命令名
+
+1. 
+history
+ctrl + p ctrl + n
+2. 
+ctrl + a  ctrl + b ctrl + e ctrl + f
+ctrl + d ctrl + k ctrl + h ctrl + u 
+
+反汇编：
+objdump命令是Linux下的反汇编目标文件或者可执行文件的命令，还有其他作用，下面以ELF格式可执行文件test为例详细介绍：
+
+objdump -f test
+显示test的文件头信息
+objdump -d test
+反汇编test中的需要执行指令的那些section
+objdump -D test
+与-d类似，但反汇编test中的所有section
+objdump -h test
+显示test的Section Header信息
+objdump -x test
+显示test的全部Header信息
+objdump -s test
+除了显示test的全部Header信息，还显示他们对应的十六进制文件代码
+
+举例：
+将C源代码和反汇编出来的指令对照：
+1.编译成目标文件（要加-g选项）
+gcc -g -o test.c
+2.输出C源代码和反汇编出来的指令对照的格式
+objdump -S test.o
+如下：
+如何对任意一个二进制文件进行反汇编？
+objdump -D -b binary -m i386 a.bin
+
+-D表示对全部文件进行反汇编，-b表示二进制，-m表示指令集架构，a.bin就是要反汇编的二进制文件
+
+应用：
+    典型的段错误是由于操作内存不当引起的（如使用野指针或访问受保护的地址等），发生段错误时，内核以一个信号SIGSEGV强行终止进程，留下的出错信息极少，从而导致难以定位。
+但利用gdb和反汇编工具，可以较准确地定位段错误产生的原因。
+
+准备工作：
+（1）coredump：进程异常中止时，内核生成的记录文件，其中保存了进程异常时所占用的内存和CPU资源，如pc计数器、各个寄存器的值等。这个文件是调试段错误最重要的依据。要使内核生成coredump，需要在内核配置中打开CONFIG_ELF_CORE选项，如果没有打开，将其选上后重新编译内核即可。
+	此外，利用命令ulimit -c unlimited，可以设置coredump大小为不受限制，可以保存更完整的信息。
+文件/proc/sys/kernel/core_pattern可以配置生成coredump的命名格式，如果不设置格式，则coredump默认生成的位置在出错进程的目录下，且生成的core同名，也就意味着旧的coredump可能被新的coredump所覆盖。如果想在/tmp目录下生成以core.pid格式命名的coredump文件，只需执行命令：
+
+echo "/tmp/core.%p" > /proc/sys/kernel/core_pattern
+
+（2）编译：为了利用gdb进行调试，在编译程序时，需要在编译选项中加入-g 选项，以将调试信息编译到目标文件中。
+
+（3）反汇编：反汇编就是将编译好的二进制可执行文件翻译成汇编文件。一般来说，编译器会自带一套反汇编工具，只有选择正确的工具才能正确地进行反汇编，这不难理解。
+比如用gcc4.6.3编译的用于mips的应用程序，那么，在编译器的目录下可以找到gcc463/usr/bin/mipsel-buildroot-linux-uclibc-objdump，这就是我要使用的反汇编工具。将二进制文件反汇编成汇编文件只需执行命令：XXXX-objdump -S XXXX（程序名），即可生成可以阅读的、关联到C代码的汇编代码，如下所示：
+
+status = httpRpmPost(reqId);      
+  42f208:   0320f809    jalr    t9  
+  42f20c:   00808021    move    s0,a0  
+  42f210:   8fbc0018    lw  gp,24(sp)  
+    if (RPM_OK != status && RPM_DONE != status)  
+  42f214:   10400009    beqz    v0,42f23c <postDataApStatusJson.part.4+0x68>  
+  42f218:   3c120061    lui s2,0x61  
+  42f21c:   24030002    li  v1,2  
+  42f220:   10430006    beq v0,v1,42f23c <postDataApStatusJson.part.4+0x68>  
+  42f224:   3c040061    lui a0,0x61  
+    {  
+        RPM_AP_ERROR("httpRpmPost error!");  
+  42f228:   2484c928    addiu   a0,a0,-14040  
+  42f22c:   2645cc98    addiu   a1,s2,-13160  
+  42f230:   8f999e50    lw  t9,-25008(gp)  
+  42f234:   0810bca3    j   42f28c <postDataApStatusJson.part.4+0xb8>  
+  42f238:   24060327    li  a2,807  
+        return RPM_ERROR;  
+    }       
+      
+    httpStatusSet(reqId, HTTP_OK);  
+  42f23c:   8f998088    lw  t9,-32632(gp)  
+  42f240:   02002021    move    a0,s0  
+  42f244:   0320f809    jalr    t9  
+  42f248:   00002821    move    a1,zero  
+  42f24c:   8fbc0018    lw  gp,24(sp)</span>  
+可以看到，C代码下面跟着一串汇编代码，而汇编代码前面有一段地址，这个地址其实就是相应的汇编指令在.text段（即代码段）中的地址。也就是说，这个地址就是用于定位具体出错地点的依据。
+（4）gdb：可以说是Linux下调试程序最常用的工具，功能强大。对于mips程序调试，只需安装相应的gdb：mips-linux-gdb即可。
+
+开始调试：
+
+	上面的准备工作都完成后，就可以开始调试了。当进程再次异常终止时，就可以在/tmp目录下找到coredump文件：比如core.126（进程id为126的进程生成的coredump）。
+用gdb的-c选项打开coredump：mips-linux-gdb -c /tmp/core.126，可以看到如下信息：
+
+GNU gdb (GDB) 7.4.1  
+Copyright (C) 2012 Free Software Foundation, Inc.  
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>  
+This is free software: you are free to change and redistribute it.  
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"  
+and "show warranty" for details.  
+This GDB was configured as "--host=i686-pc-linux-gnu --target=mips-linux".  
+For bug reporting instructions, please see:  
+<http://www.gnu.org/software/gdb/bugs/>.  
+Core was generated by `/usr/bin/httpd'.  
+Program terminated with signal 11, Segmentation fault.  
+#0  0x2b17ff50 in ?? ()  
+(gdb)
+	前面是gdb的版本信息，不必理会。我们主要关注下面的内容：
+Core was generated by `/usr/bin/httpd'.  
+Program terminated with signal 11, Segmentation fault.  
+#0  0x2b17ff50 in ?? ()
+	表示这个coredump是为进程httpd生成的，而进程退出的原因是signal 11，即SIGSEGV。
+	最后一行， 0x2b17ff50 是一个地址，这里??的地方本来应该显示一个函数名，之所以这里没有显示，猜想这应该是一个库函数，而编译这个库时，并没有带入-g信息。
+	接下来只需要输入where，即可显示信号产生时程序中止的位置：
+Core was generated by `/usr/bin/httpd'.  
+Program terminated with signal 11, Segmentation fault.  
+#0  0x2b17ff50 in ?? ()  
+(gdb) where  
+#0  0x2b17ff50 in ?? ()  
+#1  0x0045c034 in ?? ()  
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)  
+(gdb)
+	至此，已经拿到最重要的信息： 0x0045c034 ，就是进程中止时停留的位置。对照上面生成的反汇编文件，搜索 45c034 ，即可找到：
+
+out = cJSON_Print(root);  
+  45c00c:   8f9981ec    lw  t9,-32276(gp)  
+  45c010:   00000000    nop  
+  45c014:   0320f809    jalr    t9  
+  45c018:   02402021    move    a0,s2  
+  45c01c:   8fbc0010    lw  gp,16(sp)  
+    httpnPrintf(reqId, strlen(out) + 1, "%s\n", out);  
+  45c020:   00402021    move    a0,v0  
+  45c024:   8f999fe4    lw  t9,-24604(gp)  
+  45c028:   00000000    nop  
+  45c02c:   0320f809    jalr    t9  
+  45c030:   00408021    move    s0,v0  
+  45c034:   8fbc0010    lw  gp,16(sp)  
+  45c038:   8fa47e48    lw  a0,32328(sp)  
+  45c03c:   3c060062    lui a2,0x62  
+  45c040:   8f9981f0    lw  t9,-32272(gp)  
+  45c044:   24450001    addiu   a1,v0,1  
+  45c048:   24c6cdb8    addiu   a2,a2,-12872  
+  45c04c:   0320f809    jalr    t9  
+  45c050:   02003821    move    a3,s0  
+  45c054:   8fbc0010    lw  gp,16(sp)  
+  45c058:   00000000    nop  
+    RPM_MONITORAP_TRACE("\r\n%s\r\n\r\n", out);
+	可以看到，出错时，对应的C函数是 httpnPrintf ，对应的汇编代码为：    
+	lw    gp, 16(sp)。
+
+	在反汇编文件中再稍微对照上下文，即可知道具体是哪个模块、哪个文件中的调用。
+	如果看得懂汇编代码，基本可以定位到函数中的具体语句，即使看不懂汇编，利用打印调试或者静态代码分析等常规调试手段也基本可以定位到具体的出错原因了。
+	在本例中，最终确定这个函数出错的原因是操作了调用malloc(0)而获取的一个空指针（malloc(0)返回什么），着实令人始料未及。
+	
+古怪写法：
+c中struct
+
+c++中struct 
+在C++中struct和class基本是相同的
+区别之一在于class默认成员是private，而struct默认是public
+相同点是，struct也可以向class一样有成员函数，当然也包括构造函数和析构函数。
+#include <iostream>
+using namespace std;
+struct RegAccount
+{
+    int Number;
+    TCHAR ID[30];
+    TCHAR PassWord[30];
+    TCHAR PassWordOK[30];
+    TCHAR TwoPassWord[30];
+public:
+    RegAccount(RegAccount& ra)
+    {
+        memset(this, 0, sizeof(this));
+        memcpy(this, ra.ID, sizeof(ra));
+         
+    }
+    RegAccount() { memset(this, 0, sizeof(this)); }

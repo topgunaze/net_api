@@ -1,37 +1,13 @@
 pon卡：
-主从通信适配层 		olt_msc_main.c
-主从通信基本接口 	msc_main.c
-
-
-MSC_ServerSetup
-MSC_MsgProcessTask -> osal_msgQReceive -> MSC_ProcHswCmd
-MSC_MsgSendTask -> osal_msgQReceive -> MSC_SendToHsw
-MSC_PktDMCallBack -> osal_msgQSend
-
-MSC_SendToHsw -> osal_semTake[g_mscSemServerSend] -> MSC_ServerSend
-
-MSC_SendToMscTask -> osal_msgQSend][g_mscMsgQSndId]
+主从通信适配层 		 olt_msc_main.c
+主从通信基本接口 	 msc_main.c
+主从通信模块服务器端 msc_server.c
 
 MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
 
-MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> 
-
-MSC_FindCmdRegNode -> 
-
-MSC_TransOptType
-
+msc功能接口：
 报文压缩与解压缩
 MSC_PreHandleRecvPkt
-
-主从通信模块服务器端 msc_server.c
-
-MSC_ServerSetup -> accept -> fd -> MSC_ServerRecv
-
-MSC_ServerRecv -> MSC_ReadPacket
-
-MSC_ServerSend -> MSC_Send -> 
-
-
 
 主从通信模块
 msc_common.c
@@ -319,7 +295,7 @@ PON卡内部消息命令节点添加执行元素
 1. g_mscCmdRegList
 2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
 pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
-外部如何注册？
+外部如何注册针对命令字的执行元素？
 1. 注册命令节点
 2. 命令节点下挂接执行元素
 elementHasInit
