@@ -4,6 +4,9 @@ pon卡：
 主从通信模块服务器端 msc_server.c
 msc_common.c
 
+各个类之间关系;
+单例模式
+
 MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
 
 msc功能接口：
@@ -12,82 +15,294 @@ MSC_PreHandleRecvPkt
 
 发包：
 
-事件
+网络工具
+CUtil
 
+IMPORT 函数接口
+
+pon 芯片全局状态:
+g_olt_chip_ready
+
+g_lock_chip_ready 何处加锁？
+
+event_object
+service_object 
+
+事件解析与处理
+CCommandObject -> CEventCommandObject
+CEventCommandObject -> CEventCommandObject_PONCHIP_READY
+CEventCommandObject -> CEventCommandObject_ETH_FRAME
+
+事件处理消息
 pon芯片准备好：
-CEventCommandObject_PONCHIP_READY::operator()
+PON_EVT_PONCHIP_READY -> CEventCommandObject_PONCHIP_READY::operator() -> olt_main_handle_chip_ready -> CPonSystem::Instance() -> kServiceModuleOltMain -> service_object -> HandleChipReadyCallback
 
-以太网消息处理
-CEventCommandObject_ETH_FRAME::operator()
+二层消息处理
+PON_EVT_ETH_FRAME -> CEventCommandObject_ETH_FRAME::operator() ->
 UOS_E_IGMP | UOS_E_MLD | UOS_E_ARP | UOS_E_LAYER2 | 
-
 UOS_E_LAYER2 -> MSC_RecvAdpEtherPkt -> ADP_SUBTYPE_SETIP | ADP_SUBTYPE_FETCH | 
 ADP_SUBTYPE_FETCH -> MSC_SndAdpPkt -> MSC_WrapAdpPkt -> MSC_DrvSndAdpPkt -> ether_send_pkt
 
-事件注册
-olt_main_service_event_init - 》
-UOS_EVENT_ID_T
- -> olt_main_register_event_command 实现 ？
-
-事件对象
-
-事件类型 
-
-olt_main_register_event_command
 事件id对象注册
+olt_main_register_event_command
 
-pon_system_register_event_type
 事件类型资源申请
+pon_system_register_event_type
 
+事件类型添加id
 pon_system_register_event_id
-事件类型关联id
+kEvtTypePonDrv -> PON_EVT_PONCHIP_READY | PON_EVT_ETH_FRAME
+kEvtTypeOnuMngFrm -> PON_EVT_ONU_MGMT_FRAME | PON_EVT_CUS_ONU_PRI_COM
+kEvtTypeOnuOmciOper -> PON_EVT_CUS_ONU_OMCI_REQ
+kEvtTypeService -> PON_EVT_CUS_ALM_ONU_ONLINE | PON_EVT_CUS_ALM_ONU_OFFLINE | PON_EVT_CUS_ALM_ONU_DYING_GASP | PON_EVT_CUS_ALM_REPORT | PON_EVT_CUS_ONU_ONLINE_SER
 
-1. 每个eventid 对应 一个event object
-2. event object 需要注册
-3. 注册event type为其申请资源
-4. eventid 注册到event type中 
+1. 每个 event_id 对应 一个 event_object
+2. event_object 需要注册到 pon_system
+3. 注册 event_type 为其申请资源
+4. eventid 注册到 event_type 中,一个event_type 可以添加多个 event_id 
 
 缺失文件：
 pon_system_cinterface.hpp 对应cpp
+ulog 对应实现
+cl 对vtysh的封装实现
+service_object.hpp 对应cpp service_object 事件注册接口 RegisterEventCommandObject 等api
+fhdrv_olt_common_ponapi_init 实现
+fhdrv 对应接口实现
+pon_system.hpp 对应cpp
 
-服务模块
-SERVICE_MODULE_ID ->
-kServiceModuleOltMain
+事件的调用 pon_system ？
+LIST
+NODE
+结构
 
+按网卡区分
+et_global
 
+全局
 pon芯片初始化完毕
 g_olt_chip_ready
 
+服务模块
+集中管理服务，注册芯片初始化完毕回调
+RegisterChipReadyCallback
+HandleChipReadyCallback
+SERVICE_MODULE_ID ->
 
-RegisterEventCommandObject
-
-chk_hook
-Msc_PktDMCallBack()
-
-xdu端
-
-CPonSystem
-
-OLT主模块 olt_main_service_cinterface.cpp
-
-pon系统业务 
-CObjectBase -> CPonSystem
-业务模块
 CObjectBase -> CServiceObject 
-CServiceObject -> COltMainServiceObject ***
-olt_main_service_object
+
+xdu端 ？？
+
+pon系统业务 ，单例模式：
+CObjectBase -> CPonSystem
+
+pon_system 注册 service_object
+RegisterServiceObject -> _service_object_list -> object.Init()
+pon_system msc 消息分发
+DispatchMscMessage -> _service_object_list -> DispatchMscMessage
+DispatchInnerMscMessage -> _service_object_list -> DispatchInnerMscMessage
+DispatchEventMessage -> _service_object_list -> DispatchEventMessage
+...
+...
+
+PON卡初始化 olt_main_service_cinterface.cpp
+fh_maple_init -> fh_maple_init_stage1 -> fh_maple_init_stage2
+fh_maple_init_stage2 -> -> pon_system -> RegisterServiceObject -> Start (各个 service_object.start ?) -> olt_main_temp_task
+pon system 注册 service_object 并初始化
+COltMainServiceObject *
+CMscServiceObject	*
+CAlarmServiceObject *
+CStatsServiceObject *
+CRegAuthServiceObject *
+COnuAbilityServiceObject *
+COmciServiceObject
+COltConfigServiceObject
+COltVlanServiceObject
+...
+..
+
+service_object
+Init
+SortConfigCommand
+SortEventCommand
 
 
-单例模式：
-类对象作为类的成员
+1. service_object start api 何处 
 
-继承关系：
+olt_main模块
+CServiceObject -> COltMainServiceObject
+
+COltMainServiceObject[kServiceModuleOltMain] -> Init -> Init2 -> Start
+初始化显示调用
+Init -> olt_main_service_cli_init -> olt_main_service_event_init -> ...
+Init2 -> olt_main_service_event_init2 -> end_rx_hook_register[olt_main_rx_mgmt_packets_out_band]
+收报处理：
+olt_main_rx_mgmt_packets_out_band -> 
+layer2 ADP报文：
+PON_EVT_ETH_FRAME -> pon_system_dispatch_event
+
+Start -> MSC_Init
+
+1. g_mscSvrInitDone 标示MSC初始化结果，初始化完毕可进行板间消息的收发即 MSC_MsgProcessTask | MSC_MsgSendTask
+
+2. msc_module_env_init -> MSC_GlobalInit -> 
+全局信息：变量、消息收发队列、发包信号量
+MSC_InitCmdRegList -> g_mscCmdListInit 命令行链表
+MSC_InitAddErrInfo -> MSC_AddErrInfo -> MSC_ERROR_LIST_INFO 错误码链表
+MSC_PKT_DM 处理回调 MSC_PktDMCallBack 
+
+2. msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+2.1. pon卡与主控之间连接与接收消息任务
+MSC_ServerSetup ->
+2.1.1. pon卡作为服务端，等待主控连接
+2.1.2. 主控连接pon卡后，启动接收消息任务 MSC_ServerRecv
+	MSC_ServerRecv -> MSC_ReadPacket
+
+2.2. pon卡内部消息处理任务
+MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> pRegElement.regInfo.pFun -> pon_system_dispatch_msc ?
+2.1. buffer2cmdid
+2.2. cmdnode compare
+2.3. 遍历 cmdnode 下的 element， exe
+DM消息触发
+MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
+
+2.3 pon卡内部发送消息处理任务
+MSC_MsgSendTask -> g_mscMsgQSndId -> 出 -> MSC_SendToHsw -> MSC_PKT_DM -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send(write)
+发送消息触发
+MSC_SendPktToHsw -> MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
+pon_system._msc_pkt_send_func == olt_main_send_packet_to_hsw (各个 service_object ?)
+
+主从通信消息流程：
+板间消息按类型注册处理回调机制 
+注册板间消息：
+MSC_ModuleRegister -> type | cb -> g_mscModuleRegArr
+回调触发：
+MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
+
+1. pon卡接收来自主控消息，
+2. 消息类型执行回调，
+3. 消息入内部接收队列
+4. 任务取内部接收队列按命令节点遍历执行元素
+
+PON卡内部消息命令节点添加执行元素
+1. g_mscCmdRegList
+2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
+pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
+外部如何注册针对命令字的执行元素？
+1. 注册命令节点
+2. 命令节点下挂接执行元素
+elementHasInit
+
+注册命令处理
+olt_config_service_msc_init -> olt_config_register_msc_command -> 
+单例 CPonSystem -> kServiceModuleOltConfig -> CServiceObject -> RegisterMscCommandObject ？
+olt_config_register_msc_command 无实例调用？
+
+CServiceObject
+每个 service_object 关联 msc_cmd cfg_cmd event_cmd
+
+
+告警业务模块
+CAlarmServiceObject
+CServiceObject -> CAlarmServiceObject
+Init -> alarm_service_cli_init -> alarm_service_msc_init -> alarm_service_event_init -> alarm_service_config_init -> alarm_service_onu_callback_init
+
+注册模块命令处理:
+alarm_service_msc_init -> msc_cmd_object -> alarm_register_msc_command -> kServiceModuleAlarm -> pon_system2service_object -> RegisterMscCommandObject
+
+CMD_SET_ONU_OPTICAL_ALARM_ONOFF | CMD_TYPE_SET
+CMD_SET_OPTICAL_ALARM_THRESHOLD | CMD_TYPE_SET
+
+注册模块事件处理：
+alarm_register_event_command -> event_cmd_object -> kServiceModuleAlarm -> pon_system2service_object -> RegisterEventCommandObject
+PON_EVT_CUS_ALM_ONU_ONLINE | PON_EVT_CUS_ALM_ONU_OFFLINE | PON_EVT_CUS_ALM_ONU_DYING_GASP | PON_EVT_CUS_ALM_ONU_UNAUTH | PON_EVT_CUS_ALM_REPORT | PON_EVT_PONPORT_ROGUE_ONU
+
+注册模块配置处理：
+alarm_register_config_command -> cmd_cfg_object -> kServiceModuleAlarm -> pon_system2service_object -> RegisterConfigCommandObject
+CMD_SET_ONU_OPTICAL_ALARM_ONOFF | CMD_SET_OPTICAL_ALARM_THRESHOLD
+
+注册模块onu回调：
+alarm_service_onu_callback_init -> 
+regauth_register_onu_auth_callback -> kServiceModuleAlarm | alarm_onu_auth_callback -> pon_system -> RegisterOnuAuthCallback
+regauth_register_onu_unauth_callback -> kServiceModuleAlarm | alarm_onu_unauth_callback -> pon_system -> RegisterOnuUnAuthCallback
+regauth_register_onu_online_callback -> kServiceModuleAlarm | alarm_onu_online_callback -> pon_system -> RegisterOnuOnlineCallback
+regauth_register_onu_offline_callback -> kServiceModuleAlarm | alarm_onu_offline_callback -> pon_system -> RegisterOnuOfflineCallback
+regauth_register_onu_shutdown_callback -> kServiceModuleAlarm | alarm_onu_dying_gasp_callback -> pon_system -> RegisterOnuShutdownCallback
+
+注册接口如何实现
+msc_cmd_object|cfg_cmd_object|event_cmd_object2service_object  ???
+
+缺失文件：
+event_command_object.hpp 对应 app 实现
+alarm_service_config.hpp ...
+
+Start -> almRefactorModuleInit -> alarm_filter_config_init
+
+almRegMSCCmdProc -> alarm_register_msc_command
+ALM_CMD_THRESHOLD_OLT_UTIL | 0 | 
+ALM_CMD_SET_OPT_THRESHOLD | 0 | 
+ALM_CMD_TIME_CALIBRATION | 0 | almMscSetSystemTime
+
+统计模块
+CStatsServiceObject
+Init
+
+stats_service_config_init -> stats_service_cli_init -> stats_service_config_init -> stats_cpu_mem_init -> staInitStage1 -> stats_service_diagnose_init1 -> stats_service_mib_core_init
+
+stats_register_config_command -> kServiceModuleStats -> pon_system2service_object -> RegisterConfigCommandObject
+
+regauth_register_onu_auth_callback -> kServiceModuleStats | stats_onu_auth_callback
+regauth_register_onu_unauth_callback -> kServiceModuleStats | stats_onu_unauth_callback
+stats_cpuidle_time -> stats_measure_cpu_idletime
+
+staInitStage2 -> staInstallCLICommands -> staInstallMSCHandlers -> staInitStatsPollingStage2 -> staInitStatsDiagnoseStage2
+
+
+Start -> staInitStage2 -> stats_service_diagnose_init2
+Init -> 
+
+注册认证模块
+CRegAuthServiceObject
+
+onu能力集
+COnuAbilityServiceObject
+
+omci模块
+COmciServiceObject
+
+olt配置模块
+COltConfigServiceObject
+
+Init -> olt_config_service_cli_init -> olt_config_service_msc_init -> olt_config_service_config_init -> olt_config_service_onu_callback_init
+
+olt_config_service_msc_init -> olt_config_register_msc_command -> CMD_TYPE_SET -> CMD_ID
+CMD_SET_SYS_TIME
+CMD_NOTIFY_OLT_HOTPLUG_FINISH
+CMD_SET_PON_ENABLE
+CMD_SET_PON_INSULATE
+CMD_SET_PON_FEC_CONFIG
+CMD_SET_OLT_MAC_TABLE_AGING_TIME
+CMD_SET_KEY_EXCHANGE_INTERVAL
+CMD_SHOW_PON_MAC_TABLE
+CMD_GET_CARD_INFO
+CMD_SET_ROGUE_ONU_DETECT
+CMD_SET_GPON_OLT_GENERAL_COMMAND
+
+olt_config_service_config_init -> olt_config_register_config_command -> CMD_SET_SYS_TIME | 0
+
+olt_config_service_onu_callback_init -> regauth_register_onu_auth_callback | regauth_register_onu_unauth_callback -> kServiceModuleOltConfig
+olt_config_onu_auth_callback | olt_config_onu_unauth_callback
+
+
+COltVlanServiceObject
+Start -> NULL
+
+
+
 主从通信
 CCommandObject -> CMscCommandObject
 配置下发onu
 CCommandObject -> CConfigCommandObject
-事件解析与处理
-CCommandObject -> CEventCommandObject
+
 
 主从通信命令解析器
 CObjectBase -> CMscCommandParse
@@ -282,64 +497,6 @@ g++ 编译 makefile
 msc_register_event_command 命令注册接口 
 msc_register_config_command 配置注册接口
 
-PON卡主从通信模块
-CMscServiceObject::Start -> MSC_Init
-
-1. g_mscSvrInitDone 标示MSC初始化结果，初始化完毕可进行板间消息的收发即 MSC_MsgProcessTask | MSC_MsgSendTask
-
-2. msc_module_env_init -> MSC_GlobalInit -> 
-全局信息：变量、消息收发队列、发包信号量
-MSC_InitCmdRegList -> g_mscCmdListInit 命令行链表
-MSC_InitAddErrInfo -> MSC_AddErrInfo -> MSC_ERROR_LIST_INFO 错误码链表
-MSC_PKT_DM 处理回调 MSC_PktDMCallBack 
-
-2. msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
-2.1. pon卡与主控之间连接与接收消息任务
-MSC_ServerSetup ->
-2.1.1. pon卡作为服务端，等待主控连接
-2.1.2. 主控连接pon卡后，启动接收消息任务 MSC_ServerRecv
-	MSC_ServerRecv -> MSC_ReadPacket
-
-2.2. pon卡内部消息处理任务
-MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> pRegElement.regInfo.pFun -> pon_system_dispatch_msc ?
-2.1. buffer2cmdid
-2.2. cmdnode compare
-2.3. 遍历 cmdnode 下的 element， exe
-DM消息触发
-MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
-
-2.3 pon卡内部发送消息处理任务
-MSC_MsgSendTask -> g_mscMsgQSndId -> 出 -> MSC_SendToHsw -> MSC_PKT_DM -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send(write)
-发送消息触发
-MSC_SendPktToHsw -> MSC_SendToMscTask -> g_mscMsgQSndId -> MSC_MsgSendTask
-pon_system._msc_pkt_send_func == olt_main_send_packet_to_hsw ?
-
-
-流程：
-板间消息按类型注册处理回调机制 
-注册板间消息：
-MSC_ModuleRegister -> type | cb -> g_mscModuleRegArr
-回调触发：
-MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
-
-1. pon卡接收来自主控消息，
-2. 消息类型执行回调，
-3. 消息入内部接收队列
-4. 任务取内部接收队列按命令节点遍历执行元素
-
-PON卡内部消息命令节点添加执行元素
-1. g_mscCmdRegList
-2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
-pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
-外部如何注册针对命令字的执行元素？
-1. 注册命令节点
-2. 命令节点下挂接执行元素
-elementHasInit
-
-注册命令处理
-olt_config_service_msc_init -> olt_config_register_msc_command -> 
-单例 CPonSystem -> kServiceModuleOltConfig -> CServiceObject -> RegisterMscCommandObject ？
-
 set_msc_register_func
 pon_system
 msc_register_func
@@ -348,24 +505,7 @@ CMscCommandObject -> CMscCommandObject_0x602B
 
 CMD_CODE
 
-PON卡初始化
-fh_maple_init -> fh_maple_init_stage1 -> fh_maple_init_stage2
-fh_maple_init_stage2 ->
 
-
-RegisterServiceObject -> _service_object_list -> 
-
-业务对象
-Init
-SortConfigCommand
-SortEventCommand
-
-CMscServiceObject
-COltConfigServiceObject
-
-fhdrv_olt_common_ponapi_init 实现
-
-pon_system.hpp 对应cpp 无
 
 
 standTbl
@@ -384,13 +524,6 @@ CMscCommandObject_xxx ?
 COltConfigServiceObject::Init
 
 olt_main_service：
-
-
-COltMainServiceObject::Init **
-
-olt_main_msc_register
-
-CEventCommandObject_PONCHIP_READY
 
 收发包接口：
 olt_main_tx_mgmt_packets_out_band
@@ -416,7 +549,7 @@ g_olt_chip_ready
 7. static 函数 *
 8. cast 类型转换, dynamic_cast rtti *
 9 TDD 开发模式
-10 
+10. override 函数后缀
 
 业务虚端口 上行匹配 uservlan _ pri
 gemprot

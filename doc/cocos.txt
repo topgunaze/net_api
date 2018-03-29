@@ -1,0 +1,218 @@
+1. object node object
+2. api addchild
+
+AppDelegate.h
+
+ApplicationProtocol -> Application
+Application -> AppDelegate
+
+由代理复写：
+applicationDidFinishLaunching
+
+
+
+ThreadHelper
+EngineDataManager
+
+Ref -> Node
+
+
+Ref -> Configuration
+
+
+主要方法：
+drawScene
+
+事件分发
+EventDispatcher
+
+释放池
+AutoreleasePool
+
+渲染树
+Renderer
+主要方法
+render
+
+框架：
+cocos2d.h
+base:
+eventdispatcher:
+math:
+actions:
+2d nodes:
+2d utils:
+renderer:
+physical:
+plantform:
+平台相关，
+
+
+
+类
+Ref -> EventDispatcher
+Scheduler
+Renderer
+GLView
+scence
+layer
+sprite
+
+
+帧循环：
+ApplicationProtocol -> Application
+run() ->
+
+在执行完 applicationDidFinishLaunching 中自定义的初始化代码后，便开始游戏的帧循环
+
+while(!glview->windowShouldClose())
+
+{
+
+   QueryPerformanceCounter(&nNow);
+
+    //计算当前时间与上一帧的时间间隔是否大于设定每帧的时间间隔(默认60帧/秒)
+
+   if (nNow.QuadPart - nLast.QuadPart >_animationInterval.QuadPart)
+
+   {
+
+        nLast.QuadPart= nNow.QuadPart;//重置上一帧的时间
+
+        director->mainLoop();    //开始进入主循环 mainLoop所做的事情
+
+        glview->pollEvents();
+
+   }
+   else
+   {
+       //如果在一帧内，已经完成循环动作，则执行这里，确保每秒帧数达到设置值
+        Sleep(0);
+   }
+
+}
+
+Ref -> Director
+
+mainLoop() 这是主循环
+
+void Director::mainLoop()
+{
+
+    if (_purgeDirectorInNextLoop)  
+
+    {   //程序退出时做一些清理工作
+
+        _purgeDirectorInNextLoop = false;
+
+        purgeDirector();
+
+    }
+
+    else if (! _invalid)
+
+    {
+
+        drawScene();//绘制场景
+
+        PoolManager::getInstance()->getCurrentPool()->clear(); //清除内存池中需要释放的资源
+    }
+
+}
+
+drawScene() 重绘当前场景(遍历渲染树)、刷新状态信息等动作
+
+void Director::drawScene()
+{
+    //如果下一个场景不为空，则将当前场景替换为_nextScene
+
+    if (_nextScene)
+
+       setNextScene();
+
+    //如果当前存在运行场景
+
+    if (_runningScene)
+
+    {   //遍历场景中的子节点
+
+       _runningScene->visit(_renderer,Mat4::IDENTITY, false);
+
+       _eventDispatcher->dispatchEvent(_eventAfterVisit);
+
+    }
+
+    //绘制信息提示层
+    if (_notificationNode)
+
+    {
+       _notificationNode->visit(_renderer,Mat4::IDENTITY, false);
+    }
+
+    //左下角显示FPS等信息
+    if (_displayStats)
+    {
+       showStats();
+
+    }
+
+}
+
+_runningScene->visit(_renderer,Mat4::IDENTITY, false);函数先按照子节点的zOrder排序并递归渲染之，然后再调用自己的draw函数，最终完成该帧的渲染任务
+
+Cocos2dx有些什么：
+1、一颗或多颗Node组成的树，Node可以按照规定对不同的事件作出响应，执行一些任务。 
+2、一个导演，管理这这些树并不停地给树拍照
+
+事件可能有：
+1、导演准备好相机（进入场景onEnter等事件） 
+2、导演要拍照（帧事件） 
+3、来了一阵风（外部事件，触摸、键盘）
+
+响应内容可以包括:
+1、告诉导演拍那棵树、以什么样的速度拍、相机调成什么模式 
+2、给树修剪并摆好造型（操作Node）
+
+编写一个游戏的基本工作
+1、创建一个导演和至少一棵树，完成基本配置 
+2、给树上面的Node编写响应函数，将游戏逻辑在其中表示，通过编写响应函数，将游戏逻辑通过cocos2dx的树进行描述并通过导演进行展示。
+
+下面对以上的总结进行详细的解释： 
+实现一个cocos2dx的游戏，有几个核心的类几乎是都会用到的：
+导演 Director、场景 Scene、布景层 Layer、精灵 Sprite。 
+这些类全部继承自cocos2dx的基础类ref，而这四个类有分为两支，一个是director直接继承自Ref，另一个是Scene、Layer、Sprite三大类，他们都继承自Node这个类。 
+这个director就是上面所说的那个拍照的导演，而后面的三个继承自Node的类，就是组成这个树的主要元素。 
+在这里，导演类主要负责以下几件事情： 
+1、创建一个窗口 
+2、管理场景 
+3、与OpenGL打交道 
+所以说，导演就是拍照（创建窗口）的那个人，同时因为他和OpenGL打交道，所以说他可以操作摄像机拍出各种效果，最后呢，他还能通过管理场景决定拍哪棵“树”。 
+再说说那棵树，在cocos2dx中，所有展示出来被我们看到的东西，几乎都是一个Node，Node有几个主要的功能，例如添加到某个父节点、添加子节点、设置显示内容、设置大小、设置位置、设置锚点等等。继承自Node的几个类，均继承了Node的这些功能，同时又根据自己的定位有不同的特性。 
+cocos2dx使用Node这个类以及它的衍生类，通过经典的组合模式，使得绘制游戏场景变得轻松而且严密。这和Node的两个特性是分不开的，一个是每个Node作为树的组成部分，他可以管理自己的父节点和子节点，这使得游戏场景中所有的元素都被联系并管理起来；二是每一个带有多个子节点的Node在组合模式的设计下，可以被当做一个Node来进行操作。 
+这样，我们所说的场景设计，就简单地编程了设计一棵树，我们在scene这个根节点上放上几个Layer，然后再在Layer上放几个Sprite，让sprite按一定顺序或逻辑动起来，一个场景就做出来了，在执行逻辑的时候，对一个Layer进行操作（例如隐藏），它上面所有的Sprite都会跟着响应，非常方便。当然也可以不这样的顺序来，因为他们都是Node，只要应用的合适，可以任意的组合，甚至可以定制自己的Node来进行绘制。 
+最后，由于导演和Node都继承自ref，他们都享受了cocos2dx内存管理（类似垃圾回收）机制带来的福利，在不被使用的时候会被自动回收，大大减小了c++内存管理的工作量。 
+以上就是cocos2dx帮我们解决的场景管理、绘制以及展示的工具，给我们带来的设计上的便利，那么我们如何利用cocos2dx实现游戏的编写，或者说如何通过代码将游戏的数据和逻辑转化成可视可控的2d游戏。 
+
+于是就要用到cocos2dx三个重要的事件，一是游戏的事件，最主要是帧事件，就是我们所说的导演拍照，还有诸如进入场景的事件等，二是cocos2dx的外部事件（如触摸、点击等），三是游戏自定义的事件，我们主要通过定义这三个事件的响应实现游戏的逻辑。
+ 
+通过cocos2dx开发游戏，我们要做的有如下几样工作： 
+1、在进入程序主循环时创建导演，做一些相关的设置、创建一个Scene并由导演执行 
+2、设计游戏的逻辑，主要是每帧的响应逻辑和对不同事件的响应逻辑，在这些逻辑中，我们完成游戏的数据处理，并根据当前的游戏状态，操作当前的场景，对上面的Node进行增删、显示、播放动画等操作，或者进行场景切换，实现逻辑层到显示层的转化。
+
+cocos2dx 3.x 中主循环每一帧做的事情 
+Ref的子类有： 
+事件： Event, EventDispatcher, EventListener, 
+动画： Action, ActionManager, Animation, Animation3D, AnimationCache, AnimationCurve< componentSize >, AnimationFrame； 
+物理：Physics3DConstraint, Physics3DObject, Physics3DShape, Physics3DWorld,PhysicsShape, 
+渲染：RenderState, RenderState::StateBlock 
+文件、联网等；
+
+一帧之内所做的事情(FPS)： 
+1、事件检查和处理：在每一帧开始，C2d检查事件，有则处理分发事件。 
+2、动画更新:ActionManager会对每一个元素注册的所有动画执行响应计算，并更新其对应的属性值； 
+3、默认处理物理模拟碰撞； 
+4、程序自定义更新； 
+5、UI树的遍历；UI树的遍历主要是给每一个元素计算坐标变换矩阵，以及根据指定的逻辑深度排序，生成正确的绘制顺序。每个节点别遍历之后，讲发送绘制命令至绘制栈； 
+6、渲染系统根据员孙的globalZorder进行绘制,绘制完毕，交换前后缓冲区，将当前帧的内容回到屏幕上； 
+7、poolManger释放当前所有的autorelease对象；所以我们只关心对象的创建和使用,不需要关心其释放； 
+每一个步骤都会计入Ref对象类型的Ref对象，所以销毁的内容就比较清楚了；
