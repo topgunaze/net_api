@@ -1,0 +1,22 @@
+linux 上编译c++工程环境搭建
+1. 安装c++ man 手册
+yum install libstdc++-docs 
+在C++ man pages中查询C++的函数在Linux下查询命令或函数的使用，
+通常是这样：man printfman 3 printfman cat但是为了避免造成操作系统、C语言与C++的混淆，
+目前安装的C++ man pages与上面的查询命令有一些不同，主要是加了命名空间的限定，也就是说用这样的命令
+man std::iostream ，之后再通过搜索/cout，找到cout的说明，
+也就是说现在的查询命令应该是man namespace::headerman 命名空间::头文件。
+通常地：man std::头文件，或man std::函数名，或man std::类名
+
+2. 编译
+g++
+
+3. 使用stl模板库
+
+4. makefile
+
+5. gdb调试
+
+
+	
+

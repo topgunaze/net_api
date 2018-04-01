@@ -1155,5 +1155,29 @@ net_config_file_paser(
     return (find_flag == 1) ? 0 : MDW_NET_RC_PARAM_OUT_OF_RANGE;  
 }  
 
+int binary_search(int *p_data, int length, int value)  
+{  
+    int left  = 0;
+    int right = length - 1;  
+    int middle;
+
+    if (!p_data)
+        return -1;
+    
+    while(left <= right)  
+    {  
+        //防止使用(left + right) / 2出现溢出,middle偏左
+        middle = left + ((right - left)>>1);
+        if(p_data[middle] == value)  
+            return middle;  
+        else if(p_data[middle] > value)  
+            right = middle - 1;  
+        else  
+            left = middle + 1;  
+    }
+    
+    return -1;  
+}  
+
 #endif
 
