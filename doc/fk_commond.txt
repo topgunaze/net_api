@@ -1,0 +1,5 @@
+commond
+commond
+
+
+xxx_register_config_command -> config_id2config_object -> module_id2service_object -> RegisterConfigCommandObject -> operator()

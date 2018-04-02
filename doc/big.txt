@@ -1,65 +1,22 @@
-pon卡：
-主从通信适配层 		 olt_msc_main.c
-主从通信基本接口 	 msc_main.c
-主从通信模块服务器端 msc_server.c
-msc_common.c
-
-各个类之间关系;
-单例模式
-
-MSC_SetAlarmLight -> light_alarm_light_on | light_alarm_light_off
-
-msc功能接口：
-报文压缩与解压缩
-MSC_PreHandleRecvPkt
-
-发包：
 
 网络工具
 CUtil
 
-IMPORT 函数接口
-
 pon 芯片全局状态:
 g_olt_chip_ready
 
-g_lock_chip_ready 何处加锁？
-
 event_object
-service_object 
+service_object
+cmd_object
+cfg_object
 
 事件解析与处理
 CCommandObject -> CEventCommandObject
 CEventCommandObject -> CEventCommandObject_PONCHIP_READY
 CEventCommandObject -> CEventCommandObject_ETH_FRAME
 
-事件处理消息
-pon芯片准备好：
-PON_EVT_PONCHIP_READY -> CEventCommandObject_PONCHIP_READY::operator() -> olt_main_handle_chip_ready -> CPonSystem::Instance() -> kServiceModuleOltMain -> service_object -> HandleChipReadyCallback
-
-二层消息处理
-PON_EVT_ETH_FRAME -> CEventCommandObject_ETH_FRAME::operator() ->
-UOS_E_IGMP | UOS_E_MLD | UOS_E_ARP | UOS_E_LAYER2 | 
-UOS_E_LAYER2 -> MSC_RecvAdpEtherPkt -> ADP_SUBTYPE_SETIP | ADP_SUBTYPE_FETCH | 
-ADP_SUBTYPE_FETCH -> MSC_SndAdpPkt -> MSC_WrapAdpPkt -> MSC_DrvSndAdpPkt -> ether_send_pkt
-
-事件id对象注册
-olt_main_register_event_command
-
-事件类型资源申请
-pon_system_register_event_type
-
-事件类型添加id
-pon_system_register_event_id
-kEvtTypePonDrv -> PON_EVT_PONCHIP_READY | PON_EVT_ETH_FRAME
-kEvtTypeOnuMngFrm -> PON_EVT_ONU_MGMT_FRAME | PON_EVT_CUS_ONU_PRI_COM
-kEvtTypeOnuOmciOper -> PON_EVT_CUS_ONU_OMCI_REQ
-kEvtTypeService -> PON_EVT_CUS_ALM_ONU_ONLINE | PON_EVT_CUS_ALM_ONU_OFFLINE | PON_EVT_CUS_ALM_ONU_DYING_GASP | PON_EVT_CUS_ALM_REPORT | PON_EVT_CUS_ONU_ONLINE_SER
-
-1. 每个 event_id 对应 一个 event_object
-2. event_object 需要注册到 pon_system
-3. 注册 event_type 为其申请资源
-4. eventid 注册到 event_type 中,一个event_type 可以添加多个 event_id 
+1. 事件触发
+g_lock_chip_ready 何处加锁？
 
 缺失文件：
 pon_system_cinterface.hpp 对应cpp
@@ -69,14 +26,10 @@ service_object.hpp 对应cpp service_object 事件注册接口 RegisterEventComm
 fhdrv_olt_common_ponapi_init 实现
 fhdrv 对应接口实现
 pon_system.hpp 对应cpp
+内存池提供库，没有接口实现
+BUFFER_POOL
 
-事件的调用 pon_system ？
-LIST
-NODE
-结构
 
-按网卡区分
-et_global
 
 全局
 pon芯片初始化完毕
@@ -120,25 +73,21 @@ COltVlanServiceObject
 ...
 ..
 
-service_object
-Init
-SortConfigCommand
-SortEventCommand
-
-
-1. service_object start api 何处 
 
 olt_main模块
 CServiceObject -> COltMainServiceObject
 
 COltMainServiceObject[kServiceModuleOltMain] -> Init -> Init2 -> Start
-初始化显示调用
+
 Init -> olt_main_service_cli_init -> olt_main_service_event_init -> ...
+1. 命令行
+olt_main_service_cli_install_element
 Init2 -> olt_main_service_event_init2 -> end_rx_hook_register[olt_main_rx_mgmt_packets_out_band]
 收报处理：
 olt_main_rx_mgmt_packets_out_band -> 
 layer2 ADP报文：
 PON_EVT_ETH_FRAME -> pon_system_dispatch_event
+
 
 Start -> MSC_Init
 
@@ -162,7 +111,7 @@ MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRe
 2.1. buffer2cmdid
 2.2. cmdnode compare
 2.3. 遍历 cmdnode 下的 element， exe
-DM消息触发
+MSC_PKT_DM 消息触发
 MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
 
 2.3 pon卡内部发送消息处理任务
@@ -178,6 +127,10 @@ MSC_ModuleRegister -> type | cb -> g_mscModuleRegArr
 回调触发：
 MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
 
+msg type： 
+MSC_PKT_CHKCONN
+MSC_PKT_DM
+
 1. pon卡接收来自主控消息，
 2. 消息类型执行回调，
 3. 消息入内部接收队列
@@ -186,7 +139,7 @@ MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
 PON卡内部消息命令节点添加执行元素
 1. g_mscCmdRegList
 2. MSC_REG_ELEMENT_NODE2MSC_CMD_NODE
-pon_system._msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
+pon_system.msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager
 外部如何注册针对命令字的执行元素？
 1. 注册命令节点
 2. 命令节点下挂接执行元素
@@ -234,6 +187,7 @@ msc_cmd_object|cfg_cmd_object|event_cmd_object2service_object  ???
 缺失文件：
 event_command_object.hpp 对应 app 实现
 alarm_service_config.hpp ...
+pon_system_cinterface.hpp 对应app
 
 Start -> almRefactorModuleInit -> alarm_filter_config_init
 
@@ -262,9 +216,38 @@ Init ->
 
 注册认证模块
 CRegAuthServiceObject
+对象构造，单例初始化
+CActiveOnuTaskManager
+CRegAuthStateMachineManager
+CUnActiveOnuTaskManager
+CRegAuthServiceAuthenticate
+
+Init -> 
+
+regauth_service_msc_init -> regauth_register_msc_command -> 
+
+regauth_register_onu_auth_callback
+kServiceModuleRegAuth
+regauth_register_onu_auth_callback -> 
+regauth_onu_auth_callback
+regauth_onu_unauth_callback
+regauth_onu_online_callback
+regauth_onu_offline_callback
+regauth_onu_shutdown_callback
+
+
+Start -> 
+单例启动
+onu激活任务管理
+CActiveOnuTaskManager::Instance()->Start()
+onu老化任务管理
+CUnActiveOnuTaskManager::Instance()->Start()
 
 onu能力集
 COnuAbilityServiceObject
+
+Init -> onu_ability_service_cli_init
+Start -> null
 
 omci模块
 COmciServiceObject
@@ -294,9 +277,11 @@ olt_config_onu_auth_callback | olt_config_onu_unauth_callback
 
 
 COltVlanServiceObject
+Init -> olt_vlan_service_cli_init -> olt_vlan_service_msc_init
 Start -> NULL
 
-
+内核模块导入
+IMPORT
 
 主从通信
 CCommandObject -> CMscCommandObject
@@ -306,78 +291,30 @@ CCommandObject -> CConfigCommandObject
 
 主从通信命令解析器
 CObjectBase -> CMscCommandParse
-单例模式
 
 CConfigCommandObject
 
-基本类
-具备锁功能接口，抽象类
-ILockable
-
-pon系统基类
 ILockable -> CObjectBase
 
-互斥锁类
 CObjectBase -> CMutexLock
 CObjectBase -> CSyncLock
-
-LockHelper
-
-互斥锁
-CObjectBase -> CMutexLock
-同步锁
-CObjectBase -> CSyncLock
-带有超时的锁
-
-信号量锁
 CObjectBase -> CSemaphoreLock
-配置基类
-CObjectBase -> CConfigObject
-配置数据基类
+
 CObjectBase -> CConfigData
-用于配置对象
+CObjectBase -> CConfigObject
 
-工作类：
-
-
-PON卡配置类
 CConfigObject -> CCardConfigObject
-
-单例模式 _instance
-
-
-configdata 与 configobject
-配置对象 CConfigObject
-配置数据 CConfigData
-
-
-卡端口配置ONU类
-CConfigData -> CCardPortConfigData
-pon端口配置与管理
-
-
-卡端口配置的对象即为ONU
-
-onu 节点信息
-ONU_ID_INFO_ST
-
-
-
-
-ONU配置类
 CConfigObject -> COnuConfigObject
 
-ONU端口类
 CConfigObject -> COnuPortConfigObject
 COnuPortConfigObject -> COnuPonPortConfigObject
 COnuPortConfigObject -> COnuLanPortConfigObject
 COnuPortConfigObject -> COnuVoipPortConfigObject
-COnuStatusObject
 
-公共接口：
-内存池：
-提供库，没有接口实现
-BUFFER_POOL
+CConfigData -> CCardPortConfigData
+
+CObjectBase -> CStatusObject
+CStatusObject -> COnuStatusObject
 
 测试套如何运行
 
@@ -503,8 +440,6 @@ msc_register_func
 单例模式注册命令执行元素
 CMscCommandObject -> CMscCommandObject_0x602B 
 
-CMD_CODE
-
 
 
 
@@ -554,3 +489,57 @@ g_olt_chip_ready
 业务虚端口 上行匹配 uservlan _ pri
 gemprot
 最多8条
+
+主控板:
+FUNCPTR 该结构定义？
+
+
+
+msc_ClientInit -> ldu_smuInit -> msc_seltsk_init -> msc_PollXduInit
+msc_ModuleRegArr -> 
+MSC_PKT_UPGRADE | ldu_SmuRecv
+MSC_PKT_UPGRADE_BATCH | ldu_SmuRecv_batch
+MSC_PKT_UPGRADE_AUTO | ldu_SmuRecv_auto
+
+msc_seltsk_init -> msc_ClientSelect -> msc_ClientRecv
+
+msc_ClientRecv -> msc_ReadPacket_client -> msc_tell_seltsk -> msc_NotifyReSetup
+msc_ReadPacket_client -> msc_ReadPacket
+msc_ReadPacket -> msc_ProcessPacket -> msc_ModuleRegArr -> pkt_type | func
+msc_Send -> write
+msc_ClientSend -> msc_Send
+msc_QueueInfoGet_ext ?
+
+msc_ClientSetup -> msc_NotifyReSetup -> msc_ProcessSetupEv -> msc_ClientReSetup -> 
+主控连接pon卡
+msc_ClientReSetup -> msc_ClientSetupAgain -> 
+msc_ClientSetuping -> create fd -> msc_ClientConnect -> set fd -> msc_tell_seltsk
+进程内部：
+msc_pipe
+
+msc_ClientSetup_again -> msc_NotifyReSetup
+
+孤立：
+msc_GatherSyncData -> hss_Send
+
+msc_ProcessSyncData
+
+关闭连接场景：
+
+msc_ClientClose -> msc_tell_seltsk -> 
+
+msc_PollXduState
+
+start_msc_monitor_task -> msc_monitor_task
+
+init_ev_done -> start_msc_monitor_task
+
+br_init -> brmain -> 
+
+app_init -> ... -> msc_ClientInit
+bcm56820_init -> bcm56820_init
+
+msc_PollXduState -> msc_HandleLinkMsg
+
+bcmp_protocol_module_init -> BCMP_module_init -> BCMP_recv_task
+

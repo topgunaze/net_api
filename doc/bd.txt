@@ -728,7 +728,7 @@ pNode = pNext;
 }
 return preversedhead
 }
-我:
+
 int Partition 
 (int data[], int length, int start, int end)
 {
@@ -765,5 +765,4 @@ Quicksort(data, length, start, index -1);
 if( index<end)
 Quicksort(data, length, index l, end);
 }
-我:
 快速排序

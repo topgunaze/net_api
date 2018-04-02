@@ -1,0 +1,53 @@
+1. 事件类型
+kEvtTypePonDrv - 驱动事件 - 自发消息
+kEvtTypeOnuMngFrm - ONU管理 - OMCI
+kEvtTypeService - 业务模块事件 - 模块
+kEvtTypeOnuOmciOper - OMCI操作 - OMCI
+
+2. 注册事件回调
+注册事件类型和对应的资源
+pon_system_register_event_type
+注册 event_object
+olt_main_register_event_command
+注册 event_id 到 event_type
+pon_system_register_event_id
+
+
+pon_system 注册 event 对应回调
+xxx_register_event_command -> cmd_id2event_object -> module_id2service_object -> RegisterEventCommandObject -> operator()
+
+pon_system_register_event_id
+kEvtTypePonDrv -> PON_EVT_PONCHIP_READY | PON_EVT_ETH_FRAME
+kEvtTypeOnuMngFrm -> PON_EVT_ONU_MGMT_FRAME | PON_EVT_CUS_ONU_PRI_COM
+kEvtTypeOnuOmciOper -> PON_EVT_CUS_ONU_OMCI_REQ
+kEvtTypeService -> PON_EVT_CUS_ALM_ONU_ONLINE | PON_EVT_CUS_ALM_ONU_OFFLINE | PON_EVT_CUS_ALM_ONU_DYING_GASP | PON_EVT_CUS_ALM_REPORT | PON_EVT_CUS_ONU_ONLINE_SER
+
+1. 每个 event_type 需要单独申请资源，维护该类型事件的栈或者队列
+2. 每个 event_id 对应 一个 event_type
+3. event_object 与 event_id 关联， 注册到 pon_system，即为事件执行对象
+
+example:
+pon芯片准备好：
+PON_EVT_PONCHIP_READY -> CEventCommandObject_PONCHIP_READY::operator() -> olt_main_handle_chip_ready -> CPonSystem::Instance() -> kServiceModuleOltMain -> service_object -> HandleChipReadyCallback
+
+线卡cpu网卡收包，二层消息处理
+PON_EVT_ETH_FRAME -> CEventCommandObject_ETH_FRAME::operator() ->
+UOS_E_IGMP | UOS_E_MLD | UOS_E_ARP | UOS_E_LAYER2 | 
+UOS_E_LAYER2 -> MSC_RecvAdpEtherPkt -> ADP_SUBTYPE_SETIP | ADP_SUBTYPE_FETCH | 
+应答主控：
+ADP_SUBTYPE_FETCH -> MSC_SndAdpPkt -> MSC_WrapAdpPkt -> MSC_DrvSndAdpPkt -> ether_send_pkt
+适配ip：
+ADP_SUBTYPE_SETIP
+
+3. 事件触发
+pon_system_dispatch_event -> 事件状态机 ?
+
+4. 事件处理
+事件状态机 ? ->  -> event_object -> cb -> operator()
+
+alarm_onu_online_callback -> regauth_send_event_to_statemachine
+
+
+olt_main_pon_api_event_func -> pon_system_dispatch_event
+
+alarm_service_onu_callback_init
