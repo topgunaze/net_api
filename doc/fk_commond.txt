@@ -3,3 +3,25 @@ commond
 
 
 xxx_register_config_command -> config_id2config_object -> module_id2service_object -> RegisterConfigCommandObject -> operator()
+
+
+OMCI 发包：
+
+#define OMCI_MODULE_MGR (ModuleManager::GetInstance())
+
+omci_service_module.cpp
+增删改
+AddModule
+
+模块启动
+模块发包
+
+omci 内存管理器
+
+
+onu 配置 数据合法性
+pon 配置 直接配置
+
+
+状态机：
+StateMachine

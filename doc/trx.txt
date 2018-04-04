@@ -1,0 +1,28 @@
+光模块相关：
+配置在全局表 g_transceiver_module 中
+获取-修改-设置
+
+触发热插拔完成标志
+msc主从通信 -> CMD_NOTIFY_OLT_HOTPLUG_FINISH -> 
+CMscCommandObject_0x1018::operator() -> olt_main_set_hotplug_finish_flag[olt_main_get_hotplug_finish_flag] -> ...
+
+触发使能pon口
+msc主从通信 -> CMD_SET_PON_ENABLE ->
+CMscCommandObject_0x1033::operator() -> olt_main_get_hotplug_finish_flag|olt_main_is_olt_chip_ready -> cfg_mod_set_olt_port_enable
+
+触发pon芯片ready事件
+事件触发 -> PON_EVT_PONCHIP_READY ->
+CEventCommandObject_PONCHIP_READY::operator() -> olt_main_get_hotplug_finish_flag -> fhdrv_olt_port_set_port_enable -> ...
+
+*光模块对象
+
+CServiceObject -> CTransceiverServiceObject
+
+1. 业务模块单例，光模块配置任务初始化
+2. Init -> transceiver_service_cli_init -> transceiver_service_var_init (配置任务参数) -> tranceiver_init_transceiver_module_table[g_transceiver_module]
+3. Start -> 光模块配置任务
+
+*光模块配置任务
+CThread -> CTransceiverPollingTask
+
+CTransceiverPollingTask::Run -> tranceiver_change_tranceiver_vender ...

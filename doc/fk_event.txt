@@ -5,11 +5,11 @@ kEvtTypeService - 业务模块事件 - 模块
 kEvtTypeOnuOmciOper - OMCI操作 - OMCI
 
 2. 注册事件回调
-注册事件类型和对应的资源
+注册事件类型和对应的任务
 pon_system_register_event_type
 注册 event_object
 olt_main_register_event_command
-注册 event_id 到 event_type
+注册 event_id 到 event_type， 即id到任务中
 pon_system_register_event_id
 
 
@@ -26,9 +26,42 @@ kEvtTypeService -> PON_EVT_CUS_ALM_ONU_ONLINE | PON_EVT_CUS_ALM_ONU_OFFLINE | PO
 2. 每个 event_id 对应 一个 event_type
 3. event_object 与 event_id 关联， 注册到 pon_system，即为事件执行对象
 
+
+3. 事件触发
+pon_system_dispatch_event -> 事件状态机 ?
+
+4. 事件处理
+事件状态机 ? ->  -> event_object -> cb -> operator()
+
+alarm_onu_online_callback -> regauth_send_event_to_statemachine
+
+olt_main_pon_api_event_func -> pon_system_dispatch_event
+
+alarm_service_onu_callback_init
+
+关键事件:
 example:
 pon芯片准备好：
-PON_EVT_PONCHIP_READY -> CEventCommandObject_PONCHIP_READY::operator() -> olt_main_handle_chip_ready -> CPonSystem::Instance() -> kServiceModuleOltMain -> service_object -> HandleChipReadyCallback
+PON_EVT_PONCHIP_READY -> CEventCommandObject_PONCHIP_READY::operator()
+在位光模块下发配置：
+get -> set
+tranceiver_detect_tranceiver_vender -> pon2CCardPortConfigObject -> CCardPortConfigObject2CCardPortConfigData
+
+olt_main_handle_chip_ready -> g_olt_chip_ready
+
+ready 回调
+olt_main_handle_chip_ready -> pon_system -> kServiceModuleOltMain2service_object -> HandleChipReadyCallback
+回调类型：OLT_MAIN_CHIP_READY_HANDLE_FUNC
+回调注册：
+kServiceModuleIgmpAdapter2igmp_adaptor_chip_ready_handle
+
+
+使能pon口
+配置对象以pon端口为单位
+
+静态单例：
+CCardConfigObject pon口单位
+CCardPortConfigData pon口单位
 
 线卡cpu网卡收包，二层消息处理
 PON_EVT_ETH_FRAME -> CEventCommandObject_ETH_FRAME::operator() ->
@@ -39,15 +72,14 @@ ADP_SUBTYPE_FETCH -> MSC_SndAdpPkt -> MSC_WrapAdpPkt -> MSC_DrvSndAdpPkt -> ethe
 适配ip：
 ADP_SUBTYPE_SETIP
 
-3. 事件触发
-pon_system_dispatch_event -> 事件状态机 ?
+锁结构：
+synchronized  加锁接口
 
-4. 事件处理
-事件状态机 ? ->  -> event_object -> cb -> operator()
+封装list -> 使用类模板
 
-alarm_onu_online_callback -> regauth_send_event_to_statemachine
+配置对象以pon端口为单位
+card_configobject.hpp 对应 cpp
+cardport_configobject.hpp 对应 cpp
+onu_configobject.hpp 对应 cpp
+onuport_configobject.hpp 对应 cpp
 
-
-olt_main_pon_api_event_func -> pon_system_dispatch_event
-
-alarm_service_onu_callback_init

@@ -332,6 +332,11 @@ main(void)
     print(b, 10);
 #endif
 
+#if defined(SERVICE_PORT_ENABLE)     
+        printf("ctrl_init test macro\r\n");
+#endif
+
+
     //BITREENODE* pstRoot;
     BITREENODE t7 = {7, NULL, NULL};
     BITREENODE t6 = {6, NULL, NULL};
@@ -364,7 +369,6 @@ main(void)
     }
     
     //key_t key = ipc_key_get("/etc", 20);
-
 #if 0
     int     msgq_id;
     msgbuf  tx_buf;
@@ -562,43 +566,4 @@ main(void)
     exit(1);
 #endif
 }
-
-
-int Partition 
-(int data[], int length, int start, int end)
-{
-if(data = NULL || length <=0 ||
-start <0 || end >= length)
-throw new std: exception("Invalid Parameters");
-
-int index = Randominrange(start, end);
-Swap(&data [index], &data[end]);
-int small= start -1;
-for(index = start; index < end; ++index)
-{
-if(data[index]< data[end])
-{
-++small;
-if (small != index)
-Swap(&data[index], &data [small]);
-}
-}
-++ small
-Swap(&data[small], &data[end]);
-return small
-}
-
-void Quicksort
-(int data[l, int length, int start, int end)
-{
-if(start == end)
-return;
-
-int index Partition(data, length, start, end);
-if(index > start)
-Quicksort(data, length, start, index -1);
-if( index<end)
-Quicksort(data, length, index l, end);
-}
-
 

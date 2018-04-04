@@ -28,6 +28,8 @@ COltVlanServiceObject
 ..
 
 
+整个芯片ready
+igmp_adaptor_chip_ready_handle
     /* 主从通信处理接口原型 */
     typedef int (* MSC_CMD_REG_FUNC)(unsigned char *, int, unsigned short, int);
 	typedef int (*MSC_REGISTER_HANDLE)(unsigned short cmd_id, int cmd_type, void *func, const char *fmt);

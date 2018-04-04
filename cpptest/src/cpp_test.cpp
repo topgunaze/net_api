@@ -4,7 +4,58 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "cpp_test.hpp"
+#include "threadpool.hpp"
 
+
+#if 0
+Swap(int &a, int &b)
+{
+	int t;
+	t = a;
+	a = b;
+	b = t;
+}
+
+
+int Partition (int data[], int length, int start, int end)
+{
+    if(data = NULL || length <= 0 || start < 0 || end >= length)
+		return -1;
+
+    int index = Randominrange(start, end);
+	
+    Swap(&data[index], &data[end]);
+    int small= start - 1;
+    
+    for(index = start; index < end; ++index)
+    {
+        if(data[index] < data[end])
+        {
+            ++small;
+            if (small != index)
+            Swap(&data[index], &data [small]);
+        }
+    }
+    
+    ++ small
+    Swap(&data[small], &data[end]);
+    return small
+}
+
+void Quicksort(int data[], int length, int start, int end)
+{
+    if(start == end)
+        return;
+
+    int index = Partition(data, length, start, end);
+    
+    if(index > start)
+        Quicksort(data, length, start, index - 1);
+        
+    if( index < end)
+        Quicksort(data, length, index + 1, end);
+}
+#endif
 
 Stu& Stu::growup(void)
 {
@@ -267,9 +318,99 @@ ostream& operator<<(ostream &out, const myvector<T> &obj)
 	return out;
 }
 
+/*
+使用的同步原语有 
+pthread_mutex_t mutex_l;//互斥锁
+pthread_cond_t condtion_l;//条件变量
+使用的系统调用有
+pthread_mutex_init();
+pthread_cond_init();
+pthread_create(&thread_[i],NULL,threadFunc,this)
+pthread_mutex_lock()
+pthread_mutex_unlock()
+pthread_cond_signal()
+pthread_cond_wait()
+pthread_cond_broadcast();
+pthread_join()
+pthread_mutex_destory()
+pthread_cond_destory()
+
+*/
+
 int main()
 {
+	cout << "begin" << endl;
+	char    szTmp[] = "hello world";
+	
+//#if 0
+	lz::Mytask  taskobj[20];
 
+	for (int i = 0; i<20; i++)
+	{
+		taskobj[i].setArg((void*)szTmp);
+	}
+//#endif
+
+#if 0
+	lz::Mytask	taskobj;
+	
+	taskobj.setArg((void*)szTmp);
+#endif
+
+	lz::ThreadPool threadPool(10);
+	threadPool.start();
+
+	for(int i = 0; i<20; i++)
+	{
+	   threadPool.addTask(&taskobj[i]);
+	   //threadPool.addTask(&taskobj);
+	}
+
+	while(1)
+	{
+	   printf("there are still %d tasks need to process\n", threadPool.size());
+	   
+	   if(threadPool.size() == 0)
+	   {
+		   threadPool.stop();
+		   printf("now will exit from main\n");
+		   exit(0);
+	   }
+	   
+	   sleep(2);
+	}
+
+	cout<<"end"<<endl;
+
+#if 0
+	technician 		t("ma", 240);
+	salesman   		s("pu", 100000);
+	manager    		m("bai");
+	sales_manager 	sm("wang", 1000000);
+
+	employee *p[4] = {&t, &s, &m, &sm};
+	int i;
+	
+	for (i = 0; i<4;++i)
+		cout<<"i:"<<i<<" num:"<<p[i]->get_cardnum()<<" salary:"<<p[i]->get_salary()<<endl;
+	
+	cout<<"max num:"<<employee::get_maxnum()<<endl;
+#endif
+
+#if 0
+	/*forbide: virtual func
+	newspaper *p_paper = NULL;
+	book      *p_bk;
+	people    p;
+	
+	p.tell(p_bk);*/
+	//p.tell(p_paper);
+
+	people    *p = (people*)2;
+	p->test();
+#endif	
+	
+#if 0
 	myvector<double> vec(2);
 
 	vec[0] = 1.0;
@@ -281,7 +422,7 @@ int main()
 	vec3 = vec2;
 
 	cout<<vec<<";"<<vec2<<";"<<vec3;
-	
+#endif	
 	
 #if 0
 	mystack<double> s(100);

@@ -26,10 +26,15 @@ service_object.hpp 对应cpp service_object 事件注册接口 RegisterEventComm
 fhdrv_olt_common_ponapi_init 实现
 fhdrv 对应接口实现
 pon_system.hpp 对应cpp
-内存池提供库，没有接口实现
+mempoollib.h 对应 c内存池提供库，没有接口实现
 BUFFER_POOL
+igmp_adapter_service_pub.hpp 对应 app 组播协议
 
+#if defined(SERVICE_PORT_ENABLE)
+-> #if   !defined(SERVICE_PORT_ENABLE)
 
+#if !defined(SERVICE_PORT_ENABLE)
+-> #if   defined(SERVICE_PORT_ENABLE)
 
 全局
 pon芯片初始化完毕
@@ -70,7 +75,10 @@ COnuAbilityServiceObject *
 COmciServiceObject
 COltConfigServiceObject
 COltVlanServiceObject
-...
+CIgmpAdapterServiceObject
+CIgmpConfigServiceObject
+CUpgradeServiceObject
+
 ..
 
 
@@ -441,7 +449,9 @@ msc_register_func
 CMscCommandObject -> CMscCommandObject_0x602B 
 
 
-
+start接口：
+COltMainServiceObject *
+CMscServiceObject -> MSC_Init
 
 standTbl
 
@@ -493,7 +503,15 @@ gemprot
 主控板:
 FUNCPTR 该结构定义？
 
-
+业务模块：
+1. cinterface
+2. object
+3. cli
+4. config
+5. event
+6. logic
+7. var
+8. task 
 
 msc_ClientInit -> ldu_smuInit -> msc_seltsk_init -> msc_PollXduInit
 msc_ModuleRegArr -> 

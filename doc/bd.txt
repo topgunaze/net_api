@@ -707,8 +707,6 @@ public void levelTraverse(TreeNode root) {
 五、深度优先遍历
 事实上深度遍历就是上面的前序，中序和后序
 
-
-我:
 反转链表
 Listnode* Reverselist
 (Listnode* phead)
@@ -722,9 +720,9 @@ Listnode* pnext pnode->m_pnext;
 if (pnext == NULL)
 preversedhead = pnode;
 
-pnode->m_pnext = pPrevi
-pPrev = pNode;
-pNode = pNext;
+pnode->m_pnext = prev;
+prev = pnode;
+pnode = pnext;
 }
 return preversedhead
 }
@@ -766,3 +764,18 @@ if( index<end)
 Quicksort(data, length, index l, end);
 }
 快速排序
+
+
+大树相乘
+for(i=0;i<=n;i++)
+    for(j=0;j<=m;j++)
+     c[i+j]+=ia[i]*ib[j];
+
+   
+        for(i=0;i<k;i++){
+             if(c[i]<=9);
+             else{
+                 c[i+1]+=c[i]/10;
+                 c[i]%=10;
+             }
+        }

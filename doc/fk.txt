@@ -38,9 +38,9 @@ MSC_PKT_DM -> MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
 
 pon卡内部消息处理任务
 MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> g_mscCmdRegList -> pRegElement.regInfo.pFun -> pon_system_dispatch_msc ?
-buffer2cmdid
-cmd_node compare
-遍历 cmdnode 下的 element 执行注册回调
+	buffer2cmdid
+	cmd_node compare
+	遍历 cmdnode 下的 element 执行注册回调
 
 MSC_PKT_UPGRADE -> ldu_xduRecv -> 启动任务
 	LDU_TELL_UPGRADE -> ldu_xduUpgrade
@@ -48,7 +48,7 @@ MSC_PKT_UPGRADE -> ldu_xduRecv -> 启动任务
 
 MSC_PKT_UPGRADE_BATCH -> ldu_xduRecv_batch
 
-发送消息：
+3.3 发送消息：
 1. 业务模块 api：
 业务逻辑触发
 olt_main_send_packet_to_hsw(pon_system.msc_pkt_send_func) 接口封装为 pon_system ？
