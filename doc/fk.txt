@@ -1,0 +1,71 @@
+1. 注册pon卡接收主控消息类型与回调
+MSC_GlobalInit -> MSC_ModuleRegister -> MSC_PKT_DM&MSC_PktDMCallBack
+ldu_xduInit -> MSC_ModuleRegister -> 
+MSC_PKT_UPGRADE&ldu_xduRecv
+MSC_PKT_UPGRADE_BATCH&ldu_xduRecv_batch
+MSC_PKT_CHKCONN&MSC_PKT_UPGRADE_AUTO invalid
+
+2. 注册主从通信内部消息处理回调
+MSC_RegProcGswCmdFunToManager -> CMD_CODE&CMD_TYPE&FUNC -> g_mscCmdRegList -> node -> element
+
+ldu_xduInit -> MSC_RegProcGswCmdFunToManager -> 
+CMD_GET_ONU_UPGRADE_STATUS_NEW&CMD_TYPE_GET -> bc_get_onu_upgrade_status_new
+CMD_GET_LINECARD_BOOTVERSION&CMD_TYPE_GET -> ldu_get_linecard_boot_version_cmd
+
+pon卡注册主从通信内部消息处理回调
+pon_system.msc_register_func == olt_main_msc_register -> MSC_RegProcGswCmdFunToManager 当前 pon_system 注册接口封装为 RegisterMscCommandObject
+
+当前 pon_system 中 xxx_register_msc_command -> cmd_code2msc_object -> module_id2service_object -> RegisterMscCommandObject -> operator()
+
+example:
+单例 CPonSystem -> kServiceModuleOltConfig -> CServiceObject -> RegisterMscCommandObject
+
+ *在 service_object 的 init 阶段中，由 xxx_msc_init 注册 内部消息处理回调
+ *CMD_CODE 与生成对象的 operator() 对应 ，即注册的回调 cb
+
+3. pon卡与主控之间建立连接、接收消息收发任务
+msc_module_task_init -> MSC_ServerSetup | MSC_MsgProcessTask | MSC_MsgSendTask
+
+3.1 建立连接：
+MSC_ServerSetup ->
+pon卡作为服务端，等待主控连接	
+3.2 收包：
+主控连接pon卡后，启动接收消息任务 
+	MSC_ServerRecv -> MSC_ReadPacket -> recv -> MSC_ProcessPacket -> g_mscModuleRegArr -> type | cb
+	
+消息分类回调：
+MSC_PKT_DM -> MSC_PktDMCallBack -> g_mscMsgQRcvId -> 入 -> MSC_MsgProcessTask
+
+pon卡内部消息处理任务
+MSC_MsgProcessTask -> g_mscMsgQRcvId -> 出 -> MSC_ProcHswCmd -> MSC_PreHandleRecvPkt -> g_mscCmdRegList -> pRegElement.regInfo.pFun -> pon_system_dispatch_msc ?
+	buffer2cmdid
+	cmd_node compare
+	遍历 cmdnode 下的 element 执行注册回调
+
+MSC_PKT_UPGRADE -> ldu_xduRecv -> 启动任务
+	LDU_TELL_UPGRADE -> ldu_xduUpgrade
+	LDU_TELL_UPLOAD -> ldu_xduUpload
+
+MSC_PKT_UPGRADE_BATCH -> ldu_xduRecv_batch
+
+3.3 发送消息：
+1. 业务模块 api：
+业务逻辑触发
+olt_main_send_packet_to_hsw(pon_system.msc_pkt_send_func) 接口封装为 pon_system ？
+
+结果上报
+ldu_TellSmu
+ldu_TellSmu_auto
+ldu_TellSmu_batch
+
+2. api 
+MSC_SendPktToHsw -> MSC_SendToHsw|MSC_SendToMscTask 
+	MSC_PKT_UPGRADE_XXX 立即发包：
+	MSC_SendToHsw -> g_mscSemServerSend -> MSC_ServerSend -> MSC_Send(write)
+	MSC_PKT_DM 消息入队列：
+	MSC_SendToMscTask -> g_mscMsgQSndId -> 入 -> MSC_MsgSendTask
+
+
+3. 发送任务
+pon卡内部发送消息处理任务 (MSC_PKT_DM)
+MSC_MsgSendTask -> g_mscMsgQSndId -> 出 -> MSC_SendToHsw

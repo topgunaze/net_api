@@ -1,0 +1,121 @@
+pon卡初始化
+pon系统业务 ，单例模式：
+CObjectBase -> CPonSystem
+
+pon_system 注册 service_object
+RegisterServiceObject -> _service_object_list -> object.Init()
+pon_system msc 消息分发
+DispatchMscMessage -> _service_object_list -> DispatchMscMessage
+DispatchInnerMscMessage -> _service_object_list -> DispatchInnerMscMessage
+DispatchEventMessage -> _service_object_list -> DispatchEventMessage
+...
+...
+
+PON卡初始化 olt_main_service_cinterface.cpp
+fh_maple_init -> fh_maple_init_stage1 -> fh_maple_init_stage2
+fh_maple_init_stage2 -> -> pon_system -> RegisterServiceObject -> Start (各个 service_object.start ?) -> olt_main_temp_task
+pon system 注册 service_object 并初始化
+COltMainServiceObject *
+CMscServiceObject	*
+CAlarmServiceObject *
+CStatsServiceObject *
+CRegAuthServiceObject *
+COnuAbilityServiceObject *
+COmciServiceObject
+COltConfigServiceObject
+COltVlanServiceObject
+...
+..
+
+
+整个芯片ready
+igmp_adaptor_chip_ready_handle
+    /* 主从通信处理接口原型 */
+    typedef int (* MSC_CMD_REG_FUNC)(unsigned char *, int, unsigned short, int);
+	typedef int (*MSC_REGISTER_HANDLE)(unsigned short cmd_id, int cmd_type, void *func, const char *fmt);
+	
+pon_system 注册调用接口
+get_system_realtime -> almGetSystemTime -> almTickToAlarmTime
+
+何时触发注册api的调用 ？
+监听触发事件的接口
+监听触发配置的接口
+
+msc_service_cli_init
+
+自发消息的处理
+注册：
+
+回调：
+
+
+pon_system 添加业务模块 -> 触发业务模块初始化
+业务模块初始化 -> 配置命令列表排序 -> 事件命令列表排序
+Init -> SortConfigCommand ? -> SortEventCommand ?
+
+业务模块命令行
+业务模块主从通信
+业务模块配置
+业务模块事件
+
+
+pon系统启动
+Start ？
+
+事件的触发：
+g_lock_chip_ready
+
+事件处理状态机：
+fhdrv_olt_common_ponapi_init
+
+
+
+缺少文件
+command_object.hpp 对应 cpp
+
+
+/* 锁助手宏 */
+#define synchronized(onu_config_object)  
+
+for(LockHelper onu_config_object_lock(onu_config_object, __FUNCTION__, __LINE__); 
+onu_config_object_lock; onu_config_object_lock.SetUnlock())
+
+LockHelper 重载bool运算符
+
+
+int Partition 
+(int data[], int length, int start, int end)
+{
+if(data = NULL || length <=0 ||
+start <0 || end >= length)
+throw new std: exception("Invalid Parameters");
+
+int index = Randominrange(start, end);
+Swap(&data [index], &data[end]);
+int small= start -1;
+for(index = start; index < end; ++index)
+{
+if(data[index]< data[end])
+{
+++small;
+if (small != index)
+Swap(&data[index], &data [small]);
+}
+}
+++ small
+Swap(&data[small], &data[end]);
+return small
+}
+
+void Quicksort
+(int data[l, int length, int start, int end)
+{
+if(start == end)
+return;
+
+int index Partition(data, length, start, end);
+if(index > start)
+Quicksort(data, length, start, index -1);
+if( index<end)
+Quicksort(data, length, index l, end);
+}

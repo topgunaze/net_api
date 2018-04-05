@@ -41,7 +41,7 @@ $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/src/%.c
 all: $(MODULE_OBJ_DIR)/ctrl
 
 $(MODULE_OBJ_DIR)/ctrl : $(APP_DEP_LIBS) $(MODULE_DEPS)
-	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
+	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -D$(VERSION_TYPE) -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
 	$(CROSS_COMPILE)objdump -S $@ > ctrl_dump.txt
 	$(STRIP) $@
 

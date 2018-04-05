@@ -332,6 +332,11 @@ main(void)
     print(b, 10);
 #endif
 
+#if defined(SERVICE_PORT_ENABLE)     
+        printf("ctrl_init test macro\r\n");
+#endif
+
+
     //BITREENODE* pstRoot;
     BITREENODE t7 = {7, NULL, NULL};
     BITREENODE t6 = {6, NULL, NULL};
@@ -364,7 +369,6 @@ main(void)
     }
     
     //key_t key = ipc_key_get("/etc", 20);
-
 #if 0
     int     msgq_id;
     msgbuf  tx_buf;

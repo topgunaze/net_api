@@ -1,0 +1,191 @@
+场景:
+
+1. 多线程程序, 数据如果在多线程间共享时, 比如数组, 基本都是需要加锁来保证安全,正确性. std库的数据结构类,如std::vector不是线程安全的, 所以读写时必须上锁.
+
+2. objc,Java可以用sychronized来对对象加锁, 使能安全访问对象, 如果不加锁, 大多数情况下程序会崩溃.
+
+3. 问题是无论是用 pthread_mutex_t 还是用CriticalSection, 都需要额外创建一个mutex和section来进行加锁,这样会增加很多全局变量
+
+(需要在不同的源代码里使用锁,只能是全局变量), 使用不方便还容易出错.
+
+4. 这里设计了一个AALock类, 功能类似synchronize 关键字, 对对象加锁. 本质就是用一个map来进行object->mutex的映射加锁.
+
+5. pthread win32 也可以换成CriticalSection, 自己改吧.
+
+aa_lock.h
+
+#ifndef __AA_LOCK_H
+#define __AA_LOCK_H
+ 
+class  AALock
+{
+public:
+    AALock(void* object);
+    ~AALock();
+ 
+    static void GLock(void* object);
+    static void GUnLock(void* object);
+ 
+private:
+    void* lock_object_;
+};
+ 
+#endif
+
+aa_lock.cpp
+
+#include aa_lock.h
+#include pthread.h
+#include
+typedef void* LockObject; 
+// 重点是这里,用map来作为mutex的映射,虽然会损失点性能,但是使用方便.
+ static std::map gLockObject; 
+ pthread_mutex_t gMapMutex = NULL; 
+ class AALockInternal 
+ { 
+ public: 
+ AALockInternal() 
+ { 
+ pthread_mutex_init(&gMapMutex,NULL); 
+ } 
+ 
+ ~AALockInternal() 
+ { 
+ pthread_mutex_destroy(&gMapMutex); 
+ } 
+ }; 
+ 
+ static AALockInternal gLockInternal; 
+ 
+ AALock::AALock(void* object) 
+ { 
+ lock_object_ = object; 
+ GLock(object); 
+ } 
+ 
+ AALock::~AALock() 
+ { 
+ GUnLock(lock_object_); 
+ } 
+ 
+ void AALock::GLock(void* object) 
+ { 
+ pthread_mutex_lock(&gMapMutex); 
+ pthread_mutex_t lock = NULL; 
+ 
+ if(gLockObject.find(object)!=gLockObject.end()) 
+ { 
+ lock = gLockObject[object]; 
+ }
+ else 
+ { 
+ pthread_mutex_t temp = NULL; 
+ pthread_mutex_init(&temp,NULL); 
+ gLockObject[object] = temp; 
+ lock = temp; 
+ } 
+ pthread_mutex_unlock(&gMapMutex);
+ 
+ pthread_mutex_lock(&lock); } void AALock::GUnLock(void* object)
+ { 
+ pthread_mutex_lock(&gMapMutex); 
+ pthread_mutex_t lock = NULL;
+ lock = gLockObject[object]; 
+ pthread_mutex_unlock(&gMapMutex); 
+ pthread_mutex_unlock(&lock); 
+ } 
+ 
+test.cpp
+
+#include pthread.h
+ 
+#include <stdlib.h>
+#include <iostream>
+#include <stdint.h>
+#include 
+#include <string>
+#include <vector>
+#include aa_lock.h
+ 
+static const int gMaxCountTime = 10000;
+static const int gTextThreadNum = 100;
+static pthread_t ts[gTextThreadNum];
+static int64_t gCount = 0;
+static std::vector<int> gCountArray;
+ 
+void* StartPthread(void* data)
+{
+    for (int i = 0; i < gMaxCountTime; ++i)
+    {
+        // 去掉锁的话,下边的assert随时crash.
+        // 可对对象加锁,类似objc或Java的同步关键字sychronized
+        AALock::GLock(&gCount);
+        ++gCount;
+        AALock::GUnLock(&gCount);
+ 
+        // 去掉锁,push_back随时崩溃,因为vector并不是线程安全的.
+        AALock::GLock(&gCountArray);
+        gCountArray.push_back(i);
+        AALock::GUnLock(&gCountArray);
+    }
+ 
+    return NULL;
+}
+ 
+void TestAALock()
+{
+    for (int i = 0; i < gTextThreadNum; ++i)
+    {
+        pthread_create(&ts[i],NULL,StartPthread,NULL);
+    }
+ 
+    for (int i = 0; i < gTextThreadNum; ++i)
+    {
+        pthread_join(ts[i],NULL);       
+    }
+ 
+    std::cout << gCount:  << gCount << std::endl;
+    assert(gCount == gMaxCountTime*gTextThreadNum);
+ 
+    std::cout << gCountArray size:  << gCountArray.size() << std::endl; 
+    assert(gCount == gCountArray.size());
+}
+ 
+int main(int argc, char const *argv[])
+{
+     
+    for (int i = 0; i < 10; ++i)
+    {
+        TestAALock();
+        gCount = 0;
+        gCountArray.clear();
+    }
+     
+ 
+    return 0;
+}
+
+输出:
+
+C:Usersapple2Desktop    est>test
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+gCount: 1000000
+gCountArray size: 1000000
+ 
