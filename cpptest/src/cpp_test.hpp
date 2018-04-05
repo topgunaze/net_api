@@ -108,4 +108,27 @@ private:
 	int size;
 };
 
+class base
+{
+public:
+	void foo(void)
+	{
+		func();
+	}
+
+	virtual void func(void)
+	{
+		cout<<"base func"<<endl;
+	}
+};
+
+class derive:public base
+{
+private:
+	void func(void)
+	{
+		cout<<"derive func"<<endl;
+	}
+};
+
 #endif

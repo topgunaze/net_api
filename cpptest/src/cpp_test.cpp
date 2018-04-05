@@ -269,7 +269,10 @@ ostream& operator<<(ostream &out, const myvector<T> &obj)
 
 int main()
 {
+	derive dr;
+	dr.foo();
 
+#if 0
 	myvector<double> vec(2);
 
 	vec[0] = 1.0;
@@ -281,7 +284,7 @@ int main()
 	vec3 = vec2;
 
 	cout<<vec<<";"<<vec2<<";"<<vec3;
-	
+#endif	
 	
 #if 0
 	mystack<double> s(100);
