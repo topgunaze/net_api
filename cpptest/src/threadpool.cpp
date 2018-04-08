@@ -10,17 +10,13 @@ namespace lz
 		//isRunning_ = true;    
 	}
 
-	//static 
-	//void* ThreadPool::threadFunc(void* arg)
-	//·Ç static 
-	void* ThreadPool::threadFunc(void)
+	void* ThreadPool::threadFunc(void* arg)
     {
     	//tid & pid
         pthread_t tid = pthread_self();
 		pid_t     pid = syscall(SYS_gettid);
 		
-        //ThreadPool* pool = static_cast<ThreadPool*>this;
-        ThreadPool* pool = this;
+        ThreadPool* pool = static_cast<ThreadPool*>(arg);
 		
         while (pool->isRunning_)
         {
@@ -48,12 +44,10 @@ namespace lz
         pthread_cond_init(&condition_, NULL);
 		
         p_threads_ = (pthread_t*)malloc(sizeof(pthread_t) * threadsNum_);
-
-		p func = (p)&ThreadPool::threadFunc;
 		
         for (int i = 0; i < threadsNum_; ++i)
         {
-            pthread_create(&p_threads_[i], NULL, func, (void*)this);
+            pthread_create(&p_threads_[i], NULL, threadFunc, (void*)this);
 			//error 
         }
 		

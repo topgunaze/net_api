@@ -58,8 +58,8 @@ namespace lz
 	        ThreadPool& operator=(const ThreadPool&);
 	        ThreadPool(const ThreadPool&);
 	        int createThreads();
-	        //static void* threadFunc(void * threadData);
-	        void* threadFunc(void);
+	        static void* threadFunc(void * threadData);
+	        //void* threadFunc(void);
 			Task* take();
 
 	    private:

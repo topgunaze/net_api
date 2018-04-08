@@ -249,6 +249,113 @@ bool mystack<T>::push(T data)
 	return true;
 }
 
+void mylist::initlist()
+{
+	p_head = NULL;
+	size   = 0;
+}
+
+void mylist::insertlist(node *p_node)
+{
+	if (p_node == NULL)
+		return ;
+
+	if (p_head)
+	{
+		p_node->p_next = p_head;
+		p_head = p_node;
+	}
+	else
+	{
+		p_head = p_node;
+		p_head->p_next = NULL;
+	}
+
+	++size;
+}
+
+void mylist::deletenode(node *p_node)
+{
+	node* p_tmp = p_head;
+	node* p_cur = p_head->p_next;
+
+	if (p_node == NULL)
+		return ;
+	
+	if (p_node == p_head)
+	{
+		p_head = p_head->p_next;
+		--size;
+		delete p_head;
+		
+		return;
+	}
+
+	while(p_cur != NULL)
+	{
+		if (p_cur == p_node)
+		{
+			p_tmp->p_next = p_cur->p_next;
+			--size;
+			delete p_cur;
+			
+			return;
+		}
+		else
+		{
+			p_tmp = p_cur;
+			p_cur = p_cur->p_next;
+		}
+	}
+
+	return;
+}
+
+node *mylist::searchlist(int value)
+{
+	node *p_tmp = p_head;
+	
+	while(p_tmp)
+	{
+		if (p_tmp->data == value)
+			return p_tmp;
+		else
+			p_tmp = p_tmp->p_next;
+	}
+
+	return NULL;
+}
+
+void mylist::sortlist()
+{
+
+}
+
+void mylist::destroylist()
+{
+	node *p_tmp;
+	
+	while(p_head)
+	{
+		p_tmp = p_head; 
+		p_head = p_head->p_next;
+		delete p_tmp;
+	}
+}
+
+void mylist::printlist()
+{
+	node *p_tmp = p_head;
+	
+	while(p_tmp)
+	{
+		cout<<p_tmp->data<<" ";
+		p_tmp = p_tmp->p_next;
+	}
+
+	cout<<endl;
+}
+
 template<typename T>
 myvector<T>::myvector(int size)
 {
@@ -339,23 +446,43 @@ pthread_cond_destory()
 
 int main()
 {
-<<<<<<< HEAD
+	mylist l;
+	node *p_node;
+	node *p_node_array[20];
+
+	for (int i = 0; i<20; ++i)
+	{
+		p_node = new node;
+		p_node->data = i;
+		l.insertlist(p_node);
+		p_node_array[i] = p_node;
+	}
+	
+	l.printlist();
+
+	l.deletenode(p_node_array[10]);
+
+	l.printlist();
+
+	l.destroylist();
+	
+	l.printlist();
+#if 0
 	derive dr;
 	dr.foo();
-
-#if 0
-=======
+	
 	cout << "begin" << endl;
 	char    szTmp[] = "hello world";
-	
-//#if 0
+#endif
+
+#if 0
 	lz::Mytask  taskobj[20];
 
 	for (int i = 0; i<20; i++)
 	{
 		taskobj[i].setArg((void*)szTmp);
 	}
-//#endif
+#endif
 
 #if 0
 	lz::Mytask	taskobj;
@@ -363,8 +490,10 @@ int main()
 	taskobj.setArg((void*)szTmp);
 #endif
 
+#if 0
 	lz::ThreadPool threadPool(10);
 	threadPool.start();
+	lz::Mytask  taskobj[20];
 
 	for(int i = 0; i<20; i++)
 	{
@@ -387,6 +516,7 @@ int main()
 	}
 
 	cout<<"end"<<endl;
+#endif
 
 #if 0
 	technician 		t("ma", 240);
@@ -417,7 +547,6 @@ int main()
 #endif	
 	
 #if 0
->>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
 	myvector<double> vec(2);
 
 	vec[0] = 1.0;
@@ -514,8 +643,6 @@ int main()
 	s.growup().growup();
 	s.display();
 #endif
-
-	
 
 	return 0;
 }

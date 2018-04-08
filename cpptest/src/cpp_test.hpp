@@ -85,6 +85,34 @@ private:
 	
 };
 
+typedef struct node
+{
+	int    	    data;
+	struct node *p_next;
+}node;
+
+class mylist
+{
+public:
+
+	mylist():p_head(NULL), size(0){};
+	~mylist(){};
+	
+	void initlist();
+	void insertlist(node *p_node);
+	void deletenode(node *p_node);
+	node *searchlist(int value);
+	void sortlist();
+	
+	void destroylist();
+    void printlist();
+	
+private:
+	node *p_head;
+	int  size;
+};
+
+
 template <typename T> class myvector;
 template <typename T> ostream& operator<<(ostream &out, const myvector<T> &obj);
 
@@ -108,7 +136,6 @@ private:
 	int size;
 };
 
-<<<<<<< HEAD
 class base
 {
 public:
@@ -132,7 +159,6 @@ private:
 	}
 };
 
-=======
 class ireader
 {
 public:
@@ -267,29 +293,4 @@ public:
 	}	
 };
 
-#if 0
-
-typedef struct node
-{
-	int 		date;
-	struct node p_next;
-}
-
-class mylist
-{
-public:
-	void initlist();
-	void insertlist(node *p_node);
-	void deletenode(node *p_node);
-	node *searchlist(int value);
-	void sortlist();
-	
-	void destroylist();
-	
-private:
-	node *p_head;
-}
-#endif
-
->>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
 #endif
