@@ -1287,3 +1287,13 @@ public:
          
     }
     RegAccount() { memset(this, 0, sizeof(this)); }
+	
+pc与虚拟机之间能ping通但是ssh连不上
+可能原因：
+linux的防火墙没有关
+ssh服务没开进入linux服务器
+输入下面命令
+service sshd restart
+service iptables stop
+如果ssh端口号没有修改的话就可以连上了
+ssh配置文件在 /etc/ssh/sshd_config

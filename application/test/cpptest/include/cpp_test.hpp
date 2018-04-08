@@ -108,6 +108,31 @@ private:
 	int size;
 };
 
+<<<<<<< HEAD
+class base
+{
+public:
+	void foo(void)
+	{
+		func();
+	}
+
+	virtual void func(void)
+	{
+		cout<<"base func"<<endl;
+	}
+};
+
+class derive:public base
+{
+private:
+	void func(void)
+	{
+		cout<<"derive func"<<endl;
+	}
+};
+
+=======
 class ireader
 {
 public:
@@ -266,5 +291,9 @@ private:
 }
 #endif
 
+<<<<<<< HEAD:application/test/cpptest/include/cpp_test.hpp
 
+=======
+>>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
+>>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.hpp
 #endif

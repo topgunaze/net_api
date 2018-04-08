@@ -354,6 +354,7 @@ class Mytask : public thread_pool::Task
 
 int main()
 {
+<<<<<<< HEAD:application/test/cpptest/src/cpp_test.cpp
 
 	//vector_test();
 	list_test();
@@ -364,6 +365,14 @@ int main()
 	taskobj.setArg((void*)szTmp);
 
 
+=======
+<<<<<<< HEAD
+	derive dr;
+	dr.foo();
+
+#if 0
+=======
+>>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.cpp
 	cout << "begin" << endl;
 	char    szTmp[] = "hello world";
 
@@ -430,6 +439,7 @@ int main()
 #endif	
 	
 #if 0
+>>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
 	myvector<double> vec(2);
 
 	vec[0] = 1.0;
