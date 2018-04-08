@@ -433,32 +433,6 @@ main(void)
 #endif
 
 #if 0
-    int shm_id;
-    
-    shm_id = ipc_shm_create(key, sizeof(shm_struct));
-    if (shm_id == -1)
-    {
-        shm_id = ipc_shm_open(key);
-        if (shm_id == -1)
-        {
-            return shm_id;
-        }
-    }
-
-    shm_struct *p_text; 
-
-    p_text = ipc_shm_map(shm_id);
-
-    printf("ctrl read : %s\r\n", p_text->buf);
-
-    sleep(10);
-
-    ipc_shm_unmap((void*)p_text);
-
-    ipc_shm_del(shm_id);
-#endif
-
-#if 0
     short ret_code;
     char  sendbuf[128];
     char  recvbuf[128];

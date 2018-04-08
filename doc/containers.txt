@@ -1,0 +1,459 @@
+介绍
+vector是表示可变大小数组的序列容器。
+就像数组一样，vector也采用的连续存储空间来存储元素。也就是意味着可以采用下标对vector的元素进行访问，和数组一样高效。
+但是又不像数组，它的大小是可以动态改变的，而且它的大小会被容器自动处理。
+本质讲，vector使用动态分配数组来存储它的元素。当新元素插入时候，这个数组需要被重新分配大小为了增加存储空间。其做法是，分配一个新的数组，然后将全部元素移到这个数组。就时间而言，这是一个相对代价高的任务，因为每当一个新的元素加入到容器的时候，vector并不会每次都重新分配大小。
+vector分配空间策略：vector会分配一些额外的空间以适应可能的增长，因为存储空间比实际需要的存储空间更大。
+不同的库采用不同的策略权衡空间的使用和重新分配。但是无论如何，重新分配都应该是对数增长的间隔大小，
+以至于在末尾插入一个元素的时候是在常数时间的复杂度完成的。
+因此，vector占用了更多的存储空间，为了获得管理存储空间的能力，并且以一种有效的方式动态增长。
+与其它动态序列容器相比（deques, lists and forward_lists）， vector在访问元素的时候更加高效，在末尾添加和删除元素相对高效。对于其它不在末尾的删除和插入操作，效率更低。
+比起lists和forward_lists统一的迭代器和引用更好。
+
+用法
+1. 头文件
+#include<vector>
+2. vector声明及初始化
+
+vector<int> vec;        //声明一个int型向量
+vector<int> vec(5);     //声明一个初始大小为5的int向量
+vector<int> vec(10, 1); //声明一个初始大小为10且值都是1的向量
+vector<int> vec(tmp);   //声明并用tmp向量初始化vec向量
+vector<int> tmp(vec.begin(), vec.begin() + 3);  //用向量vec的第0个到第2个值初始化tmp
+int arr[5] = {1, 2, 3, 4, 5};   
+vector<int> vec(arr, arr + 5);      //将arr数组的元素用于初始化vec向量
+//说明：当然不包括arr[4]元素，末尾指针都是指结束元素的下一个元素， ？？？
+//这个主要是为了和vec.end()指针统一。
+vector<int> vec(&arr[1], &arr[4]); //将arr[1]~arr[4]范围内的元素作为vec的初始值 ？？？
+3. vector基本操作
+
+(1). 容量
+
+向量大小： vec.size();
+向量最大容量： vec.max_size();
+更改向量大小： vec.resize();
+向量真实大小： vec.capacity();
+向量判空： vec.empty();
+减少向量大小到满足元素所占存储空间的大小： vec.shrink_to_fit(); //shrink_to_fit
+
+(2). 修改
+
+多个元素赋值： vec.assign(); //类似于初始化时用数组进行赋值
+末尾添加元素： vec.push_back();
+末尾删除元素： vec.pop_back();
+任意位置插入元素： vec.insert();
+任意位置删除元素： vec.erase();
+交换两个向量的元素： vec.swap();
+清空向量元素： vec.clear();
+
+(3)迭代器
+
+开始指针：vec.begin();
+末尾指针：vec.end(); //指向最后一个元素的下一个位置
+指向常量的开始指针： vec.cbegin(); //意思就是不能通过这个指针来修改所指的内容，但还是可以通过其他方式修改的，而且指针也是可以移动的。
+指向常量的末尾指针： vec.cend();
+
+(4)元素的访问
+
+下标访问： vec[1]; //并不会检查是否越界
+at方法访问： vec.at(1); //以上两者的区别就是at会检查是否越界，是则抛出out of range异常
+访问第一个元素： vec.front();
+访问最后一个元素： vec.back();
+返回一个指针： int* p = vec.data(); //可行的原因在于vector在内存中就是一个连续存储的数组，所以可以返回一个指针指向这个数组。这是是C++11的特性。
+
+(4)算法
+
+遍历元素
+vector<int>::iterator it;
+for (it = vec.begin(); it != vec.end(); it++)
+    cout << *it << endl;
+//或者
+for (size_t i = 0; i < vec.size(); i++) {
+    cout << vec.at(i) << endl;
+}
+
+元素翻转
+#include <algorithm>
+reverse(vec.begin(), vec.end());
+元素排序
+#include <algorithm>
+sort(vec.begin(), vec.end()); //采用的是从小到大的排序
+//如果想从大到小排序，可以采用上面反转函数，也可以采用下面方法:
+bool Comp(const int& a, const int& b) {
+    return a > b;
+}
+sort(vec.begin(), vec.end(), Comp);
+
+List 容器
+
+实际上,list容器就是一个双向链表,可以高效地进行插入删除元素。
+
+使用list容器之前必须加上头文件：#include<list>;
+
+list属于std命名域的内容，因此需要通过命名限定：using std::list;也可以直接使用全局的命名空间方式：using namespace std;
+
+构造函数
+
+ 　  list<int> c0; //空链表
+
+　　list<int> c1(3); //建一个含三个默认值是0的元素的链表
+
+　　list<int> c2(5,2); //建一个含五个元素的链表，值都是2
+
+　　list<int> c4(c2); //建一个c2的copy链表
+
+　　list<int> c5(c1.begin(),c1.end()); ////c5含c1一个区域的元素[_First, _Last)。
+
+成员函数
+
+c.begin()      返回指向链表第一个元素的迭代器。
+
+c.end()      返回指向链表最后一个元素之后的迭代器。
+
+    list<int> a1{1,2,3,4,5};
+    list<int>::iterator it;
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << "\t";
+    }
+    cout << endl;
+	
+c.rbegin()      返回逆向链表的第一个元素,即c链表的最后一个数据。
+
+c.rend()      返回逆向链表的最后一个元素的下一个位置,即c链表的第一个数据再往前的位置。
+
+    list<int> a1{1,2,3,4,5};
+    list<int>::reverse_iterator it;
+    for(it = a1.rbegin();it!=a1.rend();it++){
+        cout << *it << "\t";
+    }
+    cout << endl;
+	
+operator=      重载赋值运算符。
+
+     list<int> a1 {1,2,3,4,5},a2;
+     a2 = a1;
+     list<int>::iterator it;
+     for(it = a2.begin();it!=a2.end();it++){
+         cout << *it << endl;
+     }
+c.assign(n,num)      将n个num拷贝赋值给链表c。
+
+c.assign(beg,end)      将[beg,end)区间的元素拷贝赋值给链表c。
+
+     int a[5] = {1,2,3,4,5};
+     list<int> a1;
+     list<int>::iterator it;
+     a1.assign(2,10);
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     a1.assign(a,a+5);
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+c.front()      返回链表c的第一个元素。
+
+c.back()      返回链表c的最后一个元素。
+
+    list<int> a1{1,2,3,4,5};
+    if(!a1.empty()){
+        cout << "the first number is:" << a1.front() << endl;
+        cout << "the last number is:" << a1.back() << endl;
+    }
+c.empty()  判断链表是否为空。
+
+     list<int> a1{1,2,3,4,5};
+     if(!a1.empty())
+         cout << "a1 is not empty" << endl;
+     else
+         cout << " a1 is empty" << endl;
+c.size()      返回链表c中实际元素的个数。
+
+     list<int> a1{1,2,3,4,5};
+     cout << a1.size() << endl;
+c.max_size()      返回链表c可能容纳的最大元素数量。
+
+     list<int> a1{1,2,3,4,5};
+     cout << a1.max_size() << endl;
+c.clear()      清除链表c中的所有元素。
+
+
+     list<int> a1{1,2,3,4,5};
+     list<int>::iterator it;
+     cout << "clear before:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << "\t";
+     }
+     cout << endl;
+     a1.clear();
+     cout << "clear after:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << "\t";
+     }
+     cout << endl;
+
+c.insert(pos,num)      在pos位置插入元素num。
+
+c.insert(pos,n,num)      在pos位置插入n个元素num。
+
+c.insert(pos,beg,end)      在pos位置插入区间为[beg,end)的元素。
+
+     list<int> a1{1,2,3,4,5};
+     list<int>::iterator it;
+     cout << "insert before:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     
+     a1.insert(a1.begin(),0);
+     cout << "insert(pos,num) after:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     
+     a1.insert(a1.begin(),2,88);
+     cout << "insert(pos,n,num) after:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+ 
+     int arr[5] = {11,22,33,44,55};
+     a1.insert(a1.begin(),arr,arr+3);
+     cout << "insert(pos,beg,end) after:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+c.erase(pos)　　　　删除pos位置的元素。
+
+     list<int> a1{1,2,3,4,5};
+     list<int>::iterator it;
+     cout << "erase before:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     a1.erase(a1.begin());
+     cout << "erase after:";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+c.push_back(num)      在末尾增加一个元素。
+
+c.pop_back()      删除末尾的元素。
+
+c.push_front(num)      在开始位置增加一个元素。
+
+c.pop_front()      删除第一个元素。
+
+    list<int> a1{1,2,3,4,5};
+    a1.push_back(10);
+    list<int>::iterator it;
+    cout << "push_back:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    
+    a1.pop_back();
+    cout << "pop_back:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    
+    a1.push_front(20);
+    cout << "push_front:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    
+    a1.pop_front();
+    cout << "pop_front:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+resize(n)      从新定义链表的长度,超出原始长度部分用0代替,小于原始部分删除。
+
+resize(n,num)            从新定义链表的长度,超出原始长度部分用num代替。
+
+     list<int> a1{1,2,3,4,5};
+     a1.resize(8);
+     list<int>::iterator it;
+     cout << "resize(n):";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     
+     a1.resize(10, 10);
+     cout << "resize(n,num):";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+c1.swap(c2);      将c1和c2交换。
+
+swap(c1,c2);      同上。
+
+     list<int> a1{1,2,3,4,5},a2,a3;
+     a2.swap(a1);
+     list<int>::iterator it;
+     cout << "a2.swap(a1):";
+     for(it = a2.begin();it!=a2.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     
+     swap(a3,a2);
+     cout << "swap(a3,a2):";
+     for(it = a3.begin();it!=a3.end();it++){
+         cout << *it << " ";
+     }
+     return 0;
+	 
+c1.merge(c2)      合并2个有序的链表并使之有序,从新放到c1里,释放c2。
+
+c1.merge(c2,comp)      合并2个有序的链表并使之按照自定义规则排序之后从新放到c1中,释放c2。
+
+     list<int> a1{1,2,3},a2{4,5,6};
+     a1.merge(a2);
+     list<int>::iterator it;
+     cout << "a1.merge(a2):";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+     
+     a2.merge(a1,[](int n1,int n2){return n1>n2;});
+     cout << "a2.merge(a1,comp):";
+     for(it = a2.begin();it!=a2.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+c1.splice(c1.beg,c2)      将c2连接在c1的beg位置,释放c2
+
+    list<int> a1{1,2,3},a2{4,5,6};
+    a1.splice(a1.begin(), a2);
+    list<int>::iterator it;
+    cout << "a1.merge(a2):";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+c1.splice(c1.beg,c2,c2.beg)      将c2的beg位置的元素连接到c1的beg位置，并且在c2中施放掉beg位置的元素
+
+    list<int> a1{1,2,3},a2{4,5,6};
+    a1.splice(a1.begin(), a2,++a2.begin());
+    list<int>::iterator it;
+    cout << "a1.merge(a2):";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    return 0;
+
+c1.splice(c1.beg,c2,c2.beg,c2.end)      将c2的[beg,end)位置的元素连接到c1的beg位置并且释放c2的[beg,end)位置的元素
+
+    list<int> a1{1,2,3},a2{4,5,6};
+    a1.splice(a1.begin(),a2,a2.begin(),a2.end());
+    list<int>::iterator it;
+    cout << "a1.merge(a2):";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    return 0;
+
+remove(num)             删除链表中匹配num的元素。
+
+    list<int> a1{1,2,3,4,5};
+    a1.remove(3);
+    list<int>::iterator it;
+    cout << "remove():";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+remove_if(comp)       删除条件满足的元素,参数为自定义的回调函数。
+
+     list<int> a1{1,2,3,4,5};
+     a1.remove_if([](int n){return n<3;});
+     list<int>::iterator it;
+     cout << "remove_if():";
+     for(it = a1.begin();it!=a1.end();it++){
+         cout << *it << " ";
+     }
+     cout << endl;
+
+reverse()       反转链表
+
+    list<int> a1{1,2,3,4,5};
+    a1.reverse();
+    list<int>::iterator it;
+    cout << "reverse:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+unique()       删除相邻的元素
+
+    list<int> a1{1,1,3,3,5};
+    a1.unique();
+    list<int>::iterator it;
+    cout << "unique:";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    return 0;
+
+c.sort()       将链表排序，默认升序
+
+c.sort(comp)       自定义回调函数实现自定义排序
+
+    list<int> a1{1,3,2,5,4};
+    a1.sort();
+    list<int>::iterator it;
+    cout << "sort():";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+    
+    a1.sort([](int n1,int n2){return n1>n2;});
+    cout << "sort(function point):";
+    for(it = a1.begin();it!=a1.end();it++){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+重载运算符
+operator==
+
+operator!=
+
+operator<
+
+operator<=
+
+operator>
+
+operator>=

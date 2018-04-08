@@ -1,26 +1,25 @@
-#include "threadpool.hpp"
-#include <stdio.h>
+#include <iostream>
+#include <pthread.h>
+#include <sys/syscall.h>
 #include <assert.h>
 
-namespace lz
+#include "threadpool.hpp"
+
+
+namespace thread_pool
 {
     ThreadPool::ThreadPool(int threadNum)
 	{
 		threadsNum_ = threadNum;
-		//isRunning_ = true;    
 	}
-
-	//static 
-	//void* ThreadPool::threadFunc(void* arg)
-	//·Ç static 
-	void* ThreadPool::threadFunc(void)
+ 
+	void* ThreadPool::threadFunc(void* arg)
     {
     	//tid & pid
         pthread_t tid = pthread_self();
 		pid_t     pid = syscall(SYS_gettid);
 		
-        //ThreadPool* pool = static_cast<ThreadPool*>this;
-        ThreadPool* pool = this;
+        ThreadPool* pool = static_cast<ThreadPool*>(arg);
 		
         while (pool->isRunning_)
         {
@@ -29,13 +28,13 @@ namespace lz
 
             if (!task)
             {
-                printf("thread %lu %d will exit\n", tid, pid);
+                std::cout<<"thread tid "<<tid<<" pid "<<pid<<" will exit\r\n"<<std::endl;
                 break;
             }
 
-			printf("thread %lu %d will run\n", tid, pid);
-
             assert(task);
+			
+			std::cout<<"thread tid "<<tid<<" pid "<<pid<<" will exe\r\n"<<std::endl;
             task->run();
         }
 		
@@ -47,13 +46,12 @@ namespace lz
         pthread_mutex_init(&mutex_, NULL);
         pthread_cond_init(&condition_, NULL);
 		
-        p_threads_ = (pthread_t*)malloc(sizeof(pthread_t) * threadsNum_);
+        //p_threads_ = (pthread_t*)malloc(sizeof(pthread_t) * threadsNum_);
+        p_threads_ = new pthread_t[threadsNum_];
 
-		p func = (p)&ThreadPool::threadFunc;
-		
         for (int i = 0; i < threadsNum_; ++i)
         {
-            pthread_create(&p_threads_[i], NULL, func, (void*)this);
+            pthread_create(&p_threads_[i], NULL, ThreadPool::threadFunc, (void*)this);
 			//error 
         }
 		
@@ -107,7 +105,8 @@ namespace lz
             pthread_join(p_threads_[i], NULL);
         }
 
-        free(p_threads_);
+        //free(p_threads_);
+		delete []p_threads_;
         p_threads_ = NULL;
 
         pthread_mutex_destroy(&mutex_);
@@ -162,6 +161,9 @@ namespace lz
         return task;
     }
 	
-    //bool ThreadPool::getisRunning_(){return isRunning_;}
+    bool ThreadPool::getisRunning()
+	{
+		return isRunning_;
+	}
 }
 

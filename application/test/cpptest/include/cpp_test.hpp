@@ -232,7 +232,7 @@ class sales_manager : public manager, public salesman
 {
 public:
 	sales_manager(string name, float total, int level = 3, float base = 8000, float ratio = 0.5):
-		manager(name, level, base), salesman(name, total, level, ratio), employee(name, level){}
+		employee(name, level), manager(name, level, base), salesman(name, total, level, ratio){}
 		
 	~sales_manager(){}
 
@@ -265,5 +265,6 @@ private:
 	node *p_head;
 }
 #endif
+
 
 #endif

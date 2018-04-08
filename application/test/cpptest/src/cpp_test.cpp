@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "cpp_test.hpp"
 #include "threadpool.hpp"
+#include "containers.hpp"
 
 
 #if 0
@@ -337,27 +338,44 @@ pthread_cond_destory()
 
 */
 
+class Mytask : public thread_pool::Task
+{
+	public:
+		
+		virtual int run()
+		{
+			cout<<"thread tid "<<pthread_self()<<" arg "<<(char*)this->arg_<<endl;
+			sleep(1);
+			
+			return 0;
+		}
+};	
+
+
 int main()
 {
+
+	//vector_test();
+	list_test();
+
+#if 0
+	Mytask	taskobj;
+	
+	taskobj.setArg((void*)szTmp);
+
+
 	cout << "begin" << endl;
 	char    szTmp[] = "hello world";
-	
-//#if 0
-	lz::Mytask  taskobj[20];
+
+	Mytask  taskobj[20];
 
 	for (int i = 0; i<20; i++)
 	{
 		taskobj[i].setArg((void*)szTmp);
 	}
-//#endif
 
-#if 0
-	lz::Mytask	taskobj;
-	
-	taskobj.setArg((void*)szTmp);
-#endif
 
-	lz::ThreadPool threadPool(10);
+	thread_pool::ThreadPool threadPool(10);
 	threadPool.start();
 
 	for(int i = 0; i<20; i++)
@@ -368,12 +386,12 @@ int main()
 
 	while(1)
 	{
-	   printf("there are still %d tasks need to process\n", threadPool.size());
+	   cout<<"there are still %d "<<threadPool.size()<<"tasks need to process\r\n"<<endl;
 	   
 	   if(threadPool.size() == 0)
 	   {
 		   threadPool.stop();
-		   printf("now will exit from main\n");
+		   cout<<"now will exit from main\n"<<endl;
 		   exit(0);
 	   }
 	   
@@ -381,6 +399,7 @@ int main()
 	}
 
 	cout<<"end"<<endl;
+#endif
 
 #if 0
 	technician 		t("ma", 240);
