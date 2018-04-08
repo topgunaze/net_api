@@ -260,6 +260,8 @@ main(int argc, char ** argv)
         return -1;
     }
 
+	shm_test();
+
     while(1)
     {
         sleep(1);

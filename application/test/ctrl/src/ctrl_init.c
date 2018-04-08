@@ -322,7 +322,7 @@ main(void)
       printf("t is balanse deep %d\r\n", deep);  
     }
 #endif
-
+	shm_test();
 #if 0
     int a[10] = {2, 13, 4, 8, 9, 32, 3, 5, 9, 21};
     int b[10] = {0};
@@ -332,11 +332,7 @@ main(void)
     print(b, 10);
 #endif
 
-#if defined(SERVICE_PORT_ENABLE)     
-        printf("ctrl_init test macro\r\n");
-#endif
-
-
+#if 0
     //BITREENODE* pstRoot;
     BITREENODE t7 = {7, NULL, NULL};
     BITREENODE t6 = {6, NULL, NULL};
@@ -367,7 +363,8 @@ main(void)
     {
         sleep(1);
     }
-    
+#endif
+
     //key_t key = ipc_key_get("/etc", 20);
 #if 0
     int     msgq_id;
@@ -539,5 +536,9 @@ main(void)
     /* Not reached. */
     exit(1);
 #endif
+
+	return 0; 
 }
+
+
 

@@ -230,6 +230,7 @@ int ipc_shm_open(key_t key);
 void* ipc_shm_map(int shmid);
 int ipc_shm_unmap(void *p_addr);
 int ipc_shm_del(int shmid);
+int shm_test(void);
 
 typedef enum
 {

@@ -7,8 +7,6 @@ Copyright (C), 2014-2024, C-Data Tech. Co., Ltd.
   功能描述   : 此文件定义IPC模块主程序
 ******************************************************************************/
 
-
-
 #ifndef IPC_PUBLIC_H
 #define IPC_PUBLIC_H
 

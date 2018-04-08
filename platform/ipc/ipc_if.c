@@ -1220,56 +1220,11 @@ int ipc_shm_del(int shmid)
     return ret;
 }
 
-int main(int argc, char *argv[])
-{
-	int     ret = 0;
-	int 	shmid;
-
-    ftok();
-	ipc_shm_create();
-	//相当于打开文件，文件不存
-	shmid = shmget(0x2234, sizeof(Teacher), IPC_CREAT | 0666); 
-	if (shmid == -1)
-	{
-		perror("shmget err");
-		return errno;
-	}
-	printf("shmid:%d \n", shmid);
-	Teacher *p = NULL;
-
-	p = shmat(shmid, NULL, 0);
-	if (p == (void *)-1 )
-	{
-		perror("shmget err");
-		return errno;
-	}
-	
-	strcpy(p->name, "aaaa");
-	p->age = 33;
-	
-	shmdt(p);
-		
-	printf("键入1 删除共享内存，其他不删除\n");
-	
-	int num;
-	scanf("%d", &num);
-	if (num == 1)
-	{
-		ret = shmctl(shmid, IPC_RMID, NULL);
-		if (ret < 0)
-		{
-			perror("rm errr\n");
-		}
-	}                 
-
-	return 0;	
-}
-
 int shm_test(void)
 {
-    key_t key;
-    int   shm_id, ret;
-    shm_struct *p_text; 
+    key_t 		key;
+    int   		shm_id, ret;
+    shm_struct  *p_text; 
 
     key = ipc_key_get("/etc", 20);
     if (key == -1)
@@ -1289,9 +1244,13 @@ int shm_test(void)
     if (!p_text)
         return -1;
 
-    printf("ctrl read : %s\r\n", p_text->buf);
+    printf("read shm id %d, %s\r\n", shm_id, p_text->buf);
 
-    sleep(10);
+	strcpy(p_text->buf, "this is a shm wirte test");
+
+	printf("write shm id %d, %s\r\n", shm_id, p_text->buf);
+
+	sleep(10);
 
     ret = ipc_shm_unmap((void*)p_text);
     if (ret)
