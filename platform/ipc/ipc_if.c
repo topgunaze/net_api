@@ -1113,12 +1113,49 @@ int ipc_sem_v(int semid)
 #endif
 
 #if DEFUNC("共享内存")
+
+#if 0
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+struct shmid_ds {
+	struct ipc_perm shm_perm;    /* Ownership and permissions */
+	size_t	     shm_segsz;   /* Size of segment (bytes) */
+	time_t	     shm_atime;   /* Last attach time */
+	time_t	     shm_dtime;   /* Last detach time */
+	time_t	     shm_ctime;   /* Last change time */
+	pid_t		 shm_cpid;    /* PID of creator */
+	pid_t		 shm_lpid;    /* PID of last shmat(2)/shmdt(2) */
+	shmatt_t	 shm_nattch;  /* No. of current attaches */
+	...
+};
+
+int shmget(key_t key, size_t size, int shmflg);
+void *shmat(int shmid, const void *shmaddr, int shmflg);
+int shmdt(const void *shmaddr);
+int shmctl(int shmid, int cmd, struct shmid_ds *buf);
+
+删除共享内存：
+ipcrm shm shmid
+
+解除引用 unmap (shmdt) -> 删除 shmctl
+进程退出：
+解除引用 unmap
+使用了引用计数，不像只有打开关闭状态的api如close，如果引用计数不为1的共享内存被删除，
+将会使引用计数减一并key变为0，当所有使用共享内存的进程都退出时，共享内存才能删掉。
+如果共享内存被别的进程占用，删除共享内存，则不会立马删除，出现一个现象，
+key值变为0即为私有，若其他进程再想从原来key获取对应的共享内存shmid会报错。
+只有，连接共享内存的所有进程都死掉，linux才会把共享内存删除。
+
+#endif
+
 /*
 key        shmid      owner     perms      bytes      nattch     status      
 0x00002234 131073     wbm01     666        68         0    
 */
 int ipc_shm_create(key_t key, size_t size)
 {  
+    //用法和创建文件时使用的mode模式标志是一样
     int shmid = shmget(key, size, IPC_CREAT | IPC_EXCL | 0666); 
     if (shmid == -1)
     {
@@ -1133,13 +1170,19 @@ int ipc_shm_open(key_t key)
 {
     int shmid = shmget(key, 0, 0);
     if (shmid == -1)
-        ERR_EXIT("shmget");
-        
+        perror("shmget");
+       
     return shmid;
 }
 
 void* ipc_shm_map(int shmid)
 {
+/*
+shmaddr为NULL，核心自动选择一个地址
+shmaddr不为NULL且shmflg无SHM_RND标记，则以shmaddr为连接地址。
+shmaddr不为NULL且shmflg设置了SHM_RND标记，则连接的地址会自动向下调整为SHMLBA的整数倍。公式：shmaddr - (shmaddr % SHMLBA)
+shmflg=SHM_RDONLY，表示连接操作用来只读共享内存
+*/
     void *p = shmat(shmid, NULL, 0);//SHM_RND和SHM_RDONLY
     if (p == (void *)-1)
     {
@@ -1152,6 +1195,7 @@ void* ipc_shm_map(int shmid)
 
 int ipc_shm_unmap(void *p_addr)
 {
+    //将共享内存段与当前进程脱离不等于删除共享内存段
     int ret = shmdt(p_addr);
     
     if (ret == -1)
@@ -1165,6 +1209,7 @@ int ipc_shm_unmap(void *p_addr)
 
 int ipc_shm_del(int shmid)
 {
+    //buf:指向一个保存着共享内存的模式状态和访问权限的数据结构
     int ret = shmctl(shmid, IPC_RMID, NULL);
     if (ret < 0)
     {
@@ -1174,6 +1219,121 @@ int ipc_shm_del(int shmid)
 
     return ret;
 }
+
+int main(int argc, char *argv[])
+{
+	int     ret = 0;
+	int 	shmid;
+
+    ftok();
+	ipc_shm_create();
+	//相当于打开文件，文件不存
+	shmid = shmget(0x2234, sizeof(Teacher), IPC_CREAT | 0666); 
+	if (shmid == -1)
+	{
+		perror("shmget err");
+		return errno;
+	}
+	printf("shmid:%d \n", shmid);
+	Teacher *p = NULL;
+
+	p = shmat(shmid, NULL, 0);
+	if (p == (void *)-1 )
+	{
+		perror("shmget err");
+		return errno;
+	}
+	
+	strcpy(p->name, "aaaa");
+	p->age = 33;
+	
+	shmdt(p);
+		
+	printf("键入1 删除共享内存，其他不删除\n");
+	
+	int num;
+	scanf("%d", &num);
+	if (num == 1)
+	{
+		ret = shmctl(shmid, IPC_RMID, NULL);
+		if (ret < 0)
+		{
+			perror("rm errr\n");
+		}
+	}                 
+
+	return 0;	
+}
+
+int shm_test(void)
+{
+    key_t key;
+    int   shm_id, ret;
+    shm_struct *p_text; 
+
+    key = ipc_key_get("/etc", 20);
+    if (key == -1)
+        return -1;
+        
+    shm_id = ipc_shm_create(key, sizeof(shm_struct));
+    if (shm_id == -1)
+    {
+        shm_id = ipc_shm_open(key);
+        if (shm_id == -1)
+        {
+            return -1;
+        }
+    }
+
+    p_text = ipc_shm_map(shm_id);
+    if (!p_text)
+        return -1;
+
+    printf("ctrl read : %s\r\n", p_text->buf);
+
+    sleep(10);
+
+    ret = ipc_shm_unmap((void*)p_text);
+    if (ret)
+        return -1;
+    
+    ret = ipc_shm_del(shm_id);
+    if (ret)
+        return -1;
+        
+    return 0;
+}
+
+int sem_test(void)
+{
+    key_t key = ipc_key_get("/etc", 20);
+
+    int semid;
+
+    semid = ipc_sem_create(key);
+    if (semid == -1)
+    {
+        semid = ipc_sem_open(key);
+        if (semid == -1)
+        {
+            return semid;
+        }
+    }
+
+    ipc_sem_setval(semid, 1);
+
+    while(1)
+    {
+        ipc_sem_p(semid);
+        printf("this is ctrl\r\n");
+        //sleep(1);
+        ipc_sem_v(semid);
+        sleep(0);
+    }
+
+    ipc_sem_del(semid); 
+}
+
 
 #endif
 

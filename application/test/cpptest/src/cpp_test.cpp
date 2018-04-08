@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "cpp_test.hpp"
 #include "threadpool.hpp"
+#include "containers.hpp"
 
 
 #if 0
@@ -444,8 +445,23 @@ pthread_cond_destory()
 
 */
 
+class Mytask : public thread_pool::Task
+{
+	public:
+		
+		virtual int run()
+		{
+			cout<<"thread tid "<<pthread_self()<<" arg "<<(char*)this->arg_<<endl;
+			sleep(1);
+			
+			return 0;
+		}
+};	
+
+
 int main()
 {
+<<<<<<< HEAD:cpptest/src/cpp_test.cpp
 	mylist l;
 	node *p_node;
 	node *p_node_array[20];
@@ -463,11 +479,29 @@ int main()
 	l.deletenode(p_node_array[10]);
 
 	l.printlist();
+=======
+<<<<<<< HEAD:application/test/cpptest/src/cpp_test.cpp
+
+	//vector_test();
+	list_test();
+
+#if 0
+	Mytask	taskobj;
+	
+	taskobj.setArg((void*)szTmp);
+
+
+=======
+<<<<<<< HEAD
+	derive dr;
+	dr.foo();
+>>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
 
 	l.destroylist();
 	
 	l.printlist();
 #if 0
+<<<<<<< HEAD:cpptest/src/cpp_test.cpp
 	derive dr;
 	dr.foo();
 	
@@ -477,21 +511,31 @@ int main()
 
 #if 0
 	lz::Mytask  taskobj[20];
+=======
+=======
+>>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.cpp
+	cout << "begin" << endl;
+	char    szTmp[] = "hello world";
+
+	Mytask  taskobj[20];
+>>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
 
 	for (int i = 0; i<20; i++)
 	{
 		taskobj[i].setArg((void*)szTmp);
 	}
+<<<<<<< HEAD:cpptest/src/cpp_test.cpp
 #endif
+=======
+>>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
 
-#if 0
-	lz::Mytask	taskobj;
-	
-	taskobj.setArg((void*)szTmp);
-#endif
 
+<<<<<<< HEAD:cpptest/src/cpp_test.cpp
 #if 0
 	lz::ThreadPool threadPool(10);
+=======
+	thread_pool::ThreadPool threadPool(10);
+>>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
 	threadPool.start();
 	lz::Mytask  taskobj[20];
 
@@ -503,12 +547,12 @@ int main()
 
 	while(1)
 	{
-	   printf("there are still %d tasks need to process\n", threadPool.size());
+	   cout<<"there are still %d "<<threadPool.size()<<"tasks need to process\r\n"<<endl;
 	   
 	   if(threadPool.size() == 0)
 	   {
 		   threadPool.stop();
-		   printf("now will exit from main\n");
+		   cout<<"now will exit from main\n"<<endl;
 		   exit(0);
 	   }
 	   

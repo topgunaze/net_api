@@ -283,7 +283,7 @@ class sales_manager : public manager, public salesman
 {
 public:
 	sales_manager(string name, float total, int level = 3, float base = 8000, float ratio = 0.5):
-		manager(name, level, base), salesman(name, total, level, ratio), employee(name, level){}
+		employee(name, level), manager(name, level, base), salesman(name, total, level, ratio){}
 		
 	~sales_manager(){}
 
@@ -293,4 +293,36 @@ public:
 	}	
 };
 
+<<<<<<< HEAD:cpptest/src/cpp_test.hpp
+=======
+#if 0
+
+typedef struct node
+{
+	int 		date;
+	struct node p_next;
+}
+
+class mylist
+{
+public:
+	void initlist();
+	void insertlist(node *p_node);
+	void deletenode(node *p_node);
+	node *searchlist(int value);
+	void sortlist();
+	
+	void destroylist();
+	
+private:
+	node *p_head;
+}
+#endif
+
+<<<<<<< HEAD:application/test/cpptest/include/cpp_test.hpp
+
+=======
+>>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
+>>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.hpp
+>>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/include/cpp_test.hpp
 #endif
