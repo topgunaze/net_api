@@ -14,7 +14,7 @@ bool Comp(const int& a, const int& b)
 	return a > b;
 }
 
-int vector_test()
+void vector_test()
 {
 	vector<int> 	ivec0;
 	vector<int>     ivec1(10);
@@ -79,8 +79,6 @@ int vector_test()
 	}
 
 	cout<<endl;
-	
-	return 0;
 }
 
 void list_test()
@@ -385,5 +383,68 @@ void set_test()
 	cout<<endl;
 
 	cout<<"multi 3 count "<<multiset0.count(3)<<endl;
+}
+
+void map_test()
+{
+	map<int, string> ismap0;
+
+	ismap0.insert(map<int, string>::value_type(1, "one"));
+	ismap0.insert(map<int, string>::value_type(2, "two"));
+	ismap0.insert(map<int, string>::value_type(3, "three"));
+	ismap0.insert(map<int, string>::value_type(3, "three"));
+	ismap0.insert(make_pair(4,"four"));
+	ismap0.insert(pair<int, string>(5,"five"));
+	ismap0[10] = "ten";
+
+	cout<<"ismap0 size "<<ismap0.size()<<endl;
+	
+	for(map<int, string>::iterator it =ismap0.begin(); it != ismap0.end(); ++it)
+	{
+		cout<<it->first<<" "<<it->second<<endl;
+	}
+
+
+	multimap<int, string> ismmap0;
+	ismmap0.insert(multimap<int, string>::value_type(11, "oneone"));
+	ismmap0.insert(multimap<int, string>::value_type(12, "onetwo"));
+	ismmap0.insert(multimap<int, string>::value_type(13, "onethree"));
+	ismmap0.insert(multimap<int, string>::value_type(13, "onethree"));
+	ismmap0.insert(make_pair(14, "onefour"));
+	ismmap0.insert(pair<int, string>(15, "onefive"));
+	//ismmap0[10] = "ten";
+	
+	cout<<"ismmap0 size "<<ismmap0.size()<<endl;
+	
+	for(multimap<int, string>::iterator it =ismmap0.begin(); it != ismmap0.end(); ++it)
+	{
+		cout<<it->first<<" "<<it->second<<endl;
+	}
+
+	multimap<int, string>::iterator iter = ismmap0.find(13);
+	if (iter != ismmap0.end())
+	{
+		cout<<"find 13"<<endl;
+		size_t count = ismmap0.count(13);
+		for (size_t i = 0; i < count; ++i)
+		{
+			//cout<<"ismmap0["<<distance(iter, ismmap0.begin())<<"] "<<iter->first<<" "<<iter->second<<endl;
+			cout<<iter->first<<" "<<iter->second<<endl;
+			++iter;
+		}
+	}
+
+	iter = ismmap0.find(13);
+	while(iter != ismmap0.end())
+	{
+		ismmap0.erase(iter);
+		iter = ismmap0.find(13);
+	}
+
+	for(multimap<int, string>::iterator it =ismmap0.begin(); it != ismmap0.end(); ++it)
+	{
+		cout<<it->first<<" "<<it->second<<endl;
+	}
+		
 }
 

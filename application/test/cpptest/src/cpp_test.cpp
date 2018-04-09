@@ -446,7 +446,8 @@ int main()
 	//vector_test();
 	//list_test();
 	//string_test();
-	set_test();
+	//set_test();
+	map_test();
 
 #if 0
 	mylist l;

@@ -6,13 +6,13 @@
 #include <list>
 #include <string>
 #include <set>
+#include <map>
 
-int vector_test();
+void vector_test();
 void list_test();
 void deque_test();
 void string_test();
 void set_test();
-void multiset_test();
-
+void map_test();
 
 #endif
