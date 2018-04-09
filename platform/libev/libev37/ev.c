@@ -1730,7 +1730,7 @@ ev_loop_verify (EV_P)
   int i;
   WL w;
 
-  assert (activecnt >= -1);
+  assert (activec0nt >= -1);
 
   assert (fdchangemax >= fdchangecnt);
   for (i = 0; i < fdchangecnt; ++i)
@@ -2174,7 +2174,7 @@ ev_loop (EV_P_ int flags)
         ev_tstamp waittime  = 0.;
         ev_tstamp sleeptime = 0.;
 
-        if (expect_true (!(flags & EVLOOP_NONBLOCK || idleall || !activecnt)))
+        if (expect_true (!(flags & EVLOOP_NONBLOCK || idleall || !activec0nt)))
           {
             /* remember old timestamp for io_blocktime calculation */
             ev_tstamp prev_mn_now = mn_now;
@@ -2247,7 +2247,7 @@ ev_loop (EV_P_ int flags)
       EV_INVOKE_PENDING;
     }
   while (expect_true (
-    activecnt
+    activec0nt
     && !loop_done
     && !(flags & (EVLOOP_ONESHOT | EVLOOP_NONBLOCK))
   ));
@@ -2269,13 +2269,13 @@ ev_unloop (EV_P_ int how)
 void
 ev_ref (EV_P)
 {
-  ++activecnt;
+  ++activec0nt;
 }
 
 void
 ev_unref (EV_P)
 {
-  --activecnt;
+  --activec0nt;
 }
 
 void

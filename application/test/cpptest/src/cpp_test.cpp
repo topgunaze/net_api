@@ -426,25 +426,6 @@ ostream& operator<<(ostream &out, const myvector<T> &obj)
 	return out;
 }
 
-/*
-使用的同步原语有 
-pthread_mutex_t mutex_l;//互斥锁
-pthread_cond_t condtion_l;//条件变量
-使用的系统调用有
-pthread_mutex_init();
-pthread_cond_init();
-pthread_create(&thread_[i],NULL,threadFunc,this)
-pthread_mutex_lock()
-pthread_mutex_unlock()
-pthread_cond_signal()
-pthread_cond_wait()
-pthread_cond_broadcast();
-pthread_join()
-pthread_mutex_destory()
-pthread_cond_destory()
-
-*/
-
 class Mytask : public thread_pool::Task
 {
 	public:
@@ -461,7 +442,13 @@ class Mytask : public thread_pool::Task
 
 int main()
 {
-<<<<<<< HEAD:cpptest/src/cpp_test.cpp
+	//deque_test();
+	//vector_test();
+	//list_test();
+	//string_test();
+	set_test();
+
+#if 0
 	mylist l;
 	node *p_node;
 	node *p_node_array[20];
@@ -479,63 +466,26 @@ int main()
 	l.deletenode(p_node_array[10]);
 
 	l.printlist();
-=======
-<<<<<<< HEAD:application/test/cpptest/src/cpp_test.cpp
-
-	//vector_test();
-	list_test();
-
-#if 0
-	Mytask	taskobj;
-	
-	taskobj.setArg((void*)szTmp);
-
-
-=======
-<<<<<<< HEAD
-	derive dr;
-	dr.foo();
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
-
-	l.destroylist();
-	
-	l.printlist();
-#if 0
-<<<<<<< HEAD:cpptest/src/cpp_test.cpp
-	derive dr;
-	dr.foo();
-	
-	cout << "begin" << endl;
-	char    szTmp[] = "hello world";
 #endif
 
 #if 0
-	lz::Mytask  taskobj[20];
-=======
-=======
->>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.cpp
+	derive dr;
+	dr.foo();
+#endif
+	
+#if 0
 	cout << "begin" << endl;
 	char    szTmp[] = "hello world";
 
 	Mytask  taskobj[20];
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
-
+	
 	for (int i = 0; i<20; i++)
 	{
 		taskobj[i].setArg((void*)szTmp);
 	}
-<<<<<<< HEAD:cpptest/src/cpp_test.cpp
-#endif
-=======
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
 
-
-<<<<<<< HEAD:cpptest/src/cpp_test.cpp
-#if 0
-	lz::ThreadPool threadPool(10);
-=======
 	thread_pool::ThreadPool threadPool(10);
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/cpp_test.cpp
+
 	threadPool.start();
 	lz::Mytask  taskobj[20];
 
@@ -563,18 +513,7 @@ int main()
 #endif
 
 #if 0
-	technician 		t("ma", 240);
-	salesman   		s("pu", 100000);
-	manager    		m("bai");
-	sales_manager 	sm("wang", 1000000);
-
-	employee *p[4] = {&t, &s, &m, &sm};
-	int i;
-	
-	for (i = 0; i<4;++i)
-		cout<<"i:"<<i<<" num:"<<p[i]->get_cardnum()<<" salary:"<<p[i]->get_salary()<<endl;
-	
-	cout<<"max num:"<<employee::get_maxnum()<<endl;
+	multi_inheritance();
 #endif
 
 #if 0
@@ -605,22 +544,7 @@ int main()
 #endif	
 	
 #if 0
-	mystack<double> s(100);
-
-	if (!s.isfull())
-		s.push(10.4);
-
-	if (!s.isfull())
-		s.push(9.4);
-
-	if (!s.isfull())
-		s.push(7.4);
-
-	if (!s.isfull())
-		s.push(1.4);
-
-	while(!s.isempty())
-		cout<<s.pop()<<" ";
+	mystack_test();
 #endif
 
 #if 0
@@ -629,23 +553,7 @@ int main()
 #endif
 
 #if 0
-	mystring s1("hehe");
-	s1.display();
-
-	mystring s2;
-
-	s2.display();
-
-	mystring s3(s1);
-	mystring s4 = s1;
-
-	s3.display();
-
-	s4.display();
-
-	mystring s5;
-	s5 = s3 + s4;
-	s5.display();
+	mystring_test();
 #endif
 
 #if 0
@@ -689,4 +597,61 @@ int main()
 #endif
 
 	return 0;
+}
+
+void multi_inheritance()
+{
+	technician 		t("ma", 240);
+	salesman   		s("pu", 100000);
+	manager    		m("bai");
+	sales_manager 	sm("wang", 1000000);
+
+	employee *p[4] = {&t, &s, &m, &sm};
+	int i;
+	
+	for (i = 0; i<4;++i)
+		cout<<"i:"<<i<<" num:"<<p[i]->get_cardnum()<<" salary:"<<p[i]->get_salary()<<endl;
+	
+	cout<<"max num:"<<employee::get_maxnum()<<endl;
+}
+
+void mystring_test()
+{
+	mystring s1("hehe");
+	s1.display();
+
+	mystring s2;
+
+	s2.display();
+
+	mystring s3(s1);
+	mystring s4 = s1;
+
+	s3.display();
+
+	s4.display();
+
+	mystring s5;
+	s5 = s3 + s4;
+	s5.display();
+}
+
+void mystack_test()
+{
+	mystack<double> s(100);
+
+	if (!s.isfull())
+		s.push(10.4);
+
+	if (!s.isfull())
+		s.push(9.4);
+
+	if (!s.isfull())
+		s.push(7.4);
+
+	if (!s.isfull())
+		s.push(1.4);
+
+	while(!s.isempty())
+		cout<<s.pop()<<" ";	
 }

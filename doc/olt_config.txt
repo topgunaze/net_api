@@ -1,0 +1,89 @@
+olt配置模块
+COltConfigServiceObject
+
+Init -> olt_config_service_cli_init -> olt_config_service_msc_init -> olt_config_service_config_init -> olt_config_service_onu_callback_init
+
+olt_config_service_msc_init -> olt_config_register_msc_command -> CMD_TYPE_SET -> CMD_ID
+CMD_SET_SYS_TIME
+CMD_NOTIFY_OLT_HOTPLUG_FINISH
+CMD_SET_PON_ENABLE
+CMD_SET_PON_INSULATE
+CMD_SET_PON_FEC_CONFIG
+CMD_SET_OLT_MAC_TABLE_AGING_TIME
+CMD_SET_KEY_EXCHANGE_INTERVAL
+CMD_SHOW_PON_MAC_TABLE
+CMD_GET_CARD_INFO
+CMD_SET_ROGUE_ONU_DETECT
+CMD_SET_GPON_OLT_GENERAL_COMMAND
+
+olt_config_service_config_init -> olt_config_register_config_command -> CMD_SET_SYS_TIME | 0
+
+olt_config_service_onu_callback_init -> regauth_register_onu_auth_callback | regauth_register_onu_unauth_callback -> kServiceModuleOltConfig
+olt_config_onu_auth_callback | olt_config_onu_unauth_callback
+
+1. 配置通用命令
+OLT_CONFIG_GENERAL_COMMAND
+
+主从通信命令处理:
+CMD_SET_SYS_TIME -> CMD_TYPE_SET -> CMscCommandObject_0x602B
+-> setDateTime -> cfg_mod_set_command_flag
+
+CMD_NOTIFY_OLT_HOTPLUG_FINISH -> CMD_TYPE_SET -> CMscCommandObject_0x1018
+pon卡配置读取
+-> cfg_mod_get_olt_port_enable -> CARDPORT_CONFIGOBJECT -> CCardPortConfigObject -> CARDPORT_CONFIGDATA -> CCardPortConfigData
+配置
+-> fhdrv_olt_port_set_port_enable
+
+CMD_SET_PON_ENABLE -> CMD_TYPE_SET -> CMscCommandObject_0x1033
+配置
+-> fhdrv_olt_port_set_port_enable
+配置同步
+-> cfg_mod_set_olt_port_enable -> CARDPORT_CONFIGOBJECT -> CCardPortConfigObject -> CARDPORT_CONFIGDATA -> CCardPortConfigData
+
+CMD_SET_PON_INSULATE -> CMD_TYPE_SET -> CMscCommandObject_0x104a
+-> fhdrv_olt_port_set_isolation
+
+CMD_SET_PON_FEC_CONFIG -> CMD_TYPE_SET -> CMscCommandObject_0x0145
+pon卡配置同步
+cfg_mod_set_olt_port_fec_config -> CARDPORT_CONFIGOBJECT -> CCardPortConfigObject -> CARDPORT_CONFIGDATA -> CCardPortConfigData
+pon卡配置
+-> fhdrv_olt_port_set_fec_enable
+
+CMD_SET_OLT_MAC_TABLE_AGING_TIME -> CMD_TYPE_SET -> CMscCommandObject_0x100f
+配置pon卡和交换
+-> fhdrv_olt_fdb_set_agingtime
+pon卡数据同步
+-> cfg_mod_set_onu_mac_aging_time -> ONU_CONFIGOBJECT -> COnuConfigObject -> ONU_CONFIGDATA -> COnuConfigData -> cfg_mod_set_command_flag
+
+CMD_SET_KEY_EXCHANGE_INTERVAL -> CMD_TYPE_SET -> CMscCommandObject_0x0158
+-> fhdrv_olt_crypto_set_ponport_key_exchange_interval
+
+CMD_SHOW_PON_MAC_TABLE -> CMD_TYPE_GET -> CMscCommandObject_0x2034
+-> fhdrv_olt_fdb_get_ponport_entries
+
+CMD_GET_CARD_INFO -> CMD_TYPE_POLLING -> CMscCommandObject_0x101e
+-> olt_config_fill_version
+
+CMD_SET_ROGUE_ONU_DETECT -> CMD_TYPE_SET -> CMscCommandObject_0x1118
+-> 配置状态同步 
+CARDPORT_CONFIGOBJECT -> CCardPortConfigObject -> CARDPORT_CONFIGDATA -> CCardPortConfigData
+-> 配置 
+fhdrv_olt_stats_set_rogueonu_detect_enable
+
+CMD_SET_GPON_OLT_GENERAL_COMMAND -> CMD_TYPE_SET -> CMscCommandObject_0x6026 *	
+
+
+1. 各消息对应结构 ？？？
+
+配置命令
+CMD_SET_SYS_TIME -> CConfigCommandObject_0x602B
+配置onu对象
+cfg_mod_get_command_flag -> omci_set_onu_system_time -> cfg_mod_set_command_flag
+omci_set_onu_system_time -> OmciServiceFlow::ServiceProc
+
+onu regauth
+kServiceModuleOltConfig -> olt_config_onu_auth_callback | olt_config_onu_unauth_callback
+接口为空 ？ 
+
+pon卡配置信息
+CARD_CONFIGOBJECT -> CCardConfigObject -> CARD_CONFIGDATA_GPON -> CGPONCardConfigData

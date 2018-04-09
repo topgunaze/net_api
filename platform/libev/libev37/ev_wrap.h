@@ -7,7 +7,7 @@
 #define io_blocktime ((loop)->io_blocktime)
 #define timeout_blocktime ((loop)->timeout_blocktime)
 #define backend ((loop)->backend)
-#define activecnt ((loop)->activecnt)
+#define activec0nt ((loop)->activec0nt)
 #define loop_done ((loop)->loop_done)
 #define backend_fd ((loop)->backend_fd)
 #define backend_fudge ((loop)->backend_fudge)
@@ -91,7 +91,7 @@
 #undef io_blocktime
 #undef timeout_blocktime
 #undef backend
-#undef activecnt
+#undef activec0nt
 #undef loop_done
 #undef backend_fd
 #undef backend_fudge

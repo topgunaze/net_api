@@ -30,12 +30,6 @@ mempoollib.h 对应 c内存池提供库，没有接口实现
 BUFFER_POOL
 igmp_adapter_service_pub.hpp 对应 app 组播协议
 
-#if defined(SERVICE_PORT_ENABLE)
--> #if   !defined(SERVICE_PORT_ENABLE)
-
-#if !defined(SERVICE_PORT_ENABLE)
--> #if   defined(SERVICE_PORT_ENABLE)
-
 全局
 pon芯片初始化完毕
 g_olt_chip_ready
@@ -251,38 +245,10 @@ CActiveOnuTaskManager::Instance()->Start()
 onu老化任务管理
 CUnActiveOnuTaskManager::Instance()->Start()
 
-onu能力集
-COnuAbilityServiceObject
 
-Init -> onu_ability_service_cli_init
-Start -> null
 
 omci模块
 COmciServiceObject
-
-olt配置模块
-COltConfigServiceObject
-
-Init -> olt_config_service_cli_init -> olt_config_service_msc_init -> olt_config_service_config_init -> olt_config_service_onu_callback_init
-
-olt_config_service_msc_init -> olt_config_register_msc_command -> CMD_TYPE_SET -> CMD_ID
-CMD_SET_SYS_TIME
-CMD_NOTIFY_OLT_HOTPLUG_FINISH
-CMD_SET_PON_ENABLE
-CMD_SET_PON_INSULATE
-CMD_SET_PON_FEC_CONFIG
-CMD_SET_OLT_MAC_TABLE_AGING_TIME
-CMD_SET_KEY_EXCHANGE_INTERVAL
-CMD_SHOW_PON_MAC_TABLE
-CMD_GET_CARD_INFO
-CMD_SET_ROGUE_ONU_DETECT
-CMD_SET_GPON_OLT_GENERAL_COMMAND
-
-olt_config_service_config_init -> olt_config_register_config_command -> CMD_SET_SYS_TIME | 0
-
-olt_config_service_onu_callback_init -> regauth_register_onu_auth_callback | regauth_register_onu_unauth_callback -> kServiceModuleOltConfig
-olt_config_onu_auth_callback | olt_config_onu_unauth_callback
-
 
 COltVlanServiceObject
 Init -> olt_vlan_service_cli_init -> olt_vlan_service_msc_init
@@ -485,20 +451,7 @@ g_olt_chip_ready
 
 
 备注：
-1. const 函数 const func const *
-2. 虚析构函数 *
-3. 虚函数是否具有继承性 *
-4. template <class Type> 用法 模板类
-5. explicit 如何使用 *
-6. 重载 operator 使用
-7. static 函数 *
-8. cast 类型转换, dynamic_cast rtti *
-9 TDD 开发模式
 10. override 函数后缀
-
-业务虚端口 上行匹配 uservlan _ pri
-gemprot
-最多8条
 
 主控板:
 FUNCPTR 该结构定义？

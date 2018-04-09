@@ -54,10 +54,6 @@ namespace thread_pool
 	        ThreadPool(const ThreadPool&);
 	        int createThreads();
 	        static void* threadFunc(void * threadData);
-<<<<<<< HEAD:cpptest/src/threadpool.hpp
-	        //void* threadFunc(void);
-=======
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/include/threadpool.hpp
 			Task* take();
 
 	    private:

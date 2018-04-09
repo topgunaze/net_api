@@ -47,7 +47,7 @@ VARx(ev_tstamp, io_blocktime)
 VARx(ev_tstamp, timeout_blocktime)
 
 VARx(int, backend)
-VARx(int, activecnt) /* total number of active events ("refcount") */
+VARx(int, activec0nt) /* total number of active events ("refcount") */
 VARx(unsigned char, loop_done)  /* signal by ev_unloop */
 
 VARx(int, backend_fd)

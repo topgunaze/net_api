@@ -5,6 +5,24 @@
 
 #include "threadpool.hpp"
 
+/*
+使用的同步原语有 
+pthread_mutex_t mutex_l;//互斥锁
+pthread_cond_t condtion_l;//条件变量
+使用的系统调用有
+pthread_mutex_init();
+pthread_cond_init();
+pthread_create(&thread_[i],NULL,threadFunc,this)
+pthread_mutex_lock()
+pthread_mutex_unlock()
+pthread_cond_signal()
+pthread_cond_wait()
+pthread_cond_broadcast();
+pthread_join()
+pthread_mutex_destory()
+pthread_cond_destory()
+
+*/
 
 namespace thread_pool
 {
@@ -12,11 +30,7 @@ namespace thread_pool
 	{
 		threadsNum_ = threadNum;
 	}
-<<<<<<< HEAD:cpptest/src/threadpool.cpp
-
-=======
  
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/threadpool.cpp
 	void* ThreadPool::threadFunc(void* arg)
     {
     	//tid & pid
@@ -50,20 +64,12 @@ namespace thread_pool
         pthread_mutex_init(&mutex_, NULL);
         pthread_cond_init(&condition_, NULL);
 		
-<<<<<<< HEAD:cpptest/src/threadpool.cpp
-        p_threads_ = (pthread_t*)malloc(sizeof(pthread_t) * threadsNum_);
-		
-        for (int i = 0; i < threadsNum_; ++i)
-        {
-            pthread_create(&p_threads_[i], NULL, threadFunc, (void*)this);
-=======
         //p_threads_ = (pthread_t*)malloc(sizeof(pthread_t) * threadsNum_);
         p_threads_ = new pthread_t[threadsNum_];
 
         for (int i = 0; i < threadsNum_; ++i)
         {
             pthread_create(&p_threads_[i], NULL, ThreadPool::threadFunc, (void*)this);
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/src/threadpool.cpp
 			//error 
         }
 		

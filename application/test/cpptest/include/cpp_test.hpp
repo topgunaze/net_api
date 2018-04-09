@@ -293,8 +293,6 @@ public:
 	}	
 };
 
-<<<<<<< HEAD:cpptest/src/cpp_test.hpp
-=======
 #if 0
 
 typedef struct node
@@ -319,10 +317,10 @@ private:
 }
 #endif
 
-<<<<<<< HEAD:application/test/cpptest/include/cpp_test.hpp
 
-=======
->>>>>>> c375de27aeddeaaa77db7cb2f5aa7afb7a8f5f70
->>>>>>> e71c7ac234e6fd334b3d8e6637b28fe621d7cd6d:cpptest/src/cpp_test.hpp
->>>>>>> 3f647d1f0ae1437f097f4794d723f17ec5f74db6:application/test/cpptest/include/cpp_test.hpp
+void mystack_test();
+void mystring_test();
+void multi_inheritance();
+
+
 #endif

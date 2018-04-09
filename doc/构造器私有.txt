@@ -1,0 +1,322 @@
+　　很多情况下要求当前的程序中只有一个object。例如一个程序只有一个和数据库的连接，只有一个鼠标的object。通常我们都将构造函数的声明置于public区段，假如我们将
+其放入private区段中会发生什么样的后果？这意味着什么？
+　　当我们在程序中声明一个对象时，编译器为调用构造函数(如果有的话)，而这个调用将通常是外部的，也就是说它不属于class对象本身的调用，假如构造函数是私有的，
+由于在class外部不允许访问私有成员，所以这将导致编译出错。
+　　然而，对于class本身，可以利用它的static公有成员，因为它们独立于class对象之外，不必产生对象也可以使用它们。
+　　此时因为构造函数被class私有化，所以我们要创建出对象，就必须能够访问到class的私有域；这一点只有class的成员可以做得到；但在我们建构 出其对象之前，怎么能利用它的成员呢？static公有成员，它是独立于class对象而存在的，“我们”可以访问得到。假如在某个static函数中创 建了该class的对象，并以引用或者指针的形式将其返回（这里不以对象返回，主要是构造函数是私有的，外部不能创建临时对象），就获得了这个对象的使用权。
+　　下面是例子：
+
+复制代码
+class OnlyHeapClass  
+{  
+public:  
+   static OnlyHeapClass* GetInstance()  
+       {  
+              // 创建一个OnlyHeapClass对象并返回其指针  
+              return (new OnlyHeapClass);  
+       }  
+   void Destroy();  
+private:  
+       OnlyHeapClass() { }  
+       ~OnlyHeapClass() {}  
+};  
+int main()  
+{  
+       OnlyHeapClass *p = OnlyHeapClass::GetInstance();  
+       ... // 使用*p  
+       delete p;  
+       return 0;  
+}
+复制代码
+ 
+
+　　这个例子使用了私有构造函数，GetInstance()作为OnlyHeapClass的静态成员函数来在内存中创建对象：由于要跨函数传递并且不能使用值传递方式，所以我们选择在堆上
+创建对象，这样即使getInstance()退出，对象也不会随之释放，可以手动释放。
+　　构造函数私有化的类的设计保证了其他类不能从这个类派生或者创建类的实例，还有这样的用途：例如，实现这样一个class：它在内存中至多存在一个，或者指定数量个
+的对象（可以在class的私有域中添加一个static类型的计数器，它的初值置为0，然后在GetInstance()中作些限制：每次调用它时先检查计数器的值是否已经达到对象个数的
+上限值，如果是则产生错误，否则才new出新的对象，同时将计数器的值增1.最后，为了避免值复制时产生新的对象副本，除了将构造函数置为私有外，复制构造函数也要特别
+声明并置为私有。
+　　如果将构造函数设计成Protected，也可以实现同样的目的，但是可以被继承。
+
+　　另外如何保证只能在堆上new一个新的类对象呢？只需把析构函数定义为私有成员。
+　　原因是C++是一个静态绑定的语言。在编译过程中，所有的非虚函数调用都必须分析完成。即使是虚函数，也需检查可访问性。因些，当在栈上生成对象时，对象 会自动析构，也就说析构函数必须可以访问。而堆上生成对象，由于析构时机由程序员控制，所以不一定需要析构函数。保证了不能在栈上生成对象后，需要证明能 在堆上生成它。这里OnlyHeapClass与一般对象唯一的区别在于它的析构函数为私有。delete操作会调用析构函数。所以不能编译。
+　　那么如何释放它呢？答案也很简单，提供一个成员函数，完成delete操作。在成员函数中，析构函数是可以访问的。当然detele操作也是可以编译通过。 
+
+void OnlyHeapClass::Destroy() { 
+        delete this; 
+}
+ 
+
+　　构造函数私有化的类的设计可以保证只能用new命令在堆中来生成对象，只能动态的去创建对象，这样可以自由的控制对象的生命周期。但是，这样的类需要提供创建和撤销
+
+的公共接口。
+　　另外重载delete，new为私有可以达到要求对象创建于栈上的目的，用placement new也可以创建在栈上。
+
+ 
+
+还是不懂啊：   
+  1.为什么要自己调用呢？对象结束生存期时不就自动调用析构函数了吗？什么情况下需要自己调用析构函数呢？   
+  ================================================================   
+  比如这样一种情况，你希望在析构之前必须做一些事情，但是用你类的人并不知道，那么你就可以重新写一个函数，里面把要做的事情全部做完了再调用析构函数。这样人家只能调用你这个函数析构对象，从而保证了析构前一定会做你要求的动作。   
+    
+  2.什么情况下才用得着只生成堆对象呢？   
+  ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝   
+  堆对象就是new出来的，相对于栈对象而言。什么情况下要new，什么情况下在栈里面提前分配，无非就是何时该用动态，何时该用静态生成的问题。这个要根据具体情况   
+  具体分析。比如你在一个函数里面事先知道某个对象最多只可能10个，那么你就可以定义这个对象的一个数组。10个元素，每个元素都是一个栈对象。如果你无 法确定数字，那么你就可以定义一个这个对象的指针，需要创建的时候就new出来，并且用list或者vector管理起来。   
+
+---------------------------------------------------------------------------------------------------------------------------------
+类中“私有”权限的含义就是：私有成员只能在类域内被访问，不能在类域外进行访问。   
+    
+  把析构函数定义为私有的，就阻止了用户在类域外对析构函数的使用。这表现在如下两个方面：   
+    
+  1.禁止用户对此类型的变量进行定义，即禁止在栈内存空间内创建此类型的对象。要创建对象，只能用new在堆上进行。   
+    
+  2.禁止用户在程序中使用delete删除此类型对象。对象的删除只能在类内实现，也就是说只有类的实现者才有可能实现对对象的delete，用户不能随便删除对象。如果用户想删除对象的话，只能按照类的实现者提供的方法进行。   
+    
+  可见，这样做之后大大限制了用户对此类的使用。一般来说不要这样做；通常这样做是用来达到特殊的目的，比如在singleton的实现上。
+  
+  
+问题：单例模式中，静态函数中实例化了类对象，私有构造函数得到执行。构造函数是非静态成员函数，难道静态函数中能调用非静态函数吗？
+class Singleton
+{
+public:
+    static Singleton * getInstance();
+private:
+    Singleton();
+    ~Singleton();
+    static Singleton * m_sglton ;//（此处也可直接写为静态变量）
+};
+Singleton* Singleton:: m_sglton  = NULL;
+Singleton *Singleton::getInstance()
+{
+    if(m_sglton  == NULL)
+    {
+        m_sglton = new Singleton; //注意这一句
+    }
+    return sglton;（返回对象）
+}
+
+下面来分析下原因。
+在开始正文之前，先复习一下C++静态成员
+因为静态成员是与类相关联的，非静态成员是与对象相关联的。静态成员被所有对象共同拥有，且只有一份。静态数据成员不包含在任何一个对象内。静态成员函数不会隐式传入this,所以静态成员函数不能访问类的非静态成员。在单例模式中，我们发现利用静态成员函数调用中实例化了一个所属类的对象，且该类的构造函数为私有函数。
+
+注意有个错误的说法：静态成员函数只可以访问静态成员变量/静态成员函数不能访问非静态成员。静态函数没有默认的this对象指针。但是可以通过其他方式传入对象的地址，便可以在静态成员函数中访问到非静态成员函数。这种说法不够严密。仅仅是不能在静态成员函数中，使用this隐式或者显式调用非静态成员。因为静态函数不与对象绑定在一起，因此也不能声明成const的。
+
+首先需要明确两点：
+1、因为构造函数是私有的，要实例化该对象，就要访问类的私有域。而访问私有域必须在类的内部进行（即在class成员中）。但是在没有进行实例化之前，怎么能使用他的成员呢？----公有的静态成员函数可以做到。
+2、经过测试，通过静态成员函数，可以调用私有的构造函数。
+
+以上两点满足了单例模式才产生了！
+
+已经不能从外部调用构造函数了，但是对象必须被构造，应该如何解决，麻烦大家帮忙说明，关于构造，析构函数声明为私有和保护时的用法？？？
+ 
+提出这个问题，说明你已经对c++有所思考了。
+
+从语法上来讲，一个函数被声明为protected或者private，那么这个函数就不能从“外部”直接被调用了。
+对于protected的函数，子类的“内部”的其他函数可以调用之。
+而对于private的函数，只能被本类“内部”的其他函数说调用。
+
+语法上就是这么规定的，你肯定也知道的咯。
+那么为什么有时候将构造函数或者析构函数声明为protected的或者private的？
+
+通常使用的场景如下：
+1。如果你不想让外面的用户直接构造一个类（假设这个类的名字为A）的对象，而希望用户只能构造这个类A的子类，那你就可以将类A的构造函数/析构函数声明为protected，而将类A的子类的构造函数/析构函数声明为public。例如：
+[html] view plain copy
+class A  
+{ protected: A(){}  
+  public: ....  
+};  
+calss B : public A  
+{ public: B(){}  
+  ....  
+};  
+  
+A a; // error  
+B b; // ok  
+2. 如果将构造函数/析构函数声明为private，那只能这个类的“内部”的函数才能构造这个类的对象了。这里所说的“内部”不知道你是否能明白，下面举个例子吧。
+[html] view plain copy
+class A  
+{  
+private:  
+    A(){  }  
+    ~A(){ }  
+  
+public:  
+    void Instance()//类A的内部的一个函数  
+    {  
+        A a;  
+    }  
+};  
+上面的代码是能通过编译的。上面代码里的Instance函数就是类A的内部的一个函数。Instance函数体里就构建了一个A的对象。但是，这个Instance函数还是不能够被外面调用的。为什么呢？如果要调用Instance函数，必须有一个对象被构造出来。但是构造函数被声明为private的了。外部不能直接构造一个对象出来。A aObj; // 编译通不过aObj.Instance();但是，如果Instance是一个static静态函数的话，就可以不需要通过一个对象，而可以直接被调用。如下：
+[html] view plain copy
+class A  
+{  
+private:  
+    A():data(10){ cout << "A" << endl; }  
+    ~A(){ cout << "~A" << endl; }  
+  
+    public:  
+    static A& Instance()  
+    {  
+        static A a;  
+        return a;  
+    }  
+  
+    void Print()  
+    {  
+        cout << data << endl;  
+    }  
+  
+private:  
+    int data;  
+};  
+  
+A& ra = A::Instance();  
+ra.Print();  
+上面的代码其实是设计模式singleton模式的一个简单的C++代码实现。还有一个情况是：通常将拷贝构造函数和operator=(赋值操作符重载)声明成private，但是没有实现体。这个的目的是禁止一个类的外部用户对这个类的对象进行复制动作。细节请看《effective C++》里面的一个条款。具体哪个条款不记得了。
+
+
+私有构造方法的用途介绍
+
+* 使用私有构造方法实现单例  
+
+静态成员
+
+[html] view plain copy
+public class privateMethod {  
+    //使用私有构造方法实现单例    
+    //静态成员  
+    public static final privateMethod instance = new privateMethod();  
+  
+    private privateMethod() {  
+    }  
+  
+    public void say() {  
+        System.out.println("hello");  
+    }  
+  
+    public static void main(String[] args) {  
+  
+        privateMethod method = privateMethod.instance;  
+        method.say();  
+    }  
+}  
+静态工厂
+
+[html] view plain copy
+public class privateMethod2 {  
+    //使用私有构造方法实现单例  
+    public static final privateMethod2 instance = new privateMethod2();  
+  
+    private privateMethod2() {  
+    }  
+  
+    public void say() {  
+        System.out.println("hello");  
+    }  
+    //静态工厂方法  
+    public static privateMethod2 getInstance(){  
+        return instance;  
+    }  
+  
+    public static void main(String[] args) {  
+  
+        privateMethod2 method = privateMethod2.instance;  
+        method.say();  
+    }  
+}  
+单元素的枚举类型
+
+[html] view plain copy
+public enum privateMethod3 {  
+    //单个元素的枚举类型  
+    INSTANCE;  
+    public void say() {  
+        System.out.println("hello");  
+    }  
+  
+    public static void main(String[] args) {  
+  
+        privateMethod3 method = privateMethod3.INSTANCE;  
+        method.say();  
+    }  
+}  
+保护不希望被实例化的类
+
+ 这种习惯用法也有副作用，它使得一个类完全不能够子类化（因为子类中无法调用父类中的构造方法）。
+
+[html] view plain copy
+public class privateMethod4 {  
+  
+    private privateMethod4() {  
+        throw new AssertionError();  
+    }  
+  
+}  
+
+
+std::pair主要的作用是将两个数据组合成一个数据，两个数据可以是同一类型或者不同类型。例如std::pair<int,float> 或者 std：：pair<double,double>等。pair实质上是一个结构体，其主要的两个成员变量是first和second，这两个变量可以直接使用。初始化一个pair可以使用构造函数，也可以使用std::make_pair函数，make_pair函数的定义如下：
+template pair make_pair(T1 a, T2 b) { return pair(a, b); }
+一般make_pair都使用在需要pair做参数的位置，可以直接调用make_pair生成pair对象。 另一个使用的方面就是pair可以接受隐式的类型转换，这样可以获得更高的灵活度。但是这样会出现如下问题：例如有如下两个定义：
+std::pair<int, float>(1, 1.1);
+
+std::make_pair(1, 1.1);
+其中第一个的second变量是float类型，而make_pair函数会将second变量都转换成double类型。这个问题在编程是需要引起注意。下面是一段pair与make_pair的例子程序：
+1#include <iostream>
+2#include <utility>
+3#include <string>
+4usingnamespace std;
+5
+6int main () {
+7pair <string,double> product1 ("tomatoes",3.25);
+8pair <string,double> product2;
+9pair <string,double> product3;
+10
+11product2.first ="lightbulbs"; // type of first is string
+12product2.second =0.99; // type of second is double
+13
+14product3 = make_pair ("shoes",20.0);
+15
+16cout <<"The price of "<< product1.first <<" is $"<< product1.second <<"\n";
+17cout <<"The price of "<< product2.first <<" is $"<< product2.second <<"\n";
+18cout <<"The price of "<< product3.first <<" is $"<< product3.second <<"\n";
+19return0;
+20}
+其运行结果如下：
+1The price of tomatoes is $3.25
+2The price of lightbulbs is $0.99
+3The price of shoes is $20
+
+
+
+
+
+01 pair  vs  make_pair
+02 make_pair constructs a pair object.
+03 template
+04 pair make_pair(T1 x, T2 y)
+05 {
+06     return pair(x, y);
+07 }
+08
+09 eg:  std::pair("sn001", 12.5);
+10        std::make_pair("sn001", 12.5);
+11        两者效果一样。
+12 倘若：std::pair("sn002", 12.6);   // 12.6's datatype is float
+13         std::make_pair("sn002",12.6);  // 12.6's datatype is double
+14 使用:
+15         std::pair m_pairA;
+16         m_pairA = std::make_pair("sn001", 12.5);
+17         std::cout<<m_pairA.first<<"  "<<m_pairA.second<<std::endl;
+18 结合map的简单使用：
+19         std::pair m_pairA;
+20         m_pairA = std::make_pair("sn001", 12.5);
+21         //std::cout<<m_pairA.first<<"  "<<m_pairA.second<<std::endl;
+22         std::map m_mapA;
+23         m_mapA.insert(m_pairA);
+24         std::map::iterator iter = m_mapA.begin();
+25         std::cout<<iter->first<<"  "<<iter->second<<std::endl;
+小结:
+　　make_pair创建的是一个pair对象。使用都很方便，针对成对出现的数据，如书的ISBN对应一个书名。
+　　pair是单个数据对的操作，pair是一struct类型，有两个成员变量，通过first,second来访问，用的是“.”访问。
+　　map是一个关联容器，里面存放的是键值对，容器中每一元素都是pair类型，通过map的insert()方法来插入元素(pair类型)。
