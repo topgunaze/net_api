@@ -453,7 +453,10 @@ int main()
 	//queue_test();
 #endif
 
-	funcobject_test();
+	//funcobject_test();
+	//signal_funcobj_test();
+	dual_funcobj_test();
+
 
 #if 0
 	mylist l;

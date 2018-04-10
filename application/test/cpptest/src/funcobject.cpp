@@ -4,6 +4,7 @@
 #include <vector>
 #include <list>
 #include <deque>
+#include <set>
 
 
 using namespace std;
@@ -38,17 +39,17 @@ void displayelemet_s<T>::operator()(T &val)
 class comparestrnocase
 {
 public:
-	bool operator(const string &str1, const string &str2)
+	bool operator()(const string &str1, const string &str2) const
 	{
 		string str1_tmp;
 		str1_tmp.resize(str1.size());
-		transform(str1.begin(), str1.end(), str1_tmp.begin(), tolower);
+		transform(str1.begin(), str1.end(), str1_tmp.begin(), ::tolower);
 
 		string str2_tmp;
 		str2_tmp.resize(str2.size());
-		transform(str2.begin(), str2.end(), str2_tmp.begin(), tolower);
+		transform(str2.begin(), str2.end(), str2_tmp.begin(), ::tolower);
 
-		return (str1_tmp < str2_tmp)
+		return (str1_tmp < str2_tmp);
 	}
 };
 
@@ -134,12 +135,33 @@ void dual_funcobj_test()
 		cout<<*it<<' ';
 	cout<<endl;
 
-
-	set<string, comparestrnocase> strs0;
+	set<string> strs0;
 	strs0.insert("Jim");
 	strs0.insert("Jam");
 	strs0.insert("jbm");
-	strs0.insert();
+	strs0.insert("kim");
+	strs0.insert("abm");
+	strs0.insert("cim");
+
+	for (set<string>::iterator it = strs0.begin(); it != strs0.end(); ++it)
+	{
+		cout<<*it<<" ";
+	}
+	cout<<endl;
+
+	set<string, comparestrnocase> strs1;
+	strs1.insert("Jim");
+	strs1.insert("Jam");
+	strs1.insert("jbm");
+	strs1.insert("kim");
+	strs1.insert("abm");
+	strs1.insert("cim");
+
+	for (set<string, comparestrnocase>::iterator it = strs1.begin(); it != strs1.end(); ++it)
+	{
+		cout<<*it<<" ";
+	}
+	cout<<endl;
 	
 }
 
