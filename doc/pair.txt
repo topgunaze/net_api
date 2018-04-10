@@ -1,0 +1,62 @@
+std::pair主要的作用是将两个数据组合成一个数据，两个数据可以是同一类型或者不同类型。例如std::pair<int,float> 或者 std：：pair<double,double>等。
+pair实质上是一个结构体，其主要的两个成员变量是first和second，这两个变量可以直接使用。初始化一个pair可以使用构造函数，也可以使用std::make_pair函数，
+make_pair函数的定义如下：
+template pair make_pair(T1 a, T2 b) { return pair(a, b); }
+一般make_pair都使用在需要pair做参数的位置，可以直接调用make_pair生成pair对象。 另一个使用的方面就是pair可以接受隐式的类型转换，这样可以获得更高的灵活度。但是这样会出现如下问题：例如有如下两个定义：
+std::pair<int, float>(1, 1.1);
+std::make_pair(1, 1.1);
+其中第一个的second变量是float类型，而make_pair函数会将second变量都转换成double类型。这个问题在编程是需要引起注意。下面是一段pair与make_pair的例子程序：
+#include <iostream>
+#include <utility>
+#include <string>
+using namespace std;
+
+int main () {
+pair <string,double> product1 ("tomatoes",3.25);
+pair <string,double> product2;
+pair <string,double> product3;
+
+product2.first ="lightbulbs"; // type of first is string
+product2.second =0.99; // type of second is double
+
+product3 = make_pair ("shoes",20.0);
+
+cout <<"The price of "<< product1.first <<" is $"<< product1.second <<"\n";
+cout <<"The price of "<< product2.first <<" is $"<< product2.second <<"\n";
+cout <<"The price of "<< product3.first <<" is $"<< product3.second <<"\n";
+return0;
+}
+其运行结果如下：
+The price of tomatoes is $3.25
+The price of lightbulbs is $0.99
+The price of shoes is $20
+
+ pair  vs  make_pair
+ make_pair constructs a pair object.
+ template
+ pair make_pair(T1 x, T2 y)
+ {
+     return pair(x, y);
+ }
+
+ eg:  std::pair("sn001", 12.5);
+        std::make_pair("sn001", 12.5);
+        两者效果一样。
+ 倘若：std::pair("sn002", 12.6);   // 12.6's datatype is float
+         std::make_pair("sn002",12.6);  // 12.6's datatype is double
+ 使用:
+         std::pair m_pairA;
+         m_pairA = std::make_pair("sn001", 12.5);
+         std::cout<<m_pairA.first<<"  "<<m_pairA.second<<std::endl;
+ 结合map的简单使用：
+         std::pair m_pairA;
+         m_pairA = std::make_pair("sn001", 12.5);
+         //std::cout<<m_pairA.first<<"  "<<m_pairA.second<<std::endl;
+         std::map m_mapA;
+         m_mapA.insert(m_pairA);
+         std::map::iterator iter = m_mapA.begin();
+         std::cout<<iter->first<<"  "<<iter->second<<std::endl;
+小结:
+　　make_pair创建的是一个pair对象。使用都很方便，针对成对出现的数据，如书的ISBN对应一个书名。
+　　pair是单个数据对的操作，pair是一struct类型，有两个成员变量，通过first,second来访问，用的是“.”访问。
+　　map是一个关联容器，里面存放的是键值对，容器中每一元素都是pair类型，通过map的insert()方法来插入元素(pair类型)。

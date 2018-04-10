@@ -6,6 +6,7 @@
 #include "cpp_test.hpp"
 #include "threadpool.hpp"
 #include "containers.hpp"
+#include "funcobject.hpp"
 
 
 #if 0
@@ -439,15 +440,20 @@ class Mytask : public thread_pool::Task
 		}
 };	
 
-
 int main()
 {
+#if 0
 	//deque_test();
 	//vector_test();
 	//list_test();
 	//string_test();
 	//set_test();
-	map_test();
+	//map_test();
+	//stack_test();
+	//queue_test();
+#endif
+
+	funcobject_test();
 
 #if 0
 	mylist l;

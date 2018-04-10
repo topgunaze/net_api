@@ -448,3 +448,90 @@ void map_test()
 		
 }
 
+void stack_test()
+{
+	stack<int,deque<int> >  ds0;
+	stack<int, vector<int> > vs0;
+	stack<int, list<int> >   ls0;
+	stack<int>              is0;
+
+	ds0.push(1);
+	ds0.push(2);
+	ds0.push(3);
+	ds0.push(4);
+
+	ds0.pop();
+
+	ds0.push(11);
+	ds0.push(21);
+	ds0.push(31);
+	ds0.push(41);
+
+	cout<<"ds0 size "<<ds0.size()<<endl;
+
+	while(!ds0.empty())
+	{
+		int x = ds0.top();
+		cout<<x<<" ";
+		ds0.pop();
+	}
+
+}
+
+void queue_test()
+{
+	queue<int, deque<int> > dique0;
+	queue<int, list<int> >  lique0;
+	queue<int>              ique0;
+
+	ique0.push(1);
+	ique0.push(2);
+	ique0.push(3);
+
+	ique0.pop();
+
+	ique0.push(11);
+	ique0.push(21);
+	ique0.push(31);
+
+	cout<<"ique0 size "<<ique0.size()<<endl;
+	while(!ique0.empty())
+	{
+		cout<<ique0.front()<<" "<<ique0.back()<<"  ";
+		ique0.pop();
+	}
+
+	//最小值优先级队列
+	priority_queue<int, deque<int>, greater<int> >  pdique0;
+	//最大值优先级队列
+	priority_queue<int, vector<int> > 				pvique0;
+	priority_queue<int> 							pique0;
+
+	pique0.push(1);
+	pique0.push(20);
+	pique0.push(3);
+	pique0.push(2);
+	pique0.push(8);
+
+	cout<<"pique0 size "<<pique0.size()<<endl;
+	while(!pique0.empty())
+	{
+		cout<<pique0.top()<<" ";
+		pique0.pop();
+	}
+
+	pdique0.push(3);
+	pdique0.push(15);
+	pdique0.push(2);
+	pdique0.push(32);
+	pdique0.push(2);
+
+	cout<<"pdique0 size "<<pdique0.size()<<endl;
+	while(!pdique0.empty())
+	{
+		cout<<pdique0.top()<<" ";
+		pdique0.pop();
+	}
+}
+
+
