@@ -1002,6 +1002,99 @@ ULONG ipc_if_disengage_event(UCHAR EventId)
 
 #if DEFUNC("信号量")
 
+#if 0
+linux下一切文件皆设备
+
+消息队列这些IPC对象，systemv是让linux内核持久化(保存和管理)
+IPC使用同一套函数。查看IPC 使用 ipcs tool
+Ipcs 和 ipcs -l
+删除ipc消息队列命令：
+ipcrm msg msqid
+
+通过路径获取键值key，各个应用app统一的获取key，也可以通过一个种子文件
+key=ftok("./tmp/",'a');
+export SEEDFILE=”/home/ltf/etc/seedfile”,所有的app读环境变量，getenv(“SEEDFILE”)
+
+信号量和P、V原语由Dijkstra（迪杰斯特拉）提出
+信号量
+互斥：P、V在同一个进程中
+同步：P、V在不同进程中
+信号量值含义
+S>0：S表示可用资源的个数
+S=0：表示无可用资源，无等待进程
+S<0：|S|表示等待队列中进程个数
+
+struct semaphore
+{
+    int value; 
+    pointer_PCB queue;
+}
+若 value 为 1 相当于一个竞争锁
+
+P原语 
+P(s)
+{
+	s.value = s.value--;
+	if (s.value < 0)
+	{
+	该进程状态置为等待状状态
+	将该进程的PCB插入相应的等待队列s.queue末尾
+	}
+}
+
+V原语 
+V(s)
+{
+	s.value = s.value++;
+	if (s.value < =0)
+	{
+	唤醒相应等待队列s.queue中等待的一个进程
+	改变其状态为就绪态
+	并将其插入就绪队列
+	}
+}
+
+struct semid_ds {
+	struct ipc_perm sem_perm;  /* Ownership and permissions */
+	time_t	        sem_otime; /* Last semop time */
+	time_t	        sem_ctime; /* Last change time */
+	unsigned short  sem_nsems; /* No. of semaphores in set */
+};
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+nsems:信号集中信号量的个数
+semflg: 由九个权限标志构成，它们的用法和创建文件时使用的mode模式标志是一样的
+
+int semget(key_t key, int nsems, int semflg);
+
+semnum:信号集中信号量的序号
+cmd:将要采取的动作（有三个可取值）
+最后一个参数根据命令不同而不同
+
+int semctl(int semid, int semnum, int cmd, ...);
+
+sops:指向一个结构数值的指针
+sembuf结构体：
+struct sembuf {
+    short sem_num; 
+    short sem_op; 
+    short sem_flg; 
+};
+sem_num是信号量的编号。
+sem_op是信号量一次PV操作时加减的数值，一般只会用到两个值，
+一个是“-1”，也就是P操作，等待信号量变得可用；
+另一个是“+1”，也就是V操作，发出信号量已经变得可用.
+sem_flag的两个取值是IPC_NOWAIT或SEM_UNDO（当进程退出时，自动恢复信号量，即自动执行进程中此前的对应p的v操作）
+
+nsops:信号量的个数
+
+int semop(int semid, struct sembuf *sops, unsigned nsops);
+
+#endif
+
 int ipc_key_get(char *path, int sub_key)
 {
     key_t key;
@@ -1015,7 +1108,6 @@ int ipc_key_get(char *path, int sub_key)
     return key;
 }
 
-//创建信号量
 int ipc_sem_create(key_t key)
 {
     int semid = semget(key, 1, 0666 | IPC_CREAT | IPC_EXCL);
@@ -1070,14 +1162,6 @@ int ipc_sem_del(int semid)
     return 0;
 }
 
-/*
-struct sembuf {
-    short sem_num; 
-    short sem_op; 
-    short sem_flg; 
-};
-*/
-
 int ipc_sem_p(int semid)
 {
     int	       ret;
@@ -1109,6 +1193,69 @@ int ipc_sem_v(int semid)
         
     return ret;
 }
+
+void ipc_sem_sync_test1()
+{
+	int     semid;
+    key_t   key = ipc_key_get("/etc", 20);
+
+    semid = ipc_sem_create(key);
+    if (semid == -1)
+    {
+        semid = ipc_sem_open(key);
+        if (semid == -1)
+        {
+            return;
+        }
+    }
+
+    ipc_sem_setval(semid, 1);
+
+    while(1)
+    {
+        ipc_sem_p(semid);
+        printf("this is ctrl\r\n");
+        //sleep(1);
+        ipc_sem_v(semid);
+        sleep(0);
+    }
+
+    ipc_sem_del(semid);
+}
+
+void ipc_sem_sync_test2()
+{
+    int     semid;
+    key_t   key = ipc_key_get("/etc", 20);
+
+    semid = ipc_sem_create(key);
+    if (semid == -1)
+    {
+        semid = ipc_sem_open(key);
+        if (semid == -1)
+        {
+            return ;
+        }
+    }
+
+    ipc_sem_setval(semid, 1);
+
+    while(1)
+    {
+        ipc_sem_p(semid);
+        sleep(1);
+        ipc_sem_v(semid);
+    }
+
+    ipc_sem_del(semid); 
+}
+
+#if 0
+1.客户端给服务端发报文
+2.服务端把接收的服务次数，写共享内存
+共享内存中读数据和写数据
+3. 服务器初始化时创建共享内存和信号量，服务器的各个子进程通过进程互斥的方式去操作共享内存。
+#endif
        
 #endif
 
@@ -1298,6 +1445,103 @@ int sem_test(void)
 
 #if DEFUNC("消息队列")
 
+#if 0
+每个数据块都被认为是有一个类型，接收者进程接收的数据块可以有不同的类型值
+每个消息的最大长度是有上限的MSGMAX
+每个消息队列的总的字节数是有上限的MSGMNB
+系统上消息队列的总数也有一个上限MSGMNI
+cat /proc/sys/kernel/msgmax 最大消息长度限制,一般 64k
+cat /proc/sys/kernel/msgmnb 消息队列总的字节数,一般 64k
+cat /proc/sys/kernel/msgmni 消息队列条目数
+
+对比：
+管道：流管道		消息：有边界
+	  先进先出	          可以后进入、先出来
+		                  消息大小三大限制
+						  
+IPC对象数据结构
+内核为每个IPC对象维护一个数据结构
+struct ipc_perm {
+	key_t          __key;       /* Key supplied to xxxget(2) */
+	uid_t          uid;         /* Effective UID of owner */
+	gid_t          gid;         /* Effective GID of owner */
+	uid_t          cuid;        /* Effective UID of creator */
+	gid_t          cgid;        /* Effective GID of creator */
+	unsigned short mode;        /* Permissions */
+	unsigned short __seq;       /* Sequence number */
+};
+
+struct msqid_ds {
+	struct ipc_perm msg_perm;     /* Ownership and permissions */
+	time_t	        msg_stime;    /* Time of last msgsnd(2) */
+ 	time_t	        msg_rtime;    /* Time of last msgrcv(2) */
+	time_t	        msg_ctime;    /* Time of last change */
+	unsigned long   __msg_cbytes; /* Current number of bytes in
+						             queue (nonstandard) */
+	msgqnum_t	    msg_qnum;     /* Current number of messages
+			                                                in queue */
+	msglen_t	    msg_qbytes;   /* Maximum number of bytes
+                                                allowed in queue */
+	pid_t	        msg_lspid;      /* PID of last msgsnd(2) */
+	pid_t           msg_lrpid;      /* PID of last msgrcv(2) */
+};
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+用来创建和访问一个消息队列
+msgflg:由九个权限标志构成，它们的用法和创建文件时使用的mode模式标志是一样的
+
+0666：消息队列存在则返回，不存在返回ENOENT
+0666|IPC_CREATE:消息队列存在使用旧的，消息队列不存在则创建。
+IPC_CREATE|IPC_EXCL : 若消息队列存在，返回EEXIST错误，反之，创建。单独使用IPC_EXCL无意义。
+msgget(IPC_PRIVATE, 0666);
+创建一个key为0的消息队列，IPC_PRIVATE(0)表示每次都创建新的共享内存。这样两个进程就不能共享消息队列了，IPC_PRIVATE表示自己使用,
+此时IPC_CREATE和IPC_EXCL将被忽律。
+创建的消息队列只在自己的家族中使用，不在没有血缘关系的进程间用,fork的可以。
+每一次创建的消息队列的msqid不一样，msqid即使传给其他进程，也不能使用。
+
+msgget(key, 0400|IPC_CREATE) -> msgget(key, 0600) 
+权限位：创建的权限只有0400， 如果按照0600打开消息队列，则会失败。
+421 rwx
+
+int msgget(key_t key, int msgflg);
+
+消息队列的控制函数
+cmd:是将要采取的动作,（有三个可取值）
+数据结构：msqid_ds -> ipc_perm， linux通过这两个数据结构管理ipc对象。
+
+int msgctl(int msqid, int cmd, struct msqid_ds *buf);
+
+msgsz:是msgp指向的消息长度，这个长度不含保存消息类型的那个long int长整型
+msgflg:控制着当前消息队列满或到达系统上限时将要发生的事情
+msgflg=IPC_NOWAIT表示队列满不等待，返回EAGAIN错误。
+消息结构在两方面受到制约。首先，它必须小于系统规定的上限值；其次，它必须以一个long int长整数开始，接收者函数将利用这个长整数确定消息的类型
+消息结构参考形式如下：
+struct msgbuf {
+long  mtype;
+char mtext[100];
+}
+
+int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
+
+msgsz:是msgp指向的消息长度，这个长度不含保存消息类型的那个long int长整型
+msgtype:它可以实现接收优先级的简单形式
+msgflg:控制着队列中没有相应类型的消息可供接收时将要发生的事
+
+msgtype=0返回队列第一条信息
+msgtype>0返回队列第一条类型等于msgtype的消息　
+msgtype<0返回队列第一条类型小于等于msgtype绝对值的消息，并且是满足条件的消息类型最小的消息
+
+msgflg=IPC_NOWAIT，队列没有可读消息不等待，返回ENOMSG错误。
+msgflg=MSG_NOERROR，消息大小超过msgsz时被截断 
+msgtype>0且msgflg=MSG_EXCEPT，接收类型不等于msgtype的第一条消息。
+
+ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
+
+#endif
+
 int 
 ipc_mq_create (key_t key)
 {
@@ -1348,7 +1592,7 @@ int ipc_mq_size_set(int msg_id, unsigned int size)
 }
 
 int
-ipc_mq_out (
+ipc_mq_recv (
             int             mq_id, 
             long            type, 
             void            *p_data, 
@@ -1381,7 +1625,7 @@ ipc_mq_out (
 }
 
 int
-ipc_mq_out_timeout (
+ipc_mq_recv_timeout (
                 int             mq_id, 
                 long            type, 
                 void            *p_data, 
@@ -1404,7 +1648,7 @@ ipc_mq_out_timeout (
         
         for (timeloop = timeout; timeloop > 0; timeloop = timeloop - 100)
         {
-            ret = ipc_mq_out(mq_id, type, p_data, size, NO_WAIT, p_copied);
+            ret = ipc_mq_recv(mq_id, type, p_data, size, NO_WAIT, p_copied);
             if (ret == -1 && errno == EAGAIN)
             {
                 usleep(100 * 1000);
@@ -1422,11 +1666,11 @@ ipc_mq_out_timeout (
         return ret;
     }
 
-    return ipc_mq_out(mq_id, type, p_data, size, WAIT_FOREVER, p_copied);
+    return ipc_mq_recv(mq_id, type, p_data, size, WAIT_FOREVER, p_copied);
 }
 
 int
-ipc_mq_in (
+ipc_mq_send (
             int           mq_id, 
             void          *p_data, 
             unsigned int  size, 
@@ -1454,6 +1698,95 @@ ipc_mq_in (
 
     return 0;
 }
+
+void ipc_mq_send_test()
+{
+    int         msgq_id;
+    ipc_msgbuf  tx_buf;
+    int         i = 1;
+    key_t       key = ipc_key_get("/etc", 20);
+
+    msgq_id = ipc_mq_create(key);
+    if (msgq_id == -1)
+    {
+        msgq_id = ipc_mq_open(key);
+        if (msgq_id == -1)
+        {
+            return ;
+        }
+    }
+    else
+    {
+        ipc_mq_size_set(msgq_id, 1024 * 10);
+    }
+
+    while(1)
+    {
+        bzero(&tx_buf, sizeof(ipc_msgbuf));
+        tx_buf.mtype = i;
+        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is msg type %ld", tx_buf.mtype);
+        ipc_mq_send(msgq_id, &tx_buf, sizeof(ipc_msgbuf)-sizeof(long), WAIT_FOREVER);
+        sleep(1);
+
+        ++i;
+        i %= 5;
+        if (i == 0)
+        {
+            i = 1;
+        }
+    }
+}
+
+void ipc_mq_recv_test()
+{
+    int          msgq_id, i = 1;
+    ipc_msgbuf   rx_buf;
+    unsigned int size;
+    key_t        key = ipc_key_get("/etc", 20);
+
+    msgq_id = ipc_mq_create(key);
+    if (msgq_id == -1)
+    {
+        msgq_id = ipc_mq_open(key);
+        if (msgq_id == -1)
+        {
+            return ;
+        }
+    }
+    else
+    {
+        ipc_mq_size_set(msgq_id, 1024 * 10);
+    }
+
+    while(1)
+    {
+        bzero(&rx_buf, sizeof(ipc_msgbuf));
+        rx_buf.mtype = i;
+
+        ipc_mq_recv(msgq_id, rx_buf.mtype, &rx_buf, sizeof(ipc_msgbuf) - sizeof(long), WAIT_FOREVER, &size);
+        printf("rec type %ld size %d text %s\r\n", rx_buf.mtype, size, rx_buf.mtext);
+        sleep(1);
+
+        ++i;
+        i %= 5;
+        if (i == 0)
+        {
+            i = 1;
+        }
+    }
+}
+
+#if 0
+1. 
+客户端发送服务器消息类型总是1
+服务器端回客户端type是对方进程号，客户端接收类型和自己进程号一样的消息
+相当于服务器端从消息队列中收消息，然后服务器端分类型回复客户端(通过消息队列)
+
+2. 改进
+n个消息队列进行交换有没有产生死锁的可能？
+n个客户端向服务端发送消息(本质上是向内核消息队列发送消息)，若消息队列满了服务端回射时会阻塞，造成程序死锁，即使使用非阻塞接口也会阻塞。
+
+#endif
 
 #endif
 

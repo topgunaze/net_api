@@ -7,6 +7,7 @@
 #include "threadpool.hpp"
 #include "containers.hpp"
 #include "funcobject.hpp"
+#include "overload.hpp"
 
 
 #if 0
@@ -251,44 +252,47 @@ bool mystack<T>::push(T data)
 	return true;
 }
 
-void mylist::initlist()
+template<typename T>
+void mylist<T>::initlist()
 {
 	p_head = NULL;
 	size   = 0;
 }
 
-void mylist::insertlist(node *p_node)
+template<typename T>
+void mylist<T>::insertlist(node<T> *p_node)
 {
 	if (p_node == NULL)
 		return ;
 
 	if (p_head)
 	{
-		p_node->p_next = p_head;
+		p_node->next = p_head;
 		p_head = p_node;
 	}
 	else
 	{
 		p_head = p_node;
-		p_head->p_next = NULL;
+		p_head->next = NULL;
 	}
 
 	++size;
 }
 
-void mylist::deletenode(node *p_node)
+template<typename T>
+void mylist<T>::deletenode(node<T> *p_node)
 {
-	node* p_tmp = p_head;
-	node* p_cur = p_head->p_next;
+	node<T>* p_tmp = p_head;
+	node<T>* p_cur = p_head->next;
 
 	if (p_node == NULL)
 		return ;
 	
 	if (p_node == p_head)
 	{
-		p_head = p_head->p_next;
+		p_head = p_head->next;
 		--size;
-		delete p_head;
+		delete p_node;
 		
 		return;
 	}
@@ -297,7 +301,7 @@ void mylist::deletenode(node *p_node)
 	{
 		if (p_cur == p_node)
 		{
-			p_tmp->p_next = p_cur->p_next;
+			p_tmp->next = p_cur->next;
 			--size;
 			delete p_cur;
 			
@@ -306,53 +310,57 @@ void mylist::deletenode(node *p_node)
 		else
 		{
 			p_tmp = p_cur;
-			p_cur = p_cur->p_next;
+			p_cur = p_cur->next;
 		}
 	}
 
 	return;
 }
 
-node *mylist::searchlist(int value)
+template<typename T>
+node<T> *mylist<T>::searchlist(T value)
 {
-	node *p_tmp = p_head;
+	node<T> *p_tmp = p_head;
 	
 	while(p_tmp)
 	{
 		if (p_tmp->data == value)
 			return p_tmp;
 		else
-			p_tmp = p_tmp->p_next;
+			p_tmp = p_tmp->next;
 	}
 
 	return NULL;
 }
 
-void mylist::sortlist()
+template<typename T>
+void mylist<T>::sortlist()
 {
 
 }
 
-void mylist::destroylist()
+template<typename T>
+void mylist<T>::destroylist()
 {
-	node *p_tmp;
+	node<T> *p_tmp;
 	
 	while(p_head)
 	{
 		p_tmp = p_head; 
-		p_head = p_head->p_next;
+		p_head = p_head->next;
 		delete p_tmp;
 	}
 }
 
-void mylist::printlist()
+template<typename T>
+void mylist<T>::printlist()
 {
-	node *p_tmp = p_head;
+	node<T> *p_tmp = p_head;
 	
 	while(p_tmp)
 	{
 		cout<<p_tmp->data<<" ";
-		p_tmp = p_tmp->p_next;
+		p_tmp = p_tmp->next;
 	}
 
 	cout<<endl;
@@ -453,29 +461,18 @@ int main()
 	//queue_test();
 #endif
 
+#if 0
 	//funcobject_test();
 	//signal_funcobj_test();
-	dual_funcobj_test();
+	//dual_funcobj_test();
+
+	//bool_test();
+	type_test();
+#endif
 
 
-#if 0
-	mylist l;
-	node *p_node;
-	node *p_node_array[20];
-
-	for (int i = 0; i<20; ++i)
-	{
-		p_node = new node;
-		p_node->data = i;
-		l.insertlist(p_node);
-		p_node_array[i] = p_node;
-	}
-	
-	l.printlist();
-
-	l.deletenode(p_node_array[10]);
-
-	l.printlist();
+#if 1
+	mylist_test();
 #endif
 
 #if 0
@@ -665,3 +662,55 @@ void mystack_test()
 	while(!s.isempty())
 		cout<<s.pop()<<" ";	
 }
+
+void mylist_test()
+{
+	mylist<int> l;
+	node<int> 	*p_node;
+	node<int> 	*p_node_array[20];
+
+	for (int i = 0; i<20; ++i)
+	{
+		p_node = new node<int>;
+		p_node->data = i;
+		l.insertlist(p_node);
+		p_node_array[i] = p_node;
+	}
+	
+	l.printlist();
+
+	l.deletenode(p_node_array[10]);
+
+	l.printlist();
+
+	mylist_reverse(l);
+
+	l.printlist();
+	
+}
+
+#if 1
+void mylist_reverse(mylist<int>& l)
+{
+	node<int> *p_node = l.gethead();
+	node<int> *p_node_pre = NULL;
+	node<int> *p_node_next = p_node->next;
+
+	if (!p_node)
+		return;
+
+	if (!p_node->next)
+		return;
+
+	p_node->next = NULL;
+	while(p_node_next)
+	{
+		p_node_pre = p_node;
+		p_node = p_node_next;
+		p_node_next = p_node_next->next;
+		p_node->next = p_node_pre;
+	}
+
+	l.sethead(p_node);
+}
+#endif

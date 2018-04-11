@@ -418,11 +418,6 @@ typedef struct NET_MEMBLK
 #define NET_ZC_MSG_QUEUE_DELETED    0
 #define NET_ZC_MSG_QUEUE_VALID      1
 
-typedef struct msgbuf {
-    long mtype;       /* message type, must be > 0 */
-    char mtext[1024];    /* message data */
-}msgbuf;
-
 typedef struct NET_OS_MSG NET_OS_MSG;
 
 struct NET_OS_MSG

@@ -135,6 +135,11 @@ typedef struct shm_struct
     char buf[1024];
 }shm_struct; 
 
+typedef struct ipc_msgbuf {
+    long mtype;       /* message type, must be > 0 */
+    char mtext[1024];    /* message data */
+}ipc_msgbuf;
+
 //IPC返回值定义
 typedef enum
 {
@@ -225,6 +230,9 @@ int ipc_sem_getval(int semid, int val);
 int ipc_sem_del(int semid);
 int ipc_sem_p(int semid);
 int ipc_sem_v(int semid);
+void ipc_sem_sync_test1();
+void ipc_sem_sync_test2();
+
 int ipc_shm_create(key_t key, size_t size);
 int ipc_shm_open(key_t key);
 void* ipc_shm_map(int shmid);
@@ -232,48 +240,31 @@ int ipc_shm_unmap(void *p_addr);
 int ipc_shm_del(int shmid);
 int shm_test(void);
 
-typedef enum
-{
-    MQ_CTRL_RX_SYN_REQ_MSG,
-    MQ_CTRL_RX_SYN_ACK_MSG,
-    MQ_CTRL_RX_ASYN_REQ_MSG,
-    MQ_CTRL_RX_ASYN_ACK_MSG,
-    MQ_CTRL_TX_MSG,
-
-    MQ_NODE_RX_SYN_REQ_MSG,
-    MQ_NODE_RX_SYN_ACK_MSG,
-    MQ_NODE_RX_ASYN_REQ_MSG,
-    MQ_NODE_RX_ASYN_ACK_MSG,
-    MQ_NODE_TX_MSG,
-
-    MQ_CTRL_TX_NODE_RX_MSG,
-    MQ_CTRL_RX_NODE_TX_MSG,
-
-    MQ_MAX_NUM_OF,
-}MQ_SUB_KEY_E;
-
 int ipc_mq_create (key_t key);
 int ipc_mq_open(key_t key);
 int ipc_mq_size_set(int msg_id, unsigned int size);
-int ipc_mq_out (
+int ipc_mq_recv (
             int             mq_id, 
             long            type, 
             void            *p_data, 
             unsigned int    size, 
             int             block_flag,
             unsigned int    *p_copied);
-int ipc_mq_out_timeout (
+int ipc_mq_recv_timeout (
                 int             mq_id, 
                 long            type, 
                 void            *p_data, 
                 unsigned int    size, 
                 unsigned int    timeout, /* ms  */
                 unsigned int    *p_copied);
-int ipc_mq_in (
+int ipc_mq_send (
             int           mq_id, 
             void          *p_data, 
             unsigned int  size, 
             int           block_flag);
+            
+void ipc_mq_send_test();
+void ipc_mq_recv_test();
 
 #ifdef DEBUG
       #define debuginfo(fmt, args...)	 printf(fmt, ## args)

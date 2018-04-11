@@ -43,6 +43,84 @@ get_system_realtime -> almGetSystemTime -> almTickToAlarmTime
 
 msc_service_cli_init
 
+注册授权回调：
+pon_system -> kServiceModuleRegAuth
+regauth_onu_auth_callback
+regauth_onu_unauth_callback
+regauth_onu_online_callback
+regauth_onu_offline_callback
+regauth_onu_shutdown_callback
+
+
+class 目标类
+{
+目标类(const 源类& 源类对象引用)
+{
+根据需求完成从源类型到目标类型的转换
+}
+}
+
+﻿#include <iostream> 	 
+using namespace std; 	 
+class Point3D; 	 
+class Point2D 	 
+{ 	 
+public: 	 
+Point2D(int x,int y) 	 
+:_x(x),_y(y){} 	 
+void dis() 	 
+{ 	 
+cout<<"("<<_x<<","<<_y<<")"<<endl; 	 
+} 	 
+friend Point3D; //friend Point3D::Point3D( Point2D &p2) 	 
+private:
+int _x;
+int _y;
+};
+class Point3D
+{p
+ublic:
+Point3D(int x,int y,int z)
+:_x(x),_y(y),_z(z){}
+Point3D(Point2D &p)
+{
+this->_x = p._x;
+this->_y = p._y;
+this->_z = 0;
+}
+void dis()
+{
+cout<<"("<<_x<<","<<_y<<","<<_z<<")"<<endl;
+}
+private:
+int _x;
+int _y;
+int _z;
+};
+void func(Point3D d3)
+{
+}
+int main()
+{
+Point2D p2(1,2);
+p2.dis();
+Point3D p3(3,4,5);
+p3.dis();
+Point3D p3a = p2;
+p3a.dis();
+func(d2)
+
+explicit Point3D(Point2D &p) //注:explicit 是个仅用于声明的关键字
+{
+this->_x = p._x;
+this->_y = p._y;
+this->_z = 0;
+}
+Point2D p2(1,2);
+p2.dis();
+Point3D p3a = static_cast<Point3D> (p2); //(Point3D)p2;
+p3a.dis();
+
 自发消息的处理
 注册：
 

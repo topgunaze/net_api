@@ -365,68 +365,12 @@ main(void)
     }
 #endif
 
-    //key_t key = ipc_key_get("/etc", 20);
 #if 0
-    int     msgq_id;
-    msgbuf  tx_buf;
-    int     i = 1;
-
-    msgq_id = ipc_mq_create(key);
-    if (msgq_id == -1)
-    {
-        msgq_id = ipc_mq_open(key);
-        if (msgq_id == -1)
-        {
-            return msgq_id;
-        }
-    }
-    else
-    {
-        ipc_mq_size_set(msgq_id, 1024 * 10);
-    }
-
-    while(1)
-    {
-        bzero(&tx_buf, sizeof(msgbuf));
-        tx_buf.mtype = i;
-        snprintf(tx_buf.mtext, sizeof(tx_buf.mtext), "this is ctrl msg type %ld", tx_buf.mtype);
-        ipc_mq_in(msgq_id, &tx_buf, sizeof(msgbuf), WAIT_FOREVER);
-        sleep(1);
-
-        ++i;
-        i %= 5;
-        if (i == 0)
-        {
-            i = 1;
-        }
-    }
+    ipc_mq_send_test();
 #endif
 
 #if 0
-	int semid;
-
-    semid = ipc_sem_create(key);
-    if (semid == -1)
-    {
-        semid = ipc_sem_open(key);
-        if (semid == -1)
-        {
-            return semid;
-        }
-    }
-
-    ipc_sem_setval(semid, 1);
-
-    while(1)
-    {
-        ipc_sem_p(semid);
-        printf("this is ctrl\r\n");
-        //sleep(1);
-        ipc_sem_v(semid);
-        sleep(0);
-    }
-
-    ipc_sem_del(semid); 
+    ipc_sem_sync_test1();
 #endif
 
 #if 0

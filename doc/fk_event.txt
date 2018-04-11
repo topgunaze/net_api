@@ -83,3 +83,11 @@ cardport_configobject.hpp 对应 cpp
 onu_configobject.hpp 对应 cpp
 onuport_configobject.hpp 对应 cpp
 
+注册授权事件 -> 注册授权状态机
+PON_EVT_CUS_ONU_AUTH -> CEventCommandObject_ONU_AUTH -> CRegAuthStateMachineManager.run
+PON_EVT_CUS_ONU_UNAUTH -> CEventCommandObject_ONU_UNAUTH -> CRegAuthStateMachineManager
+PON_EVT_CUS_ONU_REPLACE -> CEventCommandObject_ONU_REPLACE -> 
+PON_EVT_CUS_ONU_AUTH_STATE -> CEventCommandObject_CUS_ONU_MSG 
+//若 PON_EVT_CUS_ONU_OFFLINE_FORCE
+其他事件
+

@@ -267,68 +267,12 @@ main(int argc, char ** argv)
         sleep(1);
     }
 
-    //key_t key = ipc_key_get("/etc", 20);
-
 #if 0
-    int          msgq_id, i = 1;
-    msgbuf       rx_buf;
-    unsigned int size;
-
-    msgq_id = ipc_mq_create(key);
-    if (msgq_id == -1)
-    {
-        msgq_id = ipc_mq_open(key);
-        if (msgq_id == -1)
-        {
-            return msgq_id;
-        }
-    }
-    else
-    {
-        ipc_mq_size_set(msgq_id, 1024 * 10);
-    }
-
-    while(1)
-    {
-        bzero(&rx_buf, sizeof(msgbuf));
-        rx_buf.mtype = i;
-
-        ipc_mq_out(msgq_id, rx_buf.mtype, &rx_buf, sizeof(msgbuf), WAIT_FOREVER, &size);
-        printf("node rec type %ld size %d text %s\r\n", rx_buf.mtype, size, rx_buf.mtext);
-        sleep(1);
-
-        ++i;
-        i %= 5;
-        if (i == 0)
-        {
-            i = 1;
-        }
-    }
+    ipc_mq_recv_test();
 #endif
 
 #if 0
-    int semid;
-
-    semid = ipc_sem_create(key);
-    if (semid == -1)
-    {
-        semid = ipc_sem_open(key);
-        if (semid == -1)
-        {
-            return semid;
-        }
-    }
-
-    ipc_sem_setval(semid, 1);
-
-    while(1)
-    {
-        ipc_sem_p(semid);
-        sleep(1);
-        ipc_sem_v(semid);
-    }
-
-    ipc_sem_del(semid); 
+    ipc_sem_sync_test2();
 #endif
 
 #if 0

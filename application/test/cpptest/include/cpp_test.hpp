@@ -85,12 +85,14 @@ private:
 	
 };
 
-typedef struct node
+template<typename T>
+struct node
 {
-	int    	    data;
-	struct node *p_next;
-}node;
+	T    	    data;
+	struct node *next;
+};
 
+template<typename T>
 class mylist
 {
 public:
@@ -99,19 +101,21 @@ public:
 	~mylist(){};
 	
 	void initlist();
-	void insertlist(node *p_node);
-	void deletenode(node *p_node);
-	node *searchlist(int value);
+	void insertlist(node<T> *p_node);
+	void deletenode(node<T> *p_node);
+	node<T> *searchlist(T value);
 	void sortlist();
 	
 	void destroylist();
     void printlist();
+	node<T>* gethead(){return p_head;}
+	int getsize(){return size;}
+	void sethead(node<T> *head){p_head = head;};
 	
 private:
-	node *p_head;
-	int  size;
+	node<T> *p_head;
+	int  	size;
 };
-
 
 template <typename T> class myvector;
 template <typename T> ostream& operator<<(ostream &out, const myvector<T> &obj);
@@ -321,6 +325,9 @@ private:
 void mystack_test();
 void mystring_test();
 void multi_inheritance();
+
+void mylist_test();
+void mylist_reverse(mylist<int>& l);
 
 
 #endif
