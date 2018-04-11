@@ -66,57 +66,6 @@ private:
 	int sec;
 };
 
-template<typename T>
-class mystack
-{
-public:
-	mystack(int size);
-	~mystack();
-
-	bool isfull(void);
-	bool isempty(void);
-	bool push(T data);
-	T pop(void);
-
-private:
-	T  *p_base;
-	int top;
-	int size;
-	
-};
-
-template<typename T>
-struct node
-{
-	T    	    data;
-	struct node *next;
-};
-
-template<typename T>
-class mylist
-{
-public:
-
-	mylist():p_head(NULL), size(0){};
-	~mylist(){};
-	
-	void initlist();
-	void insertlist(node<T> *p_node);
-	void deletenode(node<T> *p_node);
-	node<T> *searchlist(T value);
-	void sortlist();
-	
-	void destroylist();
-    void printlist();
-	node<T>* gethead(){return p_head;}
-	int getsize(){return size;}
-	void sethead(node<T> *head){p_head = head;};
-	
-private:
-	node<T> *p_head;
-	int  	size;
-};
-
 template <typename T> class myvector;
 template <typename T> ostream& operator<<(ostream &out, const myvector<T> &obj);
 
@@ -297,37 +246,8 @@ public:
 	}	
 };
 
-#if 0
 
-typedef struct node
-{
-	int 		date;
-	struct node p_next;
-}
-
-class mylist
-{
-public:
-	void initlist();
-	void insertlist(node *p_node);
-	void deletenode(node *p_node);
-	node *searchlist(int value);
-	void sortlist();
-	
-	void destroylist();
-	
-private:
-	node *p_head;
-}
-#endif
-
-
-void mystack_test();
 void mystring_test();
 void multi_inheritance();
-
-void mylist_test();
-void mylist_reverse(mylist<int>& l);
-
 
 #endif
