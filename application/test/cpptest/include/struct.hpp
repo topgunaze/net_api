@@ -61,6 +61,12 @@ void mylist_test();
 void mylist_reverse0(mylist<int>& l);
 void mylist_reverse_print1(mylist<int>& l);
 void mylist_reverse_print2(node<int> *head);
+node<int>* mylist_end_k(mylist<int>& l, int k);
+node<int>* mylist_first_common_node_test(mylist<int>& l1, mylist<int>& l2);
+node<int>* mylist_ring_judge(mylist<int>& l);
+int mylist_ring_len(node<int>* p_node);
+
+
 
 
 #endif
