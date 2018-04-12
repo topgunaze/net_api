@@ -1,6 +1,52 @@
 #ifndef __OVERLOAD__
 #define __OVERLOAD__
 
+#include <iostream>
+
+class mystring
+{
+public:
+	mystring(const char* p_string = NULL);
+	mystring(const mystring &other);
+	mystring& operator=(const mystring &other);
+	mystring operator+(const mystring &other);
+	
+	bool operator==(const mystring &other);
+	bool operator>(const mystring &other);
+	bool operator<(const mystring &other);
+	char& operator[](int idx);
+	
+	void display(void);
+	
+	virtual ~mystring();
+	
+private:
+	char* p_str;
+};
+
+template <typename T> class myvector;
+template <typename T> std::ostream& operator<<(std::ostream &out, const myvector<T> &obj);
+
+template<typename T>
+class myvector
+{
+public:
+	myvector(int size = 0);
+	myvector(const myvector<T> &obj);
+	~myvector();
+	myvector<T>& operator=(const myvector<T> &obj);
+	T& operator[](int idx);
+
+	int getsize(void);
+
+	friend std::ostream& operator<<<T>(std::ostream &out, const myvector<T> &obj);
+	
+private:
+	T   *p_base;
+	int size;
+};
+
+
 //类型转换构造
 class point1d
 {
@@ -76,6 +122,8 @@ public:
 private:
 	bool val;
 };
+
+void mystring_test();
 
 void bool_test();
 

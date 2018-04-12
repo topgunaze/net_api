@@ -1,7 +1,8 @@
 #ifndef CPP_TEST
 #define CPP_TEST
 
-#include <string.h>
+#include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -9,12 +10,12 @@ class Stu
 {
 public:
 	Stu(string name, int age)//:name(name),age(age)
-		{
-			this->name = name;
-			this->age  = age;
-		};
+	{
+		this->name = name;
+		this->age  = age;
+	}
 
-	~Stu(){};
+	~Stu(){}
 
 	Stu& growup(void);
 	void display(void);
@@ -22,27 +23,6 @@ public:
 private:
 	string name;
 	int    age;
-};
-
-class mystring
-{
-public:
-	mystring(const char* p_string = NULL);
-	mystring(const mystring &other);
-	mystring& operator=(const mystring &other);
-	mystring operator+(const mystring &other);
-	
-	bool operator==(const mystring &other);
-	bool operator>(const mystring &other);
-	bool operator<(const mystring &other);
-	char& operator[](int idx);
-	
-	void display(void);
-	
-	virtual ~mystring();
-	
-private:
-	char* p_str;
 };
 
 class myclock
@@ -66,29 +46,6 @@ private:
 	int sec;
 };
 
-template <typename T> class myvector;
-template <typename T> ostream& operator<<(ostream &out, const myvector<T> &obj);
-
-
-template<typename T>
-class myvector
-{
-public:
-	myvector(int size = 0);
-	myvector(const myvector<T> &obj);
-	~myvector();
-	myvector<T>& operator=(const myvector<T> &obj);
-	T& operator[](int idx);
-
-	int getsize(void);
-
-	friend ostream& operator<<<T>(ostream &out, const myvector<T> &obj);
-	
-private:
-	T   *p_base;
-	int size;
-};
-
 class base
 {
 public:
@@ -99,7 +56,7 @@ public:
 
 	virtual void func(void)
 	{
-		cout<<"base func"<<endl;
+		std::cout<<"base func"<<endl;
 	}
 };
 
@@ -108,7 +65,7 @@ class derive:public base
 private:
 	void func(void)
 	{
-		cout<<"derive func"<<endl;
+		std::cout<<"derive func"<<endl;
 	}
 };
 
@@ -122,7 +79,7 @@ class book:public ireader
 {
 	void reader(void)
 	{
-		cout<<"read book"<<endl;
+		std::cout<<"read book"<<endl;
 	}
 };
 
@@ -130,7 +87,7 @@ class newspaper:public ireader
 {
 	void reader(void)
 	{
-		cout<<"read newspaper"<<endl;
+		std::cout<<"read newspaper"<<endl;
 	}
 };
 
@@ -144,7 +101,7 @@ class people
 
 		void test(void)
 		{
-			cout<<"this is a test"<<endl;
+			std::cout<<"this is a test"<<endl;
 		}
 };
 
@@ -246,8 +203,6 @@ public:
 	}	
 };
 
-
-void mystring_test();
 void multi_inheritance();
 
 #endif
