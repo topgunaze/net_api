@@ -576,5 +576,22 @@ int mylist_ring_len(node<int>* p_node)
 	return count;
 }
 
+node<int>* mylist_ring_entry(node<int>* p_node_head, node<int>* p_node_cur)
+{
+	node<int> *p_node_first = p_node_head,  *p_node_second = p_node_cur;
+
+	if (!p_node_head || !p_node_cur)
+		return NULL;
+
+	//len = nR-x
+	while(p_node_first != p_node_second)
+	{
+		p_node_head = p_node_head->next;
+		
+	}
+
+}
+
+
 
 
