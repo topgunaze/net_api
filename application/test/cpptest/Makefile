@@ -12,7 +12,7 @@ PRJ_ROOT_DIR   ?= $(shell cd ../../..; pwd)
 
 -include $(PRJ_ROOT_DIR)/make/Make.config
 
-CC := $(CROSS_COMPILE)g++ -O0 -g
+CC := $(CROSS_COMPILE)g++ -O0
  
 #  Create some dependency directory 
 MODULE_OBJ_DIR := $(PRJ_OBJ_DIR)/cpp_test
@@ -30,7 +30,7 @@ INCLUDE_DIRS := ./include
 				
 APP_DEP_LIBS :=
 
-CFLAGS               += -Wall -Werror $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
+CFLAGS               += -g -Wall -Werror $(addprefix -I,$(INCLUDE_DIRS)) -DHAVE_CONFIG_H
 CC_LIBS              := -lpthread
 
 #  Pattern matching rules: 

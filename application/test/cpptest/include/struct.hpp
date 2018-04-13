@@ -65,8 +65,10 @@ node<int>* mylist_end_k(mylist<int>& l, int k);
 node<int>* mylist_first_common_node_test(mylist<int>& l1, mylist<int>& l2);
 node<int>* mylist_ring_judge(mylist<int>& l);
 int mylist_ring_len(node<int>* p_node);
-
-
+node<int>* mylist_ring_entry(node<int>* p_node_head, node<int>* p_node_cur);
+int mylist_merge_traverse(mylist<int>& l1, mylist<int>& l2, mylist<int>& l);
+node<int>* mylist_merge_recursive(node<int> *p_node_1, node<int>* p_node_2);
+node<int>* mylist_repeat_del(node<int>* p_node);
 
 
 #endif

@@ -112,7 +112,8 @@ void mylist<T>::deletenode(node<T> *p_node)
 	{
 		p_head = p_head->next;
 		--size;
-		delete p_node;
+
+		p_node->next = NULL;
 		
 		return;
 	}
@@ -123,7 +124,8 @@ void mylist<T>::deletenode(node<T> *p_node)
 		{
 			p_tmp->next = p_cur->next;
 			--size;
-			delete p_cur;
+
+			p_node->next = NULL;
 			
 			return;
 		}
@@ -394,8 +396,97 @@ void mylist_test()
 	else
 	{
 		len = mylist_ring_len(p_node);
-		cout<<" the ring len "<<len<<endl;
+		p_node = mylist_ring_entry(lr0.gethead(), p_node);
+		cout<<" the ring len "<<len<<" entry data "<<p_node->data<<endl;
 	}
+
+	cout<<"mylist_merge_traverse"<<endl;
+	mylist<int> lm0;
+	mylist<int> lm1;
+	mylist<int> lm3;
+	int			ret;
+	node<int> 	*p_node_array5[20];
+
+	for (int i = 0; i<20; ++i)
+	{
+		p_node = new node<int>;
+		p_node->data = i;
+		p_node->next = NULL;
+		p_node_array5[i] = p_node;
+	}
+
+	for (int i = 0; i<20; ++i)
+	{
+		if(i%2)
+			lm0.inserttail(p_node_array5[i]);
+		else
+			lm1.inserttail(p_node_array5[i]);
+	}
+
+	lm0.printlist();
+	lm1.printlist();
+
+	ret = mylist_merge_traverse(lm0, lm1, lm3);
+	if (ret)
+		cout<<"list merge fail "<<endl;
+	else
+	{
+		cout<<"list merge suc"<<endl;
+		lm0.printlist();
+		lm1.printlist();
+		lm3.printlist();
+	}
+
+	cout<<"mylist_merge_recursive "<<endl;
+	for (int i = 0; i<20; ++i)
+	{
+		if(i%2)
+			lm0.inserttail(p_node_array5[i]);
+		else
+			lm1.inserttail(p_node_array5[i]);
+	}
+
+	node<int> *p_node_first = lm0.gethead(), *p_node_second = lm1.gethead();
+	lm0.printlist();
+	lm1.printlist();
+	
+	lm0.initlist();
+	lm1.initlist();
+	
+	p_node = mylist_merge_recursive(p_node_first, p_node_second);
+	while(p_node)
+	{
+		cout<<p_node->data<<" ";
+		p_node = p_node->next;
+	}
+	
+	lm0.printlist();
+	lm1.printlist();
+	
+	cout<<endl;
+
+	cout<<"list repeat del"<<endl;
+	mylist<int> ld1;
+
+	for (int i = 0; i<20; ++i)
+	{
+		p_node = new node<int>;
+		p_node->data = i/2;
+		p_node->next = NULL;
+
+		ld1.inserttail(p_node);
+	}
+
+	ld1.printlist();
+	
+	p_node = mylist_repeat_del(ld1.gethead());
+	while(p_node)
+	{
+		cout<<p_node->data<<" ";
+		p_node = p_node->next;
+	}
+
+	cout<<endl;
 }
 
 //修改了链表结构
@@ -583,15 +674,116 @@ node<int>* mylist_ring_entry(node<int>* p_node_head, node<int>* p_node_cur)
 	if (!p_node_head || !p_node_cur)
 		return NULL;
 
-	//len = nR-x
+	//len = nR-x = (n-1)R + (R-x)
 	while(p_node_first != p_node_second)
 	{
-		p_node_head = p_node_head->next;
-		
+		p_node_first  = p_node_first->next;
+		p_node_second = p_node_second->next;
 	}
 
+	return p_node_first;
 }
 
+int mylist_merge_traverse(mylist<int>& l1, mylist<int>& l2, mylist<int>& l)
+{
+	node<int> *p_node_1 = l1.gethead(), *p_node_2 = l2.gethead();
+	
+	if (!p_node_1 && !p_node_2)
+	{
+		return -1;
+	}
 
+	while(p_node_1 && p_node_2)
+	{
+		//cout<<"node1 "<<p_node_1->data<<" node2 "<<p_node_2->data<<endl;
+		
+		if (p_node_1->data <= p_node_2->data)
+		{
+			l1.deletenode(p_node_1);
+			l.inserttail(p_node_1);
+			p_node_1 = l1.gethead();
+		}
+		else
+		{
+			l2.deletenode(p_node_2);
+			l.inserttail(p_node_2);
+			p_node_2 = l2.gethead();
+		}
+	}
+
+	//cout<<"merge test"<<endl;
+	//l1.printlist();
+	//l2.printlist();
+	//l.printlist();
+
+	while(p_node_1)
+	{
+		l1.deletenode(p_node_1);
+		l.inserttail(p_node_1);
+		p_node_1 = l1.gethead();
+	}
+
+	while(p_node_2)
+	{
+		l2.deletenode(p_node_2);
+		l.inserttail(p_node_2);
+		p_node_2 = l2.gethead();
+	}
+
+	return 0;
+}
+
+node<int>* mylist_merge_recursive(node<int> *p_node_1, node<int>* p_node_2)
+{
+	node<int> *p_node;
+
+	if (!p_node_1)
+		return p_node_2;
+	else if (!p_node_2)
+		return p_node_1;
+	
+	if (p_node_1->data <= p_node_2->data)
+	{
+		p_node = p_node_1;
+		p_node->next = mylist_merge_recursive(p_node_1->next, p_node_2);
+	}
+	else
+	{
+		p_node = p_node_2;
+		p_node->next = mylist_merge_recursive(p_node_1, p_node_2->next);
+	}
+
+	return p_node;
+}
+
+node<int>* mylist_repeat_del(node<int> *p_node)
+{
+	node<int> *p_node_head = p_node, *p_node_cur = p_node, *p_node_next;
+	
+	if (!p_node_cur)
+	{
+		return NULL;
+	}
+	
+	p_node_next = p_node->next;
+	if (!p_node_next)
+		return p_node_cur;
+
+	while(p_node_next)
+	{
+		if (p_node_cur->data == p_node_next->data)
+		{
+			p_node_cur->next = p_node_next->next;
+			p_node_next = p_node_next->next;
+		}
+		else
+		{
+			p_node_cur  = p_node_cur->next;
+			p_node_next = p_node_next->next; 
+		}	
+	}
+
+	return p_node_head;
+}
 
 
