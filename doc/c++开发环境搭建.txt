@@ -12,10 +12,11 @@ man std::iostream ，之后再通过搜索/cout，找到cout的说明，
 g++
 
 3. 使用stl模板库
+http://en.cppreference.com/w/cpp/algorithm/search_n
+http://www.cplusplus.com/reference/algorithm/search_n/?kw=search_n
 
 4. makefile
 
 5. gdb调试
-
 
 

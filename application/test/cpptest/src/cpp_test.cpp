@@ -9,6 +9,7 @@
 #include "funcobject.hpp"
 #include "overload.hpp"
 #include "struct.hpp"
+#include "suanfa.hpp"
 
 
 #if 0
@@ -152,8 +153,15 @@ int main()
 #endif
 
 
-#if 1
+#if 0
 	mylist_test();
+#endif
+
+#if 1
+	count_find_search_test();
+	//min_max_test();
+	//find_test();
+
 #endif
 
 #if 0

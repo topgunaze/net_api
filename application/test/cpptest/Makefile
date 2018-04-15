@@ -13,7 +13,7 @@ PRJ_ROOT_DIR   ?= $(shell cd ../../..; pwd)
 -include $(PRJ_ROOT_DIR)/make/Make.config
 
 CC := $(CROSS_COMPILE)g++ -O0
- 
+
 #  Create some dependency directory 
 MODULE_OBJ_DIR := $(PRJ_OBJ_DIR)/cpp_test
 MODULE_LIB_DIR := $(PRJ_LIB_DIR)/cpp_test
@@ -43,7 +43,7 @@ all: $(MODULE_OBJ_DIR)/cpp_test
 $(MODULE_OBJ_DIR)/cpp_test : $(APP_DEP_LIBS) $(MODULE_DEPS)
 	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -D$(VERSION_TYPE) -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
 	$(CROSS_COMPILE)objdump -S $@ > cpp_test_dump.txt
-	$(STRIP) $@
+#	$(STRIP) $@
 
 clean: 
 	$(RM) $(MODULE_OBJ_DIR)/*
