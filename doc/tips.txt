@@ -1298,49 +1298,254 @@ service iptables stop
 如果ssh端口号没有修改的话就可以连上了
 ssh配置文件在 /etc/ssh/sshd_config
 
-管道
-fd0表示读，fd1表示写，子进程写需要关闭读端，父进程读需要关闭写端。
-pipe
-write
-read
-makefile例子：
+命令
+描述
+backtrace（或bt）            
+查看各级函数调用及参数
+finish
+连续运行到当前函数返回为止，然后停下来等待命令
+frame（或f） 帧编号
+选择栈帧
+info（或i） locals
+查看当前栈帧局部变量的值
+list（或l）
+列出源代码，接着上次的位置往下列，每次列10行
+list 行号
+列出从第几行开始的源代码
+list 函数名
+列出某个函数的源代码
+next（或n）
+执行下一行语句
+print（或p）
+打印表达式的值，通过表达式可以修改变量的值或者调用函数
+quit（或q）
+退出gdb调试环境
+set var
+修改变量的值
+start
+开始执行程序，停在main函数第一行语句前面等待命令
+step（或s）
+执行下一行语句，如果有函数调用则进入到函数中    
+break（或b） 行号             
+在某一行设置断点                                                                       
+break 函数名
+在某个函数开头设置断点
+break ... if ...
+设置条件断点
+continue（或c）
+从当前位置开始连续运行程序
+delete breakpoints
+删除断点
+display 变量名
+跟踪查看某个变量，每次停下来都显示它的值
+disable breakpoints
+禁用断点
+enable 断点号
+启用断点
+info(或i)breakpoints
+查看当前设置了哪些断点
+run（或r）
+从头开始连续运行程序
+undisplay 跟踪显示号
+取消跟踪显示
+watch                                  
+设置观察点     
+info（或i） watchpoints
+查看当前设置了哪些观察点  
+x
+从某个位置开始打印存储单元的内容，全部当成字节来看，   
+ 而不区分哪个字节属于哪个变量
+ 
+调用gdb编译需要在cc后面加 -g参数再加-o；
 
+[root@redhat home]#gdb 调试文件：启动gdb
 
-class Solution01 {
-public:
-	bool Find(vector<vector<int> > array, int target) {
-		int row = array.size();
-		if (row == 0)
-			return false;
+(gdb) l ：（字母l）从第一行开始列出源码
 
-		int col = array[0].size();
-		int i = 0, j = col - 1;
-		while (i < row && j >= 0){
-			if (array[i][j] == target)
-				return true;
-			else if (array[i][j] > target){
-				j--;
-			}
-			else{
-				i++;
-			}			
-		}
+(gdb) break n :在第n行处设置断点
 
-		return false;
-	}
+(gdb) break func：在函数func()的入口处设置断点
 
-public:
-	void test(){
-		vector <vector<int>> array1{{ 1, 2, 3, 4, 5 },
-		{ 6, 7, 8, 9, 10 },
-		{ 11, 12, 13, 14, 15 },
-		{ 16, 17, 18, 19, 20 }};
+(gdb) info break： 查看断点信息
 
-		vector<int> target{ 1, 2, 3, 10, 0, -1, 32, 34, 20, 16, 15, 6 };
-		for (int i = 0; i != target.size(); i++){
-			cout << "target " << target[i] << boolalpha << "    std:" << (1 <= target[i] && target[i] <= 20) << "  res:"
-				<< Find(array1, target[i]) << endl;
-		}
-	}
+(gdb) r：运行程序
 
-};
+(gdb) n：单步执行
+
+(gdb) c：继续运行
+
+(gdb) p 变量 ：打印变量的值
+
+(gdb) bt：查看函数堆栈
+
+(gdb) finish：退出函数
+
+(gdb) shell 命令行：执行shell命令行
+
+(gdb) set args 参数:指定运行时的参数
+
+(gdb) show args：查看设置好的参数
+
+(gdb) show paths:查看程序运行路径；
+
+set environment varname [=value] 设置环境变量。如：set env USER=hchen；
+
+show environment [varname] 查看环境变量；
+
+(gdb) cd 相当于shell的cd;
+
+(gdb)pwd ：显示当前所在目录
+
+(gdb)info program： 来查看程序的是否在运行，进程号，被暂停的原因。
+
+(gdb)clear 行号n：清除第n行的断点
+
+(gdb)delete 断点号n：删除第n个断点
+
+(gdb)disable 断点号n：暂停第n个断点
+
+(gdb)enable 断点号n：开启第n个断点
+
+(gdb)step：单步调试如果有函数调用，则进入函数；与命令n不同，n是不进入调用的函数的
+
+list ：简记为 l ，其作用就是列出程序的源代码，默认每次显示10行。 
+list 行号：将显示当前文件以“行号”为中心的前后10行代码，如：list 12 
+list 函数名：将显示“函数名”所在函数的源代码，如：list main 
+list ：不带参数，将接着上一次 list 命令的，输出下边的内容。 
+注意 ：如果运行list 命令得到类似如下的打印，那是因为在编译程序时没有加入 -g 选项：
+(gdb) list
+1 ../sysdeps/i386/elf/start.S: No such file or directory.
+in ../sysdeps/i386/elf/start.S
+
+run：简记为 r ，其作用是运行程序，当遇到断点后，程序会在断点处停止运行，等待用户输入下一步的命令。 
+回车：重复上一条命令。 
+set args：设置运行程序时的命令行参数，如：set args 33 55 
+show args：显示命令行参数 
+continue：简讯为 c ，其作用是继续运行被断点中断的程序。 
+break：为程序设置断点。 
+break 行号：在当前文件的“行号”处设置断点，如：break 33 
+break 函数名：在用户定义的函数“函数名”处设置断点，如：break cb_button 
+info breakpoints：显示当前程序的断点设置情况 
+disable breakpoints Num：关闭断点“Num”，使其无效，其中“Num”为 info breakpoints 中显示的对应值 
+enable breakpoints Num：打开断点“Num”，使其重新生效 
+step：简记为 s ，单步跟踪程序，当遇到函数调用时，则进入此函数体（一般只进入用户自定义函数）。 
+next：简记为 n，单步跟踪程序，当遇到函数调用时，也不进入此函数体；此命令同 step 的主要区别是，step 遇到用户自定义的函数，将步进到函数中去运行，而 next 则直接调用函数，不会进入到函数体内。 
+until：当你厌倦了在一个循环体内单步跟踪时，这个命令可以运行程序直到退出循环体。 
+finish： 运行程序，直到当前函数完成返回，并打印函数返回时的堆栈地址和返回值及参数值等信息。 
+stepi或nexti：单步跟踪一些机器指令。
+
+print 表达式：简记为 p ，其中“表达式”可以是任何当前正在被测试程序的有效表达式，比如当前正在调试C语言的程序，那么“表达式”可以是任何C语言的有效表达式，包括数字，变量甚至是函数调用。 
+print a：将显示整数 a 的值 
+print ++a：将把 a 中的值加1,并显示出来 
+print name：将显示字符串 name 的值 
+print gdb_test(22)：将以整数22作为参数调用 gdb_test() 函数 
+print gdb_test(a)：将以变量 a 作为参数调用 gdb_test() 函数 
+bt：显示当前程序的函数调用堆栈。 
+display 表达式：在单步运行时将非常有用，使用display命令设置一个表达式后，它将在每次单步进行指令后，紧接着输出被设置的表达式及值。如： display a 
+watch 表达式：设置一个监视点，一旦被监视的“表达式”的值改变，gdb将强行终止正在被调试的程序。如： watch a 
+kill：将强行终止当前正在调试的程序 
+help 命令：help 命令将显示“命令”的常用帮助信息 
+call 函数(参数)：调用“函数”，并传递“参数”，如：call gdb_test(55) 
+layout：用于分割窗口，可以一边查看代码，一边测试： 
+layout src：显示源代码窗口 
+layout asm：显示反汇编窗口 
+layout regs：显示源代码/反汇编和CPU寄存器窗口 
+layout split：显示源代码和反汇编窗口 
+Ctrl + L：刷新窗口 
+quit：简记为 q ，退出gdb 
+当然，gdb的功能远不止这些，包括多进程/多线程/信号/远程调试等功能在这里均没有提及，有需要的读者可以参考其它信息
+
+EPOLL事件的两种模型：
+Level Triggered (LT) 水平触发
+.socket接收缓冲区不为空 有数据可读 读事件一直触发
+.socket发送缓冲区不满 可以继续写入数据 写事件一直触发
+符合思维习惯，epoll_wait返回的事件就是socket的状态
+
+Edge Triggered (ET) 边沿触发
+.socket的接收缓冲区状态变化时触发读事件，即空的接收缓冲区刚接收到数据时触发读事件
+.socket的发送缓冲区状态变化时触发写事件，即满的缓冲区刚空出空间时触发读事件
+仅在状态变化时触发事件
+
+ET还是LT?
+
+LT的处理过程：
+. accept一个连接，添加到epoll中监听EPOLLIN事件
+. 当EPOLLIN事件到达时，read fd中的数据并处理
+. 当需要写出数据时，把数据write到fd中；如果数据较大，无法一次性写出，那么在epoll中监听EPOLLOUT事件
+. 当EPOLLOUT事件到达时，继续把数据write到fd中；如果数据写出完毕，那么在epoll中关闭EPOLLOUT事件
+
+ET的处理过程：
+. accept一个一个连接，添加到epoll中监听EPOLLIN|EPOLLOUT事件
+. 当EPOLLIN事件到达时，read fd中的数据并处理，read需要一直读，直到返回EAGAIN为止
+. 当需要写出数据时，把数据write到fd中，直到数据全部写完，或者write返回EAGAIN
+. 当EPOLLOUT事件到达时，继续把数据write到fd中，直到数据全部写完，或者write返回EAGAIN
+
+从ET的处理过程中可以看到，ET的要求是需要一直读写，直到返回EAGAIN，否则就会遗漏事件。
+而LT的处理过程中，直到返回EAGAIN不是硬性要求，但通常的处理过程都会读写直到返回EAGAIN，但LT比ET多了一个开关EPOLLOUT事件的步骤
+
+LT的编程与poll/select接近，符合一直以来的习惯，不易出错
+ET的编程可以做到更加简洁，某些场景下更加高效，但另一方面容易遗漏事件，容易产生bug
+
+例子与测试
+
+这里有两个简单的例子演示了LT与ET的用法(其中epoll-et的代码比epoll要少10行)：
+https://github.com/yedf/handy/blob/master/raw-examples/epoll.cc
+https://github.com/yedf/handy/blob/master/raw-examples/epoll-et.cc
+
+针对容易触发LT开关EPOLLOUT事件的情景（让服务器返回1M大小的数据），用ab做了性能测试
+测试的结果显示ET的性能稍好，详情如下：
+LT 启动命令 ./epoll a
+ET 启动命令 ./epoll-et a
+ab 命令：ab -n 1000 -k 127.0.0.1/
+LT 结果：Requests per second: 42.56 [#/sec] (mean)
+ET 结果：Requests per second: 48.55 [#/sec] (mean)
+
+当把服务器返回的数据大小改为48576时，开关EPOLLOUT更加频繁，性能的差异更大
+ab 命令：ab -n 5000 -k 127.0.0.1/
+LT 结果：Requests per second: 745.30 [#/sec] (mean)
+ET 结果：Requests per second: 927.56 [#/sec] (mean)
+
+对于nginx这种高性能服务器，ET模式是很好的，而其他的通用网络库，很多是使用LT，避免使用的过程中出现bug
+
+1.strcpy
+函数原型为char *strcpy(char *dest,const char *src);
+函数说明：strcpy函数会将参数src字符串拷贝至参数dest所指的地址。
+参数说明：dest，我们说的出参，最终得到的字符串。src，入参，因为其有const修饰。表示在此函数中不会也不能修改src的值。
+返回值：返回dest字符串的起始地址。
+附加说明：如果参数dest所指的内存空间不够大，可能会造成缓冲溢出的错误情况。
+特别强调：此函数很好用，可是它也很危险。如果在用的时候加上相关的长度判断，则会大大降低出此错误的危险。
+此函数还有一个特点，就是它在把字符串b拷贝到字符串a的时候，会在拷贝的a字符串的末尾加上一个\0结束标志。这个不同于strncpy（）函数。
+例如：
+#include<string.h>
+main(){
+    char a[30]="string(1)";
+    char b[]="string(2)";
+     printf("before strcpy():%s\n",a);
+     if(strlen(b)<strlen(a)){
+           printf("after strcpy():%s\n",strcpy(a,b));
+          }
+}
+2.strncpy
+函数原型为：char *strncpy(char *dest,const char *src ,size_t n);
+函数说明：strncpy会将参数src字符串拷贝前n个字符至参数dest所指的地址。
+返回值：返回参数dest的字符串起始地址。
+特别强调：不要以为这个函数是个好东西，往往在定位问题时，它是罪魁祸首，到顶了，它是静态的容值函数，程序跑起来你就等着dbug吧。
+strncpy的正确用法：
+strncpy(dest, src, sizeof(dest))；
+dest[sizeof(dest)-1] = ‘\0’;
+size一定要用sizeof(dest)或sizeof(dest)-1，不可误用sizeof(src).
+手工填0. 务必要把dest的最后一个字节手工设置为0. 因为strncpy仅在src的长度小于dest时，对剩余的字节填0.
+性能问题。当dest长度远大于src时，由于strncpy会对多余的每个字节填0，会有很大的性能损失。
+返回值。strncpy返回dest，因而无法知道拷贝了多少个字节。
+
+strcpy和strncpy的缺陷分析
+（1）潜在的内存越界问题
+当dest所指对象的数组长度 < src的数组长度时
+或者
+dest所指对象的数组长度 < count时，由于无法根据指针判定其所指数组长度，故数组内存边界是不可知。因此会导致内存越界，尤其是当数组是分配在栈空间的，其越界会进入程序代码区，将使程序出现非常隐晦的异常。
+（2）字符串结束标志符'\0'丢失
+当dest所指对象的数组长度 == count时，调用strncpy使得dest字符串结束标志符'\0'丢失。
+（3）效率较低
+当 count > src所指对象的数组长度时，会继续填充'\0'直到count长度为止。
+(注：)以上3点缺陷在visual studio 2005安全性得到了改进版本：strcpy_s（dest, count, src）(_s可以理解为safe)
+（4）不能处理dest和src内存交叠情况的字符串拷贝
