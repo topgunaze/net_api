@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <deque>
+#include <iterator>
 #include<algorithm>
 
 using namespace std;
@@ -187,5 +188,106 @@ void find_test()
 	cout<<endl;
 }
 
+void copy_test()
+{
+	vector<int> iv0;
+	list<int>   il0;
 
+	for (int i = 0; i<10; ++i)
+		il0.push_back(i);
+
+	for (list<int>::iterator it = il0.begin(); it != il0.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+
+	iv0.resize(10);
+	copy(il0.begin(), il0.end(), iv0.begin());
+	for (vector<int>::iterator it = iv0.begin(); it != iv0.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+	
+	copy(il0.begin(), il0.end(), ostream_iterator<int>(cout, " "));
+	cout<<endl;
+
+#if 1
+	copy(il0.rbegin(), il0.rend(), back_inserter(iv0));
+	for (vector<int>::iterator it = iv0.begin(); it != iv0.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+
+	
+#endif
+
+	vector<int> iv1;
+	vector<int> iv2;
+	for (int i = 0; i<5; ++i)
+		iv1.push_back(i);
+
+	for(vector<int>::iterator it = iv1.begin(); it != iv1.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+
+	iv2.resize(iv1.size());
+	copy_backward(iv1.begin(), iv1.end(), iv2.end());
+	for(vector<int>::iterator it = iv2.begin(); it != iv2.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+}
+
+void mismatch_test()
+{
+	vector<int> iv0;
+	vector<int> iv1;
+
+	for(int i = 0; i<5; ++i)
+	{
+		iv0.push_back(i);
+		iv1.push_back(i+1);
+	}
+
+	pair<vector<int>::iterator, vector<int>::iterator> value;
+	value = mismatch(iv0.begin(), iv0.end(), iv1.begin());
+	if (value.first != iv0.end())
+	{
+		cout<<"mismatch first "<<*value.first<<" second "<<*value.second<<endl;
+	}
+}
+
+void permutation_test()
+{
+	vector<int> iv0;
+	vector<int> iv1;
+
+	for (int i = 0; i<3; i++)
+	{
+		iv0.push_back(i);
+		iv1.push_back(3 - i);
+	}
+
+	cout<<"iv0 "<<endl;
+	for (vector<int>::iterator it = iv0.begin(); it != iv0.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+
+	cout<<"next "<<endl;
+	while(next_permutation(iv0.begin(), iv0.end()))
+	{
+		for (vector<int>::iterator it = iv0.begin(); it != iv0.end(); ++it)
+			cout<<*it<<" ";
+		cout<<endl;
+	}
+
+	cout<<"iv1 "<<endl;
+	for (vector<int>::iterator it = iv1.begin(); it != iv1.end(); ++it)
+		cout<<*it<<" ";
+	cout<<endl;
+
+	cout<<"prev "<<endl;
+	while(prev_permutation(iv1.begin(), iv1.end()))
+	{
+		for (vector<int>::iterator it = iv1.begin(); it != iv1.end(); ++it)
+			cout<<*it<<" ";
+		cout<<endl;
+	}
+}
 

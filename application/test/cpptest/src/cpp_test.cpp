@@ -158,9 +158,12 @@ int main()
 #endif
 
 #if 1
-	count_find_search_test();
+	//count_find_search_test();
 	//min_max_test();
 	//find_test();
+	copy_test();
+	//mismatch_test();
+	//permutation_test();
 
 #endif
 
