@@ -1549,3 +1549,38 @@ dest所指对象的数组长度 < count时，由于无法根据指针判定其�
 当 count > src所指对象的数组长度时，会继续填充'\0'直到count长度为止。
 (注：)以上3点缺陷在visual studio 2005安全性得到了改进版本：strcpy_s（dest, count, src）(_s可以理解为safe)
 （4）不能处理dest和src内存交叠情况的字符串拷贝
+
+
+monitor
+sqlite
+
+node_onu_db_sem
+
+node_onu_unit_bit_map_alloc
+lock 
+
+dml
+ddl
+
+
+black_list
+ni  sn expire phy_unit auth_key phy_uint
+
+phy_uint status sn password loid_user loid_co eqd attr autofind_timestamp auth_key
+
+constraint
+primary key
+FOREIGN KEY REFERENCES
+
+COLLATE NOCASE
+
+api:
+sqlite3_step
+
+sqlite3_reset
+
+
+类似读写锁
+
+库锁 性能测试
+表锁 性能测试

@@ -21,7 +21,7 @@ static uint32_t autofind_aging_duration;
 
 static NODE_BLACKLIST_INFO g_onu_filter_info;
 
-static uint8_t onu_uint_bit_map[MAX_NUM_OF_PORT][MAX_NODE_EACH_PORT/8];
+static uint8_t onu_unit_bit_map[MAX_NUM_OF_PORT][MAX_NODE_EACH_PORT/8];
 
 static sem_t node_onu_db_sem;
 
@@ -55,33 +55,30 @@ node_str_to_sn(
                 const unsigned char *p_sn_str,
                 char *p_serial_number)
 {
-    uint32_t idx;
-    const unsigned char *p_str;
-    int hex;
+    uint32_t            idx;
+    const unsigned char *p_str = p_sn_str + 4;
+    int                 hex;
 
-    if(!p_sn_str || !p_serial_number)
+    if(!p_sn_str || !p_serial_number|| !p_str)
         return -1;
 
-    for(idx = 0, p_str = p_sn_str + 4; idx < 4; idx++, p_str += 2)
+    for(idx = 0; (idx < 4) && p_str; ++idx, p_str += 2)
     {
         if(sscanf((const char*)p_str, "%02x", &hex) <= 0)
             return -1;
-
     }
 
     return 0;
 }
 
-
 static int
 node_pwd_to_str(
-                const char *p_password,
-                char *pwd_str,
-                const int pwd_str_size)
+                const char  *p_password,
+                char        *pwd_str,
+                const int   pwd_str_size)
 {
     if(!p_password || !pwd_str || pwd_str_size <= sizeof(char))
         return -1;
-
 
     return 0;
 }
@@ -97,11 +94,10 @@ node_str_to_pwd(
     return 0;
 }
 
-
 static int
 node_str_to_loid_user(
                 const unsigned char *p_loid_user_str,
-                node_loid_user *p_loid_user)
+                node_loid_user      *p_loid_user)
 {
     if(!p_loid_user)
         return -1;
@@ -113,7 +109,6 @@ node_str_to_loid_user(
 
     return 0;
 }
-
 
 static int
 node_loid_user_to_str(
@@ -129,7 +124,6 @@ node_loid_user_to_str(
     return 0;
 }
 
-
 static int
 node_str_to_loid_co(
                 const unsigned char *p_loid_co_str,
@@ -139,13 +133,12 @@ node_str_to_loid_co(
         return -1;
 
     if(!p_loid_co_str)
-        memset((char *)p_loid_co->arr, 0, sizeof(node_loid_co));
+        memset((char*)p_loid_co->arr, 0, sizeof(node_loid_co));
     else
-        strncpy((char *)p_loid_co->arr, (const char*)p_loid_co_str, sizeof(node_loid_co));
+        strncpy((char*)p_loid_co->arr, (const char*)p_loid_co_str, sizeof(node_loid_co));
 
     return 0;
 }
-
 
 static int
 node_loid_co_to_str(
@@ -161,37 +154,36 @@ node_loid_co_to_str(
     return 0;
 }
 
-
 static void
-node_onu_uint_bit_map_clear(
-                const uint8_t port_id,
-                const uint16_t onu_id)
+node_onu_unit_bit_map_clear(
+                const uint8_t  port_id,
+                const uint8_t  onu_id)
 {
-    onu_uint_bit_map[port_id][onu_id/8] &= ~(1U << (onu_id%8));
+    onu_unit_bit_map[port_id][onu_id/8] &= ~(1U << (onu_id%8));
 }
 
 
 static int
-node_onu_uint_bit_map_alloc(
+node_onu_unit_bit_map_alloc(
                 const uint8_t port_id,
-                uint16_t *p_onu_id)
+                uint16_t      *p_onu_id)
 {
     uint32_t idx1, idx2;
-    static const uint8_t mask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+    const uint8_t mask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
     uint8_t val;
 
-    for (idx1 = 0; idx1 < MAX_NODE_EACH_PORT/8; idx1++)
+    for (idx1 = 0; idx1 < MAX_NODE_EACH_PORT/8; ++idx1)
     {
-        if (onu_uint_bit_map[port_id][idx1] == 0xFFU)
+        if (onu_unit_bit_map[port_id][idx1] == 0xFFU)
             continue;
 
-        val = ~onu_uint_bit_map[port_id][idx1];
-        for (idx2 = 0; idx2 < 8; idx2++)
+        val = ~onu_unit_bit_map[port_id][idx1];
+        for (idx2 = 0; idx2 < 8; ++idx2)
         {
             if(val & mask[idx2])
             {
                 *p_onu_id = idx1*8+idx2;
-                onu_uint_bit_map[port_id][idx1] |= mask[idx2];
+                onu_unit_bit_map[port_id][idx1] |= mask[idx2];
                 return SQLITE_OK;
             }
         }
@@ -199,7 +191,6 @@ node_onu_uint_bit_map_alloc(
 
     return SQLITE_PERM;
 }
-
 
 #endif
 
@@ -223,11 +214,14 @@ node_onu_db_onu_black_tbl_aging(
     snprintf(cmd_str, sizeof(cmd_str),
         "delete from onu_black_tbl where expire_at <= %ld and expire_at not null", timestamp_now);
 
+    //索引优化
     NODE_DB_LOCK;
 
     ret = sqlite3_exec(p_node_onu_db, cmd_str, 0, 0, 0);
 
     NODE_DB_UNLOCK;
+
+    //适配表锁
 
     EXIT_ON_SQLITE(p_node_onu_db, ret, SQLITE_OK, cmd_str, ret);
 
@@ -256,6 +250,7 @@ node_onu_db_onu_black_tbl_should_silence(
     snprintf(cmd_str, sizeof(cmd_str),
         "select * from onu_black_tbl where ni = %d and sn like \'%s\'", ni, sn_str);
 
+    //索引优化
     NODE_DB_LOCK;
 
     ret = sqlite3_prepare_v2(p_node_onu_db, cmd_str, -1, &stmt, 0);
@@ -268,6 +263,8 @@ node_onu_db_onu_black_tbl_should_silence(
 
         return TRUE;
     }
+
+    //结构冗余
 
     sqlite3_finalize(stmt);
     NODE_DB_UNLOCK;
@@ -283,11 +280,11 @@ node_onu_db_onu_black_tbl_add(
                 const uint32_t *p_phy_uint,     //null: unknown
                 const uint32_t sec_duration)    //0: no-aging
 {
-    int ret;
-    sqlite3_stmt *stmt;
-    const char* sql = "insert or replace into onu_black_tbl values(?, ?, ?, ?)"; //warnning: override the old record
-    struct sysinfo sys_info;
-    char sn_str[MAX_SN_STR_SIZE];
+    int             ret;
+    sqlite3_stmt    *stmt;
+    const char      *sql = "insert or replace into onu_black_tbl values(?, ?, ?, ?)";
+    struct          sysinfo sys_info;
+    char            sn_str[MAX_SN_STR_SIZE];
 
     if(!p_serial_number)
         return SQLITE_PERM;
@@ -332,6 +329,7 @@ node_onu_db_onu_black_tbl_add(
 
         sqlite3_exec(p_node_onu_db,"commit;", 0, 0, 0);
         ret = SQLITE_OK;
+        //事务可能失败
     }
     while(0);
 
@@ -358,6 +356,7 @@ node_onu_db_onu_black_tbl_del_by_sn(
     snprintf(cmd_str, sizeof(cmd_str),
         "delete from onu_black_tbl where sn like \'%s\' and ni = %d", sn_str, ni);
 
+    //索引 组合
     NODE_DB_LOCK;
 
     ret = sqlite3_exec(p_node_onu_db, cmd_str, 0, 0, 0);
@@ -420,9 +419,9 @@ node_onu_db_onu_black_tbl_update_by_phy_uint(
                 const uint32_t *p_new_phy_uint, //null:unknown
                 const uint32_t sec_duration)
 {
-    int ret;
-    char cmd_str[MAX_SQLITE_CMD_STR_SIZE];
-    struct sysinfo sys_info;
+    int             ret;
+    char            cmd_str[MAX_SQLITE_CMD_STR_SIZE];
+    struct sysinfo  sys_info;
 
     if(!sec_duration)
         return SQLITE_PERM;
@@ -511,6 +510,7 @@ node_onu_db_onu_phy_info_tbl_get_free_phy_id(
         "select * from onu_phy_info_tbl where phy_uint >= %d and phy_uint <= %d order by phy_uint",
         phy_uint_start, phy_uint_end);
 
+    //索引排序
     NODE_DB_LOCK;
 
     ret = sqlite3_prepare_v2(p_node_onu_db, cmd_str, -1, &stmt, 0);
@@ -1337,7 +1337,7 @@ node_onu_db_onu_auth_info_tbl_get_free_onu_id(
 
     NODE_DB_LOCK;
 
-    ret = node_onu_uint_bit_map_alloc(ni, p_onu_id);
+    ret = node_onu_unit_bit_map_alloc(ni, p_onu_id);
 
     NODE_DB_UNLOCK;
 
@@ -1352,7 +1352,7 @@ node_onu_db_onu_auth_info_tbl_free_onu_id(
 {
     NODE_DB_LOCK;
 
-    node_onu_uint_bit_map_clear(ni, onu_id);
+    node_onu_unit_bit_map_clear(ni, onu_id);
 
     NODE_DB_UNLOCK;
 
