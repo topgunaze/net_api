@@ -158,12 +158,18 @@ int main()
 #endif
 
 #if 1
+<<<<<<< HEAD
 	//count_find_search_test();
 	//min_max_test();
 	//find_test();
 	copy_test();
 	//mismatch_test();
 	//permutation_test();
+=======
+	count_find_search_test();
+	//min_max_test();
+	//find_test();
+>>>>>>> 93f19fb44844ee26033c36a1e313e44b40685769
 
 #endif
 

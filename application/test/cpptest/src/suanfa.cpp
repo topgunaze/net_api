@@ -3,7 +3,10 @@
 #include <vector>
 #include <list>
 #include <deque>
+<<<<<<< HEAD
 #include <iterator>
+=======
+>>>>>>> 93f19fb44844ee26033c36a1e313e44b40685769
 #include<algorithm>
 
 using namespace std;
@@ -188,6 +191,7 @@ void find_test()
 	cout<<endl;
 }
 
+<<<<<<< HEAD
 void copy_test()
 {
 	vector<int> iv0;
@@ -290,4 +294,7 @@ void permutation_test()
 		cout<<endl;
 	}
 }
+=======
+
+>>>>>>> 93f19fb44844ee26033c36a1e313e44b40685769
 
