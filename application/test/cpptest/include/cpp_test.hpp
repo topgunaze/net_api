@@ -69,42 +69,6 @@ private:
 	}
 };
 
-class ireader
-{
-public:
-	virtual void reader() = 0;
-};
-
-class book:public ireader
-{
-	void reader(void)
-	{
-		std::cout<<"read book"<<endl;
-	}
-};
-
-class newspaper:public ireader
-{
-	void reader(void)
-	{
-		std::cout<<"read newspaper"<<endl;
-	}
-};
-
-class people
-{
-	public:
-		void tell(ireader *p_ir)
-		{
-			p_ir->reader();
-		}
-
-		void test(void)
-		{
-			std::cout<<"this is a test"<<endl;
-		}
-};
-
 class
 employee
 {

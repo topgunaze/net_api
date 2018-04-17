@@ -70,5 +70,10 @@ int mylist_merge_traverse(mylist<int>& l1, mylist<int>& l2, mylist<int>& l);
 node<int>* mylist_merge_recursive(node<int> *p_node_1, node<int>* p_node_2);
 node<int>* mylist_repeat_del(node<int>* p_node);
 
+template<typename T>
+void quicksort(T *array, int left, int right);
+void quicksort_test();
+
+
 
 #endif

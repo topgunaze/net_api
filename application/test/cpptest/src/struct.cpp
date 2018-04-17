@@ -636,7 +636,7 @@ node<int>* mylist_ring_judge(mylist<int>& l)
 		else
 			break;
 
-		if (p_node_fast->next->next)
+		if (p_node_fast->next && p_node_fast->next->next)
 			p_node_fast = p_node_fast->next->next;
 		else
 			break;
@@ -695,8 +695,6 @@ int mylist_merge_traverse(mylist<int>& l1, mylist<int>& l2, mylist<int>& l)
 
 	while(p_node_1 && p_node_2)
 	{
-		//cout<<"node1 "<<p_node_1->data<<" node2 "<<p_node_2->data<<endl;
-		
 		if (p_node_1->data <= p_node_2->data)
 		{
 			l1.deletenode(p_node_1);
@@ -774,6 +772,7 @@ node<int>* mylist_repeat_del(node<int> *p_node)
 		if (p_node_cur->data == p_node_next->data)
 		{
 			p_node_cur->next = p_node_next->next;
+			//p_node_next del
 			p_node_next = p_node_next->next;
 		}
 		else
@@ -786,4 +785,52 @@ node<int>* mylist_repeat_del(node<int> *p_node)
 	return p_node_head;
 }
 
+template<typename T>
+void quicksort(T *array, int left, int right)
+{
+    int l = left, r = right;
+	T 	tmp, base = array[left];
+	
+    if(l >= r)
+       return;
+                                   
+    while(l != r)
+    {
+		//顺序很重要，要先从右边开始找
+		while(array[r] >= base && l < r)
+			r--;
+		
+		//再找右边的
+		while(array[l] <= base && l < r)
+			l++;
+		
+		//交换两个数在数组中的位置
+		if(l < r)
+		{
+			tmp  	 = array[l];
+			array[l] = array[r];
+			array[r] = tmp;
+		}
+	}
+	
+    //最终将基准数归位
+    array[left] = array[l];
+    array[l]	= base;
+                                 
+    quicksort(array, left, l-1);//继续处理左边的，这里是一个递归的过程
+    quicksort(array, l+1, right);//继续处理右边的 ，这里是一个递归的过程
+}
+
+void quicksort_test()
+{
+	int array[10] = {3, 12, 2 , 5, 13 ,11, 34, 6, 1, 99};
+
+	quicksort<int>(array, 0, 9);
+
+	for(int i = 0; i<10;++i)
+	{
+		cout<<array[i]<<" ";
+	}
+	cout<<endl;
+}
 

@@ -10,6 +10,8 @@
 #include "overload.hpp"
 #include "struct.hpp"
 #include "suanfa.hpp"
+//#include "redis_api.hpp"
+#include "designmode.hpp"
 
 
 #if 0
@@ -132,6 +134,19 @@ class Mytask : public thread_pool::Task
 
 int main()
 {
+ 
+	//doTest();
+
+#if 1
+	//simple_factory_test();
+	//simple_delegate_test();
+
+#endif
+
+	
+	quicksort_test();
+
+
 #if 0
 	//deque_test();
 	//vector_test();
@@ -157,19 +172,17 @@ int main()
 	mylist_test();
 #endif
 
-#if 1
-<<<<<<< HEAD
+#if 0
+
 	//count_find_search_test();
 	//min_max_test();
 	//find_test();
 	copy_test();
 	//mismatch_test();
 	//permutation_test();
-=======
 	count_find_search_test();
 	//min_max_test();
 	//find_test();
->>>>>>> 93f19fb44844ee26033c36a1e313e44b40685769
 
 #endif
 
@@ -222,16 +235,7 @@ int main()
 #endif
 
 #if 0
-	/*forbide: virtual func
-	newspaper *p_paper = NULL;
-	book      *p_bk;
-	people    p;
-	
-	p.tell(p_bk);*/
-	//p.tell(p_paper);
-
-	people    *p = (people*)2;
-	p->test();
+	simple_factroy_test();
 #endif	
 	
 #if 0
@@ -342,4 +346,4 @@ void mystring_test()
 }
 
 
-
+ 
