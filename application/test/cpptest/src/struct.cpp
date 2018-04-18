@@ -1,5 +1,6 @@
 #include "struct.hpp"
 #include<stack>
+#include <queue>
 
 using namespace std;
 
@@ -832,5 +833,417 @@ void quicksort_test()
 		cout<<array[i]<<" ";
 	}
 	cout<<endl;
+}
+
+void findPath(TreeNode *pRoot, vector<vector<int> > &pathes, vector<int> &onePath, int expectNumber, int &curSum)
+{
+	curSum += pRoot->val;
+	onePath.push_back(pRoot->val);
+
+	bool isLeaf = false;
+	if(pRoot->left == NULL && pRoot->right == NULL)
+		isLeaf = true;
+	
+	if(isLeaf && curSum == expectNumber)
+	{
+		pathes.push_back(onePath);
+	}
+
+	if(pRoot->left != NULL)
+		findPath(pRoot->left, pathes, onePath, expectNumber, curSum);
+	
+	if(pRoot->right != NULL)
+		findPath(pRoot->right, pathes, onePath, expectNumber, curSum);
+
+	curSum -= pRoot->val;
+	onePath.pop_back();
+}
+
+vector<vector<int> > binary_tree_findpath(TreeNode* root, int expectNumber)
+{
+	vector<vector<int> > pathes;
+	if(root == NULL)
+		return pathes;
+
+	vector<int> onePath;
+	int curSum = 0;
+	findPath(root, pathes, onePath, expectNumber, curSum);
+
+	return pathes;	
+}
+
+void binary_tree_findpath_test()
+{
+	TreeNode t8(8, NULL, NULL);
+	
+	TreeNode t7(7, NULL, NULL);
+	TreeNode t6(6, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, &t8, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+	vector<vector<int> > ivv = binary_tree_findpath(&t1, 4);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+
+vector<vector<int> > Solution_bt_traverse_print::operator()(TreeNode *pRoot)
+{
+	vector<vector<int> > result;
+	if(pRoot == NULL)
+	    return result;
+
+	std::queue<TreeNode*> nodes;
+	nodes.push(pRoot);
+	int nextLevel = 0;
+	int toBePrinted = 1;
+
+	vector<int> oneRow;
+
+	while(!nodes.empty())
+	{
+	    TreeNode* pNode = nodes.front();
+	    oneRow.push_back(pNode->val);
+
+	    if(pNode->left != NULL)
+	    {
+	        nodes.push(pNode->left);
+	        ++nextLevel;
+	    }
+		
+	    if(pNode->right != NULL)
+	    {
+	        nodes.push(pNode->right);
+	        ++nextLevel;
+	    }
+
+	    nodes.pop();
+	    --toBePrinted;
+		
+	    if(toBePrinted == 0)
+	    {
+	        result.push_back(oneRow);
+	        oneRow.clear();
+			
+	        toBePrinted = nextLevel;
+	        nextLevel = 0;
+	    }
+	}
+
+	return result;
+}
+
+void binary_tree_traverse_print()
+{
+	TreeNode t8(8, NULL, NULL);
+	
+	TreeNode t7(7, NULL, NULL);
+	TreeNode t6(6, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, &t8, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+	Solution_bt_traverse_print obj;
+	
+	vector<vector<int> > ivv = obj(&t1);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+vector<vector<int> > Solution_bt_ztraverse_print::operator()(TreeNode* pRoot) 
+{
+    vector<vector<int> > result;
+    if(pRoot == NULL)
+        return result;
+
+    stack<TreeNode*> levels[2];
+    int current = 0;
+    int next = 1;
+
+    levels[current].push(pRoot);
+    vector<int> oneRow;
+	
+    while(!levels[0].empty() || !levels[1].empty())
+    {
+        TreeNode *pNode = levels[current].top();
+        levels[current].pop();
+        oneRow.push_back(pNode->val);
+
+        if(current == 0)
+        {
+            if(pNode->left != NULL)
+                levels[next].push(pNode->left);
+			
+            if(pNode->right != NULL)
+                levels[next].push(pNode->right);
+        }
+        else
+        {
+            if(pNode->right != NULL)
+                levels[next].push(pNode->right);
+			
+            if(pNode->left != NULL)
+                levels[next].push(pNode->left);
+        }
+		
+        if(levels[current].empty())
+        {
+            result.push_back(oneRow);
+            oneRow.clear();
+			
+            current = 1 - current;
+            next = 1 - next;
+        }
+    }
+	
+    return result;
+}
+
+void binary_tree_ztraverse_print_test()
+{
+	TreeNode t8(8, NULL, NULL);
+	
+	TreeNode t7(7, NULL, NULL);
+	TreeNode t6(6, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, &t8, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+
+	Solution_bt_ztraverse_print obj;
+	
+	vector<vector<int> > ivv = obj(&t1);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+bool Solution_bt_is_symmetrical::operator()(TreeNode* pRoot)
+{
+    return is_symmetrical(pRoot->left, pRoot->right);
+}
+
+bool Solution_bt_is_symmetrical::is_symmetrical(TreeNode *pRoot1, TreeNode *pRoot2)
+{
+    if(pRoot1 == NULL && pRoot2 == NULL)
+        return true;
+	
+    if(pRoot1 == NULL || pRoot2 == NULL)
+        return false;
+	
+    if(pRoot1->val != pRoot2->val)
+        return false;
+	
+    return is_symmetrical(pRoot1->left, pRoot2->right) && is_symmetrical(pRoot1->right, pRoot2->left);
+}
+
+void binary_tree_is_symmetrical_test()
+{
+
+	TreeNode t7(4, NULL, NULL);
+	TreeNode t6(5, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, NULL, NULL);
+	
+	TreeNode t3(2, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+
+	Solution_bt_is_symmetrical obj;
+	
+	bool flag = obj(&t1);
+	if (flag)
+		cout<<" is_symmetrical"<<endl;
+
+	else
+		cout<<" not is_symmetrical"<<endl;
+
+	TreeNode tt7(4, NULL, NULL);
+	TreeNode tt6(65, NULL, NULL);
+	
+	TreeNode tt5(5, NULL, NULL);
+	TreeNode tt4(4, NULL, NULL);
+	
+	TreeNode tt3(2, &tt6, &tt7);
+	TreeNode tt2(2, &tt4, &tt5);
+	TreeNode tt1(1, &tt2, &tt3);
+	
+	flag = obj(&tt1);
+	if (flag)
+		cout<<" is_symmetrical"<<endl;
+
+	else
+		cout<<" not is_symmetrical"<<endl;
+}
+
+
+#if 0
+
+/*
+struct TreeLinkNode {
+	int val;
+	struct TreeLinkNode *left;
+	struct TreeLinkNode *right;
+	struct TreeLinkNode *next;	 // next 指向父节点；
+	TreeLinkNode(int x) :val(x), left(NULL), right(NULL), next(NULL) {
+	}
+};
+*/
+class Solution {
+public:
+	TreeLinkNode* GetNext(TreeLinkNode* pNode)
+	{
+		if(pNode == nullptr)
+			return nullptr;
+
+		TreeLinkNode* pNext = nullptr;
+		if(pNode->right != nullptr)
+		{
+			TreeLinkNode* pRight = pNode->right;
+			while(pRight->left != nullptr)
+				pRight = pRight->left;
+
+			pNext = pRight;
+		}
+		else if(pNode->next != nullptr)
+		{
+			TreeLinkNode* pCurrent = pNode;
+			TreeLinkNode* pParent = pNode->next;
+			while(pParent != nullptr && pCurrent == pParent->right)
+			{
+				pCurrent = pParent;
+				pParent = pParent->next;
+			}
+
+			pNext = pParent;
+		}
+
+		return pNext;
+	}
+};
+
+#endif
+
+bool Solution_bt_isbalance_depth::operator()(TreeNode* pRoot, int &depth) 
+{
+    if(pRoot == NULL)
+        return true;
+	
+    depth = 0;
+	
+    return IsBalanced(pRoot, &depth);
+}
+
+bool Solution_bt_isbalance_depth::IsBalanced(TreeNode *pRoot, int *depth)
+{
+    if(pRoot == NULL)
+    {
+        *depth = 0;
+        return true;
+    }
+	
+    int left, right;
+	
+    if(IsBalanced(pRoot->left, &left) && IsBalanced(pRoot->right, &right))
+    {
+        int diff = left - right;
+        if(diff <= 1 && diff >= -1)
+        {
+            *depth = left > right? (left+1) : (right+1);
+            return true;
+        }
+    }
+	
+    return false;
+}
+
+void binary_tree_isbanance_depth_test()
+{
+	TreeNode t8(4, NULL, NULL);
+
+	TreeNode t7(4, NULL, NULL);
+	TreeNode t6(5, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, &t8, NULL);
+	
+	TreeNode t3(2, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+
+	Solution_bt_isbalance_depth obj;
+	int depth;
+	
+	bool flag = obj(&t1, depth);
+	if (flag)
+		cout<<" is_balance "<<depth<<endl;
+
+	else
+		cout<<" not is_balance"<<depth<<endl;	
+}
+
+vector<int> Solution_bt_print_t2b::operator(TreeNode* root)
+{
+	vector<int> result;
+	if(root == NULL)
+	    return result;
+
+	queue<TreeNode *> nodes;
+	nodes.push(root);
+
+	while(!nodes.empty())
+	{
+	    TreeNode *pNode = nodes.front();
+	    result.push_back(pNode->val);
+
+	    if(pNode->left != NULL)
+	        nodes.push(pNode->left);
+		
+	    if(pNode->right != NULL)
+	        nodes.push(pNode->right);
+
+	    nodes.pop();
+	}
+
+	return result;
 }
 

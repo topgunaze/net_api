@@ -89,3 +89,19 @@ A *b=new B这种方式相当于将A当作一个接口，而这两种继承方式下B并没有从A中继承到pub
 
 }
 
+/*
+void paa::p_test()
+{
+	cout<<"ppa p_test"<<endl;
+}
+*/
+void simple_singleton_test()
+{
+	paa paa1;
+	cout<<"test paa object"<<endl;
+
+	pa *p_pa = new paa;
+	delete p_pa;
+}
+
+

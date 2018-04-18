@@ -2,6 +2,7 @@
 #define __STRUCT_HPP__
 
 #include <iostream>
+#include <vector>
 
 template<typename T>
 class mystack
@@ -55,6 +56,49 @@ private:
 	int  	size;
 };
 
+struct TreeNode 
+{
+    int 			val;
+    struct TreeNode *left;
+    struct TreeNode *right;
+	
+    TreeNode(int x, TreeNode *l = NULL, TreeNode *r = NULL):val(x), left(l), right(r){}
+};
+
+class Solution_bt_traverse_print
+{
+public:
+    std::vector<std::vector<int> > operator()(TreeNode* pRoot);
+};
+
+class Solution_bt_ztraverse_print 
+{
+public:
+    std::vector<std::vector<int> > operator()(TreeNode* pRoot);
+};
+
+class Solution_bt_is_symmetrical
+{
+public:
+    bool operator()(TreeNode* pRoot);
+	
+private:
+    bool is_symmetrical(TreeNode *pRoot1, TreeNode *pRoot2);
+};
+
+class Solution_bt_isbalance_depth {
+public:
+    bool operator()(TreeNode* pRoot, int &depth);
+
+private:
+    bool IsBalanced(TreeNode *pRoot, int *depth);
+};
+
+class Solution_bt_print_t2b {
+public:
+    vector<int> operator()(TreeNode* root);
+};
+
 void mystack_test();
 
 void mylist_test();
@@ -73,6 +117,16 @@ node<int>* mylist_repeat_del(node<int>* p_node);
 template<typename T>
 void quicksort(T *array, int left, int right);
 void quicksort_test();
+void binary_tree_findpath_test();
+void binary_tree_traverse_print();
+void binary_tree_ztraverse_print_test();
+void binary_tree_is_symmetrical_test();
+void binary_tree_isbanance_depth_test();
+
+
+
+
+
 
 
 
