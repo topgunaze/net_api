@@ -1,0 +1,59 @@
+override：
+	强制复写
+
+枚举类：
+enum Alert { green, yellow, orange, red }; // traditional enum
+enum class Color { red, blue }; // new enum
+C++11里面提出了一个新的概念enum class。它的特点是。
+
+新的enum的作用域不在是全局的了。
+原来enum名字的作用域是全局的。
+
+    Alert a1 = red; //ok
+    Alert a2 = Alert::red; //error in C++98; ok in C++11
+    int red = 0; // error, red is redefined
+而新的enum class的名字是处于类的作用域里面的。
+
+    Color c1 = Color::blue; //ok
+    Color c2 = blue; // error
+    int blue = 0; //ok， blue is in class scope
+不能隐式转换成其他类型
+
+    int i = Alert::red; //ok for old enum
+    int k = Color::blue; // error for new enum
+	可以有更严格类型系统，本来red和blue和数字就是两个系统的东西，没理由互相转换。
+
+	C++11里面可以指定用特定的类型来存储enum值了。
+看下面这个问题，struct Data是对应着某个硬件的寄存器，所以这里使用了固定精度的整形uint8_t，
+然后使用了#pragma pack(push,1)来禁止了结构体内部的padding。
+	对于flag，一项喜欢使用enum，而不是宏来定义。但是在C++11以前，enum值的大小是一个编译器相关的事情，
+	所以在这个场景下，struct Data大小必须和硬件寄存器一样，所以就不能用enum来作为flag的类型。
+
+#define FLAG_1 (0x1)
+#define FLAG_2 (0x2)
+#define FLAG_3 (0x4)
+#pragma pack(push, 1)
+struct Data{
+    uint8_t  data1;
+    uint16_t  flag;
+    uint8_t  data2;
+};
+#pragma pack(pop)
+	在C++11里面，enum的大小是可以指定的了，像下面这样。
+    enum Alert : int { green, yellow, orange, red }; 
+    enum class Color : unsigned char { red, blue }; 
+	所以前面的那段代码，基本上会写成下面这样，使用enum FLAG代替uint16_t来声明flag了。
+
+#pragma pack(push, 1)
+struct Data{
+    enum FLAG : uint16_t { 
+        FLAG_1 = 0x1, 
+        FLAG_2 = 0x2, 
+        FLAG_3 = 0x4 
+    };
+    uint8_t  data1;
+    FLAG  flag;
+    uint8_t  data2;
+};
+#pragma pack(pop)
+Data d = { 1, Data::FLAG_1, 2 };

@@ -1,6 +1,11 @@
 1. object node object
 2. api addchild
 
+ApplicationProtocol
+
+PoolManager
+ScriptEngineManager
+
 AppDelegate.h
 
 ApplicationProtocol -> Application
@@ -9,6 +14,26 @@ Application -> AppDelegate
 由代理复写：
 applicationDidFinishLaunching
 
+CCApplicationProtocol
+
+Application
+.run 
+applicationDidFinishLaunching
+
+单例
+Director
+mainLoop
+end
+
+glview
+pollEvents
+windowShouldClose
+release
+ApplicationProtocol
+
+?;
+override 
+__attribute__((deprecated))
 
 
 ThreadHelper
@@ -92,6 +117,30 @@ while(!glview->windowShouldClose())
 
 }
 
+
+AutoreleasePool
+addObject
+_managedObjectArray
+
+单例模式：
+构造析构私有
+PoolManager -> 
+s_singleInstance
+_releasePoolStack
+
+结构：
+for (const auto& obj : _managedObjectArray)
+
+cocos2d
+callfunc_selector == CC_CALLFUNC_SELECTOR
+callfuncN_selector CC_CALLFUNCN_SELECTOR
+callfuncND_selector CC_CALLFUNCND_SELECTOR
+callfuncO_selector CC_CALLFUNCO_SELECTOR
+menu_selector CC_MENU_SELECTOR
+schedule_selector CC_SCHEDULE_SELECTOR
+
+
+
 Ref -> Director
 
 mainLoop() 这是主循环
@@ -119,6 +168,8 @@ void Director::mainLoop()
     }
 
 }
+
+EventDispatcher
 
 drawScene() 重绘当前场景(遍历渲染树)、刷新状态信息等动作
 

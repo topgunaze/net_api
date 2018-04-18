@@ -194,7 +194,32 @@ public:
 	virtual bool applicationlanch();
 };
 
+class pa
+{
+public:
+	virtual ~ pa(){std::cout<<"pa unconstruct"<<std::endl;}
+	//virtual void p_test(void);
+protected:
+	pa(){std::cout<<"pa construct"<<std::endl;}
+
+public:
+	int data;
+};
+
+class paa:public pa
+{
+public:	
+	paa(){std::cout<<"paa construct"<<std::endl;}
+	~paa(){std::cout<<"paa unconstruct"<<std::endl;}
+	//virtual void p_test(void) override;
+	//virtual void p_test(void);
+	
+private:
+	int paa_data;
+};
+
 void simple_factory_test();
 void simple_delegate_test();
+void simple_singleton_test();
    
 #endif

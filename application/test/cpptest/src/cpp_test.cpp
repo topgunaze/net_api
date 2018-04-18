@@ -144,7 +144,7 @@ int main()
 #endif
 
 	
-	quicksort_test();
+	//quicksort_test();
 
 
 #if 0
@@ -234,8 +234,15 @@ int main()
 	multi_inheritance();
 #endif
 
-#if 0
-	simple_factroy_test();
+#if 1
+	//simple_factory_test();
+	//simple_singleton_test();
+	//binary_tree_findpath_test();
+	//binary_tree_traverse_print();
+	//binary_tree_ztraverse_print_test();
+	//binary_tree_is_symmetrical_test();
+	binary_tree_isbanance_depth_test();
+
 #endif	
 	
 #if 0

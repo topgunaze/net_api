@@ -17,6 +17,29 @@ http://www.cplusplus.com/reference/algorithm/search_n/?kw=search_n
 
 4. makefile
 
+5. linux g++开启C++11/14支持
+
+sudo vim ~/.bashrc 
+在some more ls aliases注释块的地方添加下面这两行：
+
+alias g++11='g++ -g -Wall -std=c++11'
+alias g++14='g++ -g -Wall -std=c++14'
+
+　　目前来看GCC是对C++11支持程度最高最多的编译器，但需要GCC4.8及以上版本。
+获取GCC 4.8.2包：wget http://gcc.skazkaforyou.com/releases/gcc-4.8.2/gcc-4.8.2.tar.gz；
+解压缩：tar -xf gcc-4.8.2.tar.gz；
+进入到目录gcc-4.8.2，运行：./contrib/download_prerequisites。这个神奇的脚本文件会帮下载、配置、安装依赖库。
+建立输出目录并到目录里：mkdir gcc-build-4.8.2；cd gcc-build-4.8.2；
+../configure --enable-checking=release --enable-languages=c,c++ --disable-multilib。
+--enable-languages表示要让gcc支持那些语言
+--disable-multilib不生成编译为其他平台可执行代码的交叉编译器。
+--disable-checking生成的编译器在编译过程中不做额外检查，也可以使用--enable-checking=xxx来增加一些检查；
+编译：make；注意此步和上一步，比较耗时；
+安装：make  install；
+验证：gcc -v；或者g++ -v，如果显示的gcc版本仍是以前的版本，就需要重启系统。
+
+相当于用别名的方式，简化输入。在编译的时候，仅需要输入g++11或者 g++14即可。
+
 5. gdb调试
 
 
