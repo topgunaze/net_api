@@ -241,7 +241,12 @@ int main()
 	//binary_tree_traverse_print();
 	//binary_tree_ztraverse_print_test();
 	//binary_tree_is_symmetrical_test();
-	binary_tree_isbanance_depth_test();
+	//binary_tree_isbanance_depth_test();
+	//binary_tree_has_subtree();
+	//binary_tree_mirror_test();
+	//binary_tree_reconstruct_test();
+	binary_tree_treedepth_test();
+
 
 #endif	
 	

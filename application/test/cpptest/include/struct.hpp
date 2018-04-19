@@ -65,6 +65,17 @@ struct TreeNode
     TreeNode(int x, TreeNode *l = NULL, TreeNode *r = NULL):val(x), left(l), right(r){}
 };
 
+struct TreeLinkNode
+{
+    int 				val;
+    struct TreeLinkNode *left;
+    struct TreeLinkNode *right;
+	struct TreeLinkNode *next;
+	
+    TreeLinkNode(int x, TreeLinkNode *l = NULL, TreeLinkNode *r = NULL, TreeLinkNode *n):
+		val(x), left(l), right(r), next(n){}	
+}
+
 class Solution_bt_traverse_print
 {
 public:
@@ -96,7 +107,41 @@ private:
 
 class Solution_bt_print_t2b {
 public:
-    vector<int> operator()(TreeNode* root);
+    std::vector<int> operator()(TreeNode* root);
+};
+
+class Solution_bt_HasSubtree
+{
+public:
+    bool operator()(TreeNode* pRoot1, TreeNode* pRoot2);
+    
+private:
+    bool DoesTree1HaveTree2(TreeNode *Tree1, TreeNode *Tree2);
+};
+
+class Solution_mirror_recursive{
+public:
+    void operator()(TreeNode *pRoot);
+};
+
+class Solution_mirror_statck{
+public:
+	void operator()(TreeNode *pRoot);
+};
+
+class Solution_bt_reConstructBinaryTree {
+public:
+	TreeNode* operator()(std::vector<int> pre, std::vector<int> vin);
+};
+
+class Solution_bt_TreeDepth {
+public:
+    int operator()(TreeNode* pRoot);
+};
+
+class Solution_bt_TreeDepth_traverse {
+public:
+    int operator()(TreeNode* pRoot);
 };
 
 void mystack_test();
@@ -122,12 +167,9 @@ void binary_tree_traverse_print();
 void binary_tree_ztraverse_print_test();
 void binary_tree_is_symmetrical_test();
 void binary_tree_isbanance_depth_test();
-
-
-
-
-
-
-
+void binary_tree_has_subtree(void);
+void binary_tree_mirror_test();
+void binary_tree_reconstruct_test();
+void binary_tree_treedepth_test();
 
 #endif

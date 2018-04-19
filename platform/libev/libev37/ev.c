@@ -974,22 +974,36 @@ downheap (ANHE *heap, int N, int k)
       ANHE *pos = heap + DHEAP * (k - HEAP0) + HEAP0 + 1;
 
       /* find minimum child */
-      if (expect_true (pos + DHEAP - 1 < E))
+        if (expect_true (pos + DHEAP - 1 < E))
         {
-          /* fast path */                               (minpos = pos + 0), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [1]) < minat) (minpos = pos + 1), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [2]) < minat) (minpos = pos + 2), (minat = ANHE_at (*minpos));
-          if (               ANHE_at (pos [3]) < minat) (minpos = pos + 3), (minat = ANHE_at (*minpos));
+          /* fast path */                               
+          (minpos = pos + 0), (minat = ANHE_at (*minpos));
+          
+          if (               ANHE_at (pos [1]) < minat) 
+            (minpos = pos + 1), (minat = ANHE_at (*minpos));
+            
+          if (               ANHE_at (pos [2]) < minat) 
+            (minpos = pos + 2), (minat = ANHE_at (*minpos));
+            
+          if (               ANHE_at (pos [3]) < minat) 
+            (minpos = pos + 3), (minat = ANHE_at (*minpos));
         }
-      else if (pos < E)
+        else if (pos < E)
         {
-          /* slow path */                               (minpos = pos + 0), (minat = ANHE_at (*minpos));
-          if (pos + 1 < E && ANHE_at (pos [1]) < minat) (minpos = pos + 1), (minat = ANHE_at (*minpos));
-          if (pos + 2 < E && ANHE_at (pos [2]) < minat) (minpos = pos + 2), (minat = ANHE_at (*minpos));
-          if (pos + 3 < E && ANHE_at (pos [3]) < minat) (minpos = pos + 3), (minat = ANHE_at (*minpos));
+          /* slow path */                               
+          (minpos = pos + 0), (minat = ANHE_at (*minpos));
+          
+          if (pos + 1 < E && ANHE_at (pos [1]) < minat) 
+            (minpos = pos + 1), (minat = ANHE_at (*minpos));
+            
+          if (pos + 2 < E && ANHE_at (pos [2]) < minat) 
+            (minpos = pos + 2), (minat = ANHE_at (*minpos));
+          
+          if (pos + 3 < E && ANHE_at (pos [3]) < minat) 
+            (minpos = pos + 3), (minat = ANHE_at (*minpos));
         }
-      else
-        break;
+        else
+            break;
 
       if (ANHE_at (he) <= minat)
         break;

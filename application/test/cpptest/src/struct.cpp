@@ -1114,19 +1114,6 @@ void binary_tree_is_symmetrical_test()
 		cout<<" not is_symmetrical"<<endl;
 }
 
-
-#if 0
-
-/*
-struct TreeLinkNode {
-	int val;
-	struct TreeLinkNode *left;
-	struct TreeLinkNode *right;
-	struct TreeLinkNode *next;	 // next 指向父节点；
-	TreeLinkNode(int x) :val(x), left(NULL), right(NULL), next(NULL) {
-	}
-};
-*/
 class Solution {
 public:
 	TreeLinkNode* GetNext(TreeLinkNode* pNode)
@@ -1159,8 +1146,6 @@ public:
 		return pNext;
 	}
 };
-
-#endif
 
 bool Solution_bt_isbalance_depth::operator()(TreeNode* pRoot, int &depth) 
 {
@@ -1221,7 +1206,7 @@ void binary_tree_isbanance_depth_test()
 		cout<<" not is_balance"<<depth<<endl;	
 }
 
-vector<int> Solution_bt_print_t2b::operator(TreeNode* root)
+vector<int> Solution_bt_print_t2b::operator()(TreeNode* root)
 {
 	vector<int> result;
 	if(root == NULL)
@@ -1245,5 +1230,353 @@ vector<int> Solution_bt_print_t2b::operator(TreeNode* root)
 	}
 
 	return result;
+}
+
+bool Solution_bt_HasSubtree::operator()(TreeNode* pRoot1, TreeNode* pRoot2)
+{
+    bool result = false;
+	
+    if(pRoot1 != NULL && pRoot2 != NULL)
+    {
+        if(pRoot1->val == pRoot2->val)
+            result = DoesTree1HaveTree2(pRoot1, pRoot2);
+		
+        if(!result)
+            result = operator()(pRoot1->left, pRoot2);
+		
+        if(!result)
+            result = operator()(pRoot1->right, pRoot2);
+    }
+	
+    return result;
+}
+	
+bool Solution_bt_HasSubtree::DoesTree1HaveTree2(TreeNode *Tree1, TreeNode *Tree2)
+{
+    if(Tree2 == NULL)
+        return true;
+	
+    if(Tree1 == NULL)
+        return false;
+	
+    if(Tree1->val != Tree2->val)
+        return false;
+
+    return DoesTree1HaveTree2(Tree1->left, Tree2->left) &&
+        DoesTree1HaveTree2(Tree1->right, Tree2->right);
+}
+
+void binary_tree_has_subtree(void)
+{
+	//TreeNode t8(4, NULL, NULL);
+
+	TreeNode t7(4, NULL, NULL);
+	TreeNode t6(5, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, NULL, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+	
+	TreeNode tt3(5, NULL, NULL);
+	TreeNode tt2(4, NULL, NULL);
+	TreeNode tt1(2, &tt2, &tt3);
+
+	Solution_bt_HasSubtree obj;
+	
+	bool flag = obj(&t1, &tt1);
+	if (flag)
+		cout<<" is_subtree "<<endl;
+
+	else
+		cout<<" not is_subtree"<<endl;		
+}
+
+void Solution_mirror_recursive::operator()(TreeNode *pRoot) 
+{
+    if(pRoot == NULL || (pRoot->left == NULL && pRoot->right == NULL))
+        return;
+
+    if(pRoot->left != NULL)
+        operator()(pRoot->left);
+	
+    if(pRoot->right != NULL)
+        operator()(pRoot->right);
+	
+    TreeNode *temp = pRoot->left;
+    pRoot->left = pRoot->right;
+    pRoot->right = temp;
+}
+
+void Solution_mirror_statck::operator()(TreeNode *pRoot) 
+{
+	if(pRoot == NULL || (pRoot->left == NULL && pRoot->right == NULL))
+		return;
+
+	stack<TreeNode*> stackNodes;
+	stackNodes.push(pRoot);
+
+	while(stackNodes.size() > 0)
+	{
+	    TreeNode *pNode = stackNodes.top();
+	    stackNodes.pop();
+
+	    TreeNode *pTemp = pNode->left;
+	    pNode->left = pNode->right;
+	    pNode->right = pTemp;
+
+	    if(pNode->left != NULL)
+	        stackNodes.push(pNode->left);
+		
+	    if(pNode->right != NULL)
+	        stackNodes.push(pNode->right);
+	}
+}
+
+void binary_tree_mirror_test()
+{
+	TreeNode t7(7, NULL, NULL);
+	TreeNode t6(6, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, NULL, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+	cout<<"old "<<endl;
+	
+	Solution_mirror_recursive obj1;
+
+	Solution_bt_traverse_print obj_print;
+	
+	vector<vector<int> > ivv = obj_print(&t1);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+
+	cout<<"mirror first"<<endl;
+	obj1(&t1);
+
+	ivv = obj_print(&t1);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+
+	cout<<"mirror second"<<endl;
+	Solution_mirror_statck obj2;
+	obj2(&t1);
+
+	ivv = obj_print(&t1);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+class Solution {
+public:
+    bool VerifySquenceOfBST(vector<int> sequence) {
+        if(sequence.size()<=0)
+            return false;
+        int start=0, end=sequence.size()-1;
+        return isLastOrder(sequence, start, end);
+    }
+
+private:
+    bool isLastOrder(vector<int> &sequence, int start, int end)
+    {
+        if(start > end)
+            return false;
+
+        int root = sequence[end];
+        int i = start;
+        for(; i<end; i++)
+        {
+            if(sequence[i]>root)
+                break;
+        }
+        int j = i;
+        for(; j<end; j++)
+        {
+            if(sequence[j]<root)
+                return false;
+        }
+        bool left = true;
+        if(i-1 > start)
+            left = isLastOrder(sequence, start, i-1);
+
+        bool right = true;
+        if(i < end-1)
+            right = isLastOrder(sequence, i, end-1);
+
+        return(left && right);
+    }
+
+};
+
+/*
+输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。
+假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
+例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
+*/
+
+ /* 思路（递归）：根据前序遍历的第一个数字创建根节点；
+ 在中序便利找到根节点的位置；
+ 确定左右子树节点数量；递归构建左右子树；
+ */
+
+TreeNode* Solution_bt_reConstructBinaryTree::operator()(vector<int> pre, vector<int> vin) 
+{
+    if(pre.empty() || vin.empty() || pre.size() != vin.size())
+        return NULL;
+
+    vector<int> left_pre, right_pre, left_vin, right_vin;
+    TreeNode *node = new TreeNode(pre[0]);
+
+    size_t left_length = 0;
+    while(pre[0] != vin[left_length] && left_length < pre.size())
+        ++left_length;
+
+    for(size_t i = 0; i<left_length; i++)
+    {
+        left_pre.push_back(pre[i+1]);
+        left_vin.push_back(vin[i]);
+    }
+
+    for(size_t i = left_length+1; i < pre.size(); i++)
+    {
+        right_pre.push_back(pre[i]);
+        right_vin.push_back(vin[i]);
+    }
+	
+    node->left = operator()(left_pre, left_vin);
+    node->right = operator()(right_pre, right_vin);
+
+    return node;
+}
+
+void binary_tree_reconstruct_test()
+{
+	vector<int> iv1;
+	vector<int> iv2;
+
+	iv1.push_back(1);
+	iv1.push_back(3);
+	iv1.push_back(4);
+
+	iv2.push_back(3);
+	iv2.push_back(1);
+	iv2.push_back(4);
+
+	TreeNode    *p_tree;
+	
+	Solution_bt_reConstructBinaryTree obj;
+	p_tree = obj(iv1, iv2);
+
+	Solution_bt_traverse_print obj_print;
+
+	vector<vector<int> > ivv = obj_print(p_tree);
+
+	for (vector<vector<int> >::iterator vit = ivv.begin(); vit != ivv.end(); ++vit)
+	{
+		cout<<"the next:"<<endl;
+		for (vector<int>::iterator it = (*vit).begin(); it != (*vit).end(); ++it)
+		{
+			cout<<*it<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+int Solution_bt_TreeDepth::operator()(TreeNode* pRoot)
+{
+    if(pRoot == NULL)
+        return 0;
+	
+    int left = operator()(pRoot->left);
+    int right = operator()(pRoot->right);
+
+    return left >= right ? (left+1):(right+1);
+}
+
+int Solution_bt_TreeDepth_traverse::operator()(TreeNode* pRoot)
+{
+    queue<TreeNode*> q;
+    if(!pRoot)
+        return 0;
+	
+    q.push(pRoot);
+    int level=0;
+    while(!q.empty())
+    {
+        size_t len = q.size();
+        level++;
+		
+        while(len--)
+        {
+            TreeNode *tmp = q.front();
+            q.pop();
+			
+            if(tmp->left)
+                q.push(tmp->left);
+			
+            if(tmp->right)
+                q.push(tmp->right);
+        }
+    }
+	
+    return level;
+}
+
+void binary_tree_treedepth_test()
+{
+	TreeNode t8(8, NULL, NULL);
+
+	TreeNode t7(7, NULL, NULL);
+	TreeNode t6(6, NULL, NULL);
+	
+	TreeNode t5(5, NULL, NULL);
+	TreeNode t4(4, &t8, NULL);
+	
+	TreeNode t3(3, &t6, &t7);
+	TreeNode t2(2, &t4, &t5);
+	TreeNode t1(1, &t2, &t3);
+
+	
+	Solution_bt_TreeDepth obj1;
+
+	Solution_bt_TreeDepth_traverse obj2;
+
+	int dep = obj1(&t1);
+	cout<<dep<<endl;
+	
+	dep = obj2(&t1);
+	cout<<dep<<endl;
+	
 }
 
