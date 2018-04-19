@@ -824,7 +824,7 @@ void quicksort(T *array, int left, int right)
 
 void quicksort_test()
 {
-	int array[10] = {3, 12, 2 , 5, 13 ,11, 34, 6, 1, 99};
+	int array[10] = {3, 2, 1 , 1, 13 ,11, 34, 5, 13, 99};
 
 	quicksort<int>(array, 0, 9);
 
