@@ -1,0 +1,398 @@
+https://blog.csdn.net/abcd1f2/article/details/43175145
+https://blog.csdn.net/Solstice/article/details/5848547
+https://www.sogou.com/link?url=DSOYnZeCC_o8JarbLQiu8yXsG-8h47PJJsTQS8z9-ePNdRkLnIcx1uudBwAy5LFBpUJ1jeNQk0OMkk6ZwiLIwg..
+https://www.sogou.com/link?url=DSOYnZeCC_pKZzihDKzFgzQoUkRGi7SFVlCntNcKfqcoBghQOqIFXA..
+1.C++互斥锁与条件变量的封装使用
+#ifndef _MUTEXLOCK_H
+#define _MUTEXLOCK_H
+
+#include <pthread.h>
+#include <assert.h>
+
+class MutexLock
+{
+    friend class Condition; //将条件变量设为友元类,访问MutexLock私有成员
+
+private:
+    pthread_mutex_t _mutex;
+    bool _isLocking;
+    void restoreMutexStatus()//条件变量使用
+    {
+        _isLocking = true;
+    }
+
+public:
+    MutexLock() : _isLocking(false)
+    {
+        pthread_mutex_init(&_mutex, NULL); //初始化互斥量
+    }
+
+    ~MutexLock()
+    {
+        assert(!_isLocking()); //确保已解锁
+        pthread_mutex_destory(&_mutex);    //摧毁互斥量
+    }
+
+    void lock()
+    {
+        pthread_mutex_lock(&_mutex);    //加锁并将锁状态设为true
+        _isLocking = true;
+    }
+
+    void unlock()
+    {
+        pthread_mutex_unlock(&_mutex);  //解锁并将锁状态设为false
+        _isLocking = false;
+    }
+
+    bool isLocking() const            //获取锁状态
+    {
+        return _isLocking;        
+    }
+
+    pthread_mutex_t* getMutexPtr()    //获取锁
+    {
+        return &_mutex;
+    }
+};
+
+//--------------------------------------------------------
+
+//守护锁类
+class MutexLockGuard
+{
+public:
+    MutexLockGuard(MutexLock& mutex) :_mutex(mutex) //构造函数加锁
+    {
+        _mutex.lock();
+    }
+
+    ~MutexLockGuard()     //析构函数解锁
+    {
+        _mutex.unlock();
+    }
+
+private:
+    MutexLock& _mutex;
+};
+
+#endif
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+条件变量类的封装：
+
+#ifndef _CONDITION_H
+#define _CONDITION_H
+
+#include <pthread.h>
+
+class MutexLock;
+
+class Condition
+{
+public:
+    Condition(MutexLock& mutex) : _mutex(mutex)
+    {
+        pthread_cond_init(&_cond, NULL);
+    }
+
+    ~Condition()
+    {
+        pthread_cond_destory(&_cond);
+    }
+
+    void wait()
+    {
+        assert(_mutex.isLocking());//必须为上锁状态
+        pthread_cond_wait(&_cond, _mutex.getMutexPtr());
+        _mutex.restoreMutexStatus();//还原锁的状态
+    }
+
+    void notify()
+    {
+        pthread_cond_signal(&_cond);
+    }
+
+    void notifyAll()
+    {
+        pthread_cond_broadcast(&_cond);
+    }
+
+private:
+    pthread_cond_t _cond;
+    MutexLock& _mutex;
+};
+
+#endif
+2.实现的一对锁的封装
+在使用锁的时候，出现的最多的问题是由于忘记对锁的释放从而出现的各种死锁问题。所以经常会去检查对应的锁是否在之后的代码中得到合适的释放。前段时间学习到很巧妙的实现，即在构造函数中实现对锁的锁定，在析构函数中实现对锁的释放，这样只需要在使用锁的时候，定义一个锁，接下来即进入临界区，最后在退出对应的作用域的时候，自动调用析构函数，对应的锁自动释放， 对于一些锁的简单使用，还是比较不错的，个人觉得挺有意思的，拿出来和大家分享下。
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ThreadRWLock
+{
+public:
+       ThreadRWLock(){
+              pthread_rwlockattr_t attr;
+              pthread_rwlockattr_init(&attr);
+              pthread_rwlock_init(&_rw_lock, &attr); 
+        }
+       ~ThreadRWLock(){
+             pthread_rwlock_destory(&_rw_lock);
+         }
+        int AcquireRead(void){
+             return pthread_rwlock_rdlock(&_rw_lock);
+        }
+        int AcquireWrite(void){
+             return pthread_rwlock_wrlock(&_rw_lock);
+        }
+        int Release(void){
+            return pthread_rwlock_unlock(&_rw_lock);
+        }
+private:
+       pthread_rwlock_t  _rw_lock;
+};
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//读锁的实现
+class ReadLocker
+{
+public:
+  explicit ReadLocker(ThreadRWLock& rwlock): _lock_point(&rwlock)
+  {
+      _lock_point->AcquireRead();
+      _is_lock = true;
+  }
+  ~ReadLocker(){
+    if (_is_lock)
+        _lock_point->Release();
+  }
+  void Lock(){
+    if (!_is_lock)
+        _lock_point->AcquireRead();
+       _is_lock = true;
+    }
+  void Unlock(){
+      if (_is_lock){
+         _lock_point->Release();
+      }  
+      _is_lock = false;
+  }
+
+private:
+  ThreadRWLock * _lock_point;
+  bool is_lock;
+};
+//读锁的使用示例：
+void fun(void){
+      ThreadRWLock   lock;
+      ReadLocker        readlock(lock); //自动获取读锁
+     /*
+         临界区
+     */
+     //退出作用域自动释放读锁
+}
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+//写锁的实现：
+class WriteLocker
+{
+public:
+  explicit WriteLocker(ThreadRWLock& rwlock)
+              : _lock_point(rwlock){
+              _lock_point->AcquireWrite();
+              _is_lock = true;
+  }
+  explicit WriteLocker(ThreadRWLock* rwlock)
+            :_lock_point(rwlock){
+             _lock_point->AcquireWrite();
+              _is_lock = true;
+  }
+  ~WriteLocker(){
+     if(_is_lock)
+         _lock_point->Release();
+        _is_lock = false;   
+      }
+   void Lock(){
+      if (!_is_lock)
+           _lock_point->AcquireWrite();
+          _is_lock = true;
+   }
+   void Unlock(){
+     if (_is_lock)
+         _lock_point->Release();
+        _is_lock = false;
+   }
+private:
+  ThreadRWLock * _lock_point;
+  bool _is_lock;
+};
+//写锁的使用示例（与读锁类似）
+void fun(void){
+      ThreadRWLock   lock;
+      WriteLocker        writelock(lock); //自动获取写锁
+      /*
+         临界区
+       */
+      //退出作用域自动释放写锁
+}
+3.对象锁模版
+实现原理：
+
+1、利用临时对象做保护
+
+template<class T>
+
+class TempObject {
+
+T* m_ptr;
+
+Lock& m_lock;
+
+public:
+
+TempObject (Lock& lock, T* ptr)  : m_ptr(ptr), m_lock(lock) {
+
+m_lock.lock();
+
+}
+
+~TempObject () {
+
+m_lock.unlock();
+
+}
+
+T* operator->() { return m_ptr; }
+
+};
+
+
+
+2、转调用为临时对象的调用
+
+template<class T>
+
+class ProxyObject {
+
+T* m_ptr;
+
+Lock m_lock;
+
+public:
+
+ProxyObject (T* t)  : m_ptr(t) {}
+
+
+
+TempObject  operator->() {
+
+TempObject  to(m_lock, m_ptr);
+
+return to;
+
+}
+
+};
+
+
+
+3、调用
+
+class Test {
+
+...
+
+public:
+
+void fun() {...}
+
+};
+
+Test* pobj = new Test();
+
+ProxyObject<Test> pT;
+
+pT->fun();
+
+// 进行如下转化
+
+// TempObject  tmp = pT.operator->() ;
+
+// Test* ptr = tmp.operator->() ;
+
+//
+ptr ->fun();
+
+
