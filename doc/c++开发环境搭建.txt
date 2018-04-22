@@ -42,4 +42,10 @@ alias g++14='g++ -g -Wall -std=c++14'
 
 5. gdb调试
 
+最大堆与最小堆
+
+1. sqlite
+事务，主外键关联
+acid 规则
+jdbc标准
 

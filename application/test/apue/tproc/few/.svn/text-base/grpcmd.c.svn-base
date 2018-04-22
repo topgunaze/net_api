@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int
+main(int argc, char * argv[])
+{
+	pid_t pid;
+	char buf[256];
+	int pfd[2];
+	FILE * fp;
+	int ret;
+	char * s;
+	size_t n;
+
+	ret = pipe(pfd);
+	if(ret < 0){
+	}
+	pid = fork();
+	if(ret < 0){
+	}
+	if(pid == 0){
+		//child 
+		//find /tmp/codexa01 | grep .svn
+		close(pfd[0]);
+		ret = dup2(pfd[1], 1);
+		if(ret < 0){
+		}
+		ret = system("find /tmp/codexa01 | grep .c");
+		if(ret < 0){
+		}
+		exit(0);
+	}
+	close(pfd[1]);
+	s = NULL;
+	n = 0;
+	fp = fdopen(pfd[0], "r");
+	while(1){
+		ret = getline(&s, &n, fp);
+		if(ret < 0)
+			break;
+		sprintf(buf, "%s %s", "echo  I have read you paper , your score is 90 ^_^ >> ", s);
+		ret = system(buf);
+		if(ret < 0){
+			perror("system()");
+			exit(-1);
+		}
+	}
+	wait(NULL);	
+	return 0;
+}

@@ -1,0 +1,356 @@
+一 网络通讯
+
+ 1 网络基础和arp，udp, tcp, 应用；
+   
+   网络通讯的分层：
+   
+   物理 > 链路 > 网络 > 传输 > 表示层 > 会话 > 应用 
+  
+   链路 >  网络 > 传输 > 应用
+  
+
+   应用曾常用传输协议：
+   ftp, tftp, http
+
+	 {00:00:00:00:00:01} 	{00,00,00,05}			{0x21}  "hello"
+
+
+   ftpserver  : 0x20
+   httpserver : 0x21
+
+ 2 传输的过程是封装报头，和去掉报头；
+
+
+
+ 3 实例发送以太报文
+   以太报头 ＋ 数据
+   以太报文的长度：60 ～ 1500
+   以太抱头格式  ：
+    6（目标mac）+ 6 (发送方mac) + 2 （类型）
+   
+
+   网络数据报定义的规则：
+   数据定长， 
+   字节序， 发送转换为网络字节序(htons htonl)
+            接收转换为本地字节序(ntohs ntohl)
+   数据类型无空隙，
+
+ 4 套接字（socket)
+
+   int socket(int  domain,  int  type,  int
+       protocol);
+
+   domain : PF_INET ipv4
+   type   : 指定协议
+     SOCK_STREAM 流套接字（tcp）
+     SOCK_DGRAM  报套接字 (udp)
+     SOCK_PACKET 封装字定义数据报；
+   protocol 具体协议
+            使用默认协议填0；
+  
+ 5 ssize_t  sendto(int  s, const void *buf,
+       size_t  len,  int  flags,  const  struct
+       sockaddr *to, socklen_t tolen);
+   s    套接字，
+   buf  缓存区首地址，
+   len  要发送的字节数，
+   flags 附加选项，默认是0，
+   to   目标地址（网卡）
+     	struct sockaddr{
+				sa_family_t sa_family;
+				char sa_data[14];
+			}
+   tolen to的长度；
+  
+  
+ 6                    inet
+
+     arp                               ip
+     
+
+                                   udp  tcp icmp
+
+
+
+   arp报文负责将ip地址转换到mac地址
+
+   广播mac地址 ：ff:ff:ff:ff:ff:ff
+
+
+二 udp
+  
+ 1 ineth   iph            tcph     data
+           192.168.11.254 0x0003/    "hello"
+                          0x0010
+           
+
+   
+
+   216:
+
+	 http    : 0x0001
+   svn     : 0x0002
+   a.out   : 0x1990
+
+
+   0x0003 端口号：标识程序，
+          ip地址：标识主机；
+
+   自定义端口号一般大于1024
+
+
+ 2  ssize_t recvfrom(int s, void *buf, size_t len, int flags, struct sockaddr *from, socklen_t *fromlen);
+
+	flags:
+	MSG_PEEK: 接收数据报内容到buf,
+            下次再接收，数据还存在；
+  from 传出发送方的信息（ip port），
+  如果接收udp ，from不是struct sockaddr;
+  而是 struct sockaddr_in,
+  fromlen :from的字节数；
+       
+
+ 3 int  bind(int sockfd, const struct sock-
+       addr *my_addr, socklen_t addrlen);
+
+ 4 课堂练习：
+		修改send.c id修改为自己的学号，
+    name修改为自己名字的全拼，
+    端口号改为0x1991, 
+    发送到教师机192.168.11.254
+
+
+ 5 int ioctl(int d, int request, ...);
+
+  设置或取得文件的控制信息，
+  FIONREAD :
+	取得可读取的字节数；
+
+三 udp广播
+ 1 路由根据目的地址不同，
+   将数据报发送到不同的路由器上；
+ 
+ 2 分类：子网广播， 全网广播；
+
+   子网广播，主机号所有bit为1
+
+   全网广播 : 255.255.255.255
+
+ 3 int setsockopt(int  s,  int  level,  int
+       optname,  const  void *optval, socklen_t
+       optlen);
+  level : 
+    网络层 （ip) IPPROTO_IP
+    传输层  
+    应用层       SOL_SOCKET
+
+
+  optname： 某个选项
+     SO_BROADCAST 设置发送广播
+     
+  optval : 设置的数值，不同的设置，
+           optval 类型不同；
+
+  optlen ： optval的字节数
+  
+ 4 关闭防火墙：
+
+	 service iptables stop
+
+
+四 rhel6启动盘制作
+
+ rhel5 : 8+G u盘， windows
+ rhel6 : 4+G u盘， linux/windows
+  
+ 1 有第一个分区 4G
+ 
+ 2 拷贝文件（.iso）到分区根目录
+
+ 3 写引导区
+   ls /dev/sdb* 
+   确保u盘是第二个存储设备
+
+   挂在u盘： 
+	 mkdir /root/udisk
+   mount /dev/sdb4 /root/udisk
+
+   挂载.iso
+   mkdir /root/iso
+   mount /root/.iso /root/iso -o loop
+   
+   cp /root/iso/images/ /root/udisk/ -r
+   cp /root/iso/isolinux/vmlinuz /root/udisk/
+   cp /root/iso/isolinux/initrd.img /root/udisk/
+  
+   cd /root/udisk
+	 mkdir boot
+   cd boot 
+	 mkdir grub
+   cd grub
+   cp /boot/grub/*stage* .
+
+	 umount /root/udisk
+
+   在bash下，执行grub
+
+   输入: 
+   root (hd1,3)
+   setup (hd1)
+   quit
+   
+
+
+
+ 4 u盘启动电脑，安装
+
+   进入grub
+	 输入:
+	  kernel /vmlinuz
+    initrd /initrd.img
+    boot
+
+   进入rhel6.1安装界面
+
+
+五  多播（组播）
+
+ 1 ip地址的分类
+
+   ｜0000 0000｜         ｜         ｜          ｜
+ 
+ A   0*** ****
+    0    ~  127
+    127.0.0.1
+ B   10** ****
+    128  ~  128+63 (191)       255.255.0.0
+    64 * 255
+
+ C   110* ****
+    192 ~ 192+31   (223)       255.255.255.0
+    32*255*255
+
+ D   1110 ****
+    224 ~  239
+
+ E   1111 0***
+    240 ~ 247
+
+
+ 2 加组的方法
+   自定义的组号要大于 224.0.0.254
+   int setsockopt(int  s,  int  level,  int
+       optname,  const  void *optval, socklen_t
+       optlen);
+
+   level : SOL_IP
+
+   optname : IP_ADD_MEMBERSHIP
+
+   optval  : struct ip_mreqn
+	 服务端（被动端）：
+   确定被动方的端口（bind)
+   加组             setsockopt
+   等待数据         recvfrom
+
+   客户端（主动端）：
+	 发送数据到指定的组号和指定的端口号
+                    sendto
+
+ 3 unsigned    if_nametoindex(const    char
+       *ifname); 
+   转换网络接口为序号；
+   ifname 网络接口的名字，"eth0"
+   
+  
+ 4 模拟ftp传输文件， 
+   只下载文件，
+   利用多进程或多线程，
+   多客户端单服务端；
+
+
+六 tcp
+ 
+ 1 tcp收到的数据就是正确
+ 
+ 2 tcp连接过程：3次握手
+
+
+ 3 tcp通讯实现流程：
+  
+
+  Server:                         Clinet
+           
+   sfd = socket()                 sfd = socket()
+                       
+   bind
+
+	 listen(sfd,100)
+
+   newsfd = accept(ack+syn)
+
+                                  connect(syn,ack)                                  
+
+   write / read                   read/write 
+
+
+   close(syn, ack)                
+                                  read() 返回0；
+                                  
+                                  close();
+
+七 网络数据报截获
+
+
+ 1 套接字截获
+
+   socket(PF_INET, SOCK_PACT, 0x0806/0x0800);
+
+
+ 2 使用 libpcap库截获
+  
+ 
+ 3 开源库的使用 
+
+   a 解压缩
+   b 代码配置 ./configure
+   c 编译安装 
+     make 
+     make install
+
+   
+ 4 解析ip报头
+   参考wireshark和 /usr/include/netinet/ip.h
+struct iphdr
+  {
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    unsigned int ihl:4;
+    unsigned int version:4;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+    unsigned int version:4;
+    unsigned int ihl:4;
+
+#else
+# error "Please fix <bits/endian.h>"
+#endif
+    u_int8_t tos;
+    u_int16_t tot_len;
+    u_int16_t id;
+    u_int16_t frag_off;
+    u_int8_t ttl;
+    u_int8_t protocol;
+    u_int16_t check;
+    u_int32_t saddr;
+    u_int32_t daddr;
+    /*The options start here. */
+  };
+
+
+
+
+
+
+
+
+  
+

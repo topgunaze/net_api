@@ -1,0 +1,343 @@
+一 接口分类
+
+	1 系统调用 （系统函数）
+  2 库函数    (由编译器将系统函数作封装）
+
+    void mopen(void)
+	  封装
+		void mymopen(void)
+		{
+			mopen();
+			mopen();
+			mopen();
+		}
+	3 ps aux 查看进程
+
+二 fopen fgetc
+
+ 1 fgetc
+	读取文件中的一个字符， 
+	如果文件里没有字符，或者已经读取完，
+	返回EOF
+  ＊ EOF 不是文件里的内容；
+
+ 2 可执行文件执行传递命令行参数
+  ./arg t.txt
+  有两个命令行参数 
+	arg[0] = "./arg"
+	arg[1] = "t.txt"
+
+三 文件当前操作指针
+
+ 1 操作文件时读取或写入的位置
+ 2 修改指向不能用等号，只能调函数。
+ 3 fseek
+   SEEK_SET 文件开头
+	 SEEK_END 末尾
+	 SEEK_CUR 文件的当前位置开始移动
+
+四 预习内容
+
+ 1 函数fgets fputs
+       fread fwrite
+
+ 2 使用上两组函数实现文件拷贝
+  （命令行参数输入文件名）
+
+ 3 函数getline的使用
+ 
+ 4 课后练习 实现getline; 
+
+五 字符串io操作
+
+ 1 char *fgets(char *s, int size, FILE *stream);
+   stream : fp , stdin 。
+   
+ 文件内容：
+uplooking
+abc
+123
+	size == 5;
+  读取文件所有内容需要5次；
+
+ 文件内容：
+uplooking
+ab\0c
+123
+   调用fgets一次（fgets执行结束的条件），
+	a : 遇到换行就返回（包括换行）。
+  b : 读取文件结束。
+  c : 存放缓存剩下一个字节。
+
+  ＊注意：fgets只能读取文本文件；
+
+int fun(FILE * stream)
+{
+	return 0;
+}
+
+#define tfun(stream) fun(stream)
+
+
+  2 int fputs(const char *s, FILE *stream);
+    结尾0不会输入到文件；
+
+六 二进制io
+
+ size_t  fread(void  *ptr,  size_t  size,
+       size_t nmemb, FILE *stream);
+ size 读取但元的字节数；
+ nmemb 读取单元的个数；
+ 
+ size : 1  
+ nmemb : 10
+ read: 8
+ *return : 8;
+
+
+ size : 2  
+ nmemb : 5
+ read: 9
+ return : 4
+
+ 结论：unix环境 size一般都是1；
+
+ 3 fopen
+  mode : r w r+ w+ a a+ 
+  //mode : rb wb rb wb wb+ ab ab+ 
+
+
+七 默认打开的文件
+
+ 1 stdin stdout stderr
+
+  fprintf(stream, format, ...);
+  printf(format, ...);
+
+ 2 修改默认打开的文件
+  < 输入重定向 
+  > 输出重定向
+
+八 配置rhel程序安装
+
+ 1 yum配置：
+   挂载文件.iso 
+	 mkdir /root/iso
+   mount /root/name.iso /root/iso -o loop
+
+   修改文件：
+	 /etc/yum.repos.d/rhel-debuginfo.repo
+ 
+   内容：
+[uplooking]
+name=xian
+baseurl=file:///root/iso/Server
+enabled=1
+gpgcheck=0
+  
+ 2 测试
+  yum clean all
+  yum list
+
+
+ 3 安装 
+  yum install 名字
+
+
+ 4 管道(|)和过滤(grep)
+
+七 open
+
+ 1 fopen调用open
+
+ 2 open  返回整数（-1出错）
+   fopen 返回FILE 
+   FILE * 指向的数据里包括一个整数 
+
+ 3 file descriptor (文件描述符)
+   
+ 4 flag的可选标记
+   O_APPEND 
+   如果多个标记一起填入到flag 用 |连接，
+   O_CREAT 创建 必须填写第三个参数 0644
+   O_NONBLOCK 非阻塞
+   O_SYNC 写入要等待刷新文件
+   O_TRUNC 清空文件内容
+
+八 读写操作
+
+ 1 文件描述符复制
+   dup2(oldfd, newfd);
+	返回复制目标文件（newfd）描述符；
+ 
+ 2 O_SYNC实验
+
+ 3 终端的默认io方式是行缓存。
+   错误输出是无缓存。
+   普通文件全缓存。
+
+九 目录操作
+
+ 1 DIR *opendir(const char *name);
+   struct dirent *readdir(DIR *dir);
+
+ 2 课堂练习 实现目录递归访问，参照tree
+
+
+十 gdb调试
+ 
+ 1 编译要使用-g
+ 2 进入调试 gdb a.out
+   结束调试 q
+ 3 开始调试 start 
+ 
+ 4 查看变量 p 变量名字
+ 5 下一步   n
+ 6 进入函数 s  
+
+ 7 查看代码： 
+	l  
+	l + 行号
+  l + 函数名字
+
+ 8 查看数组（内存）
+  x 地址
+  x 指针变量名
+	x/d    十进制
+  x/x    十六进制
+  x/数字 查看的单于数是
+
+ 9 设置断点
+  b 行号
+  r 执行到第一个断点；
+  c 从当前断点跳到下一个断点；
+
+ 10 快速查找错误行
+  gdb a.out
+  r
+
+
+十一 stat
+	1 ln 创建硬链接
+     ln name newname
+
+     创建软链接
+     ln -s name newname
+
+ 2  int  stat(const  char *path, struct stat
+       *buf);
+    
+	  struct tm *gmtime(const time_t *timep);
+
+
+  reg      :-
+	dir      :d
+  char     :c
+  block    :b
+	pipe     :p
+  socket   :s
+  symbolic :l
+ 3 课后练习：实现文件信息打印，参考ls -l
+
+十二 非阻塞io
+
+ 1 open()   O_NONBLOCK,
+ 2 阻塞io（默认），无数据就等待，
+   有数据就读取数据，并返回；
+ 3 已经打开的文件修改打开方式：
+   int fcntl(int fd, int cmd, long arg);
+   cmd F_SETFL 设置打开标记
+			 F_GETFL 获取打开标记（2参数）
+
+ 4 如果为非阻塞，
+   返回－1为无数据，而不是
+   发生读取异常；
+
+十三 状态机
+ 
+ 1 画草图
+
+   Read              Write
+
+
+
+   Terminit          Error
+
+
+	R -> R
+  R -> W
+  R -> E
+  R -> T
+
+
+  W -> R
+  W -> W
+  W -> E
+	
+  E -> T
+  
+  T
+
+ 2 根据草图编写代码。 
+
+
+ 3 课后练习
+
+	a 实现cat < t.txt:
+
+	编写mdupcat.c 
+  编译为make mdupcat,
+	命令行输入：./mdupcat t.txt，
+  使其输出和 cat < t.txt 输出相同；
+
+  b 将内容类似(ls -l -a > t.txt)的字符串数组，
+  转化为空格分割的子字符串, 分别为：
+	ls -l -a > t.txt五个字符串；
+  可以封装mstrsep
+
+
+
+十四 多路io监控（转接）
+
+ 1  int select(int nfds, fd_set *readfds, fd_set *wri    tefds, fd_set *exceptfds, struct timeval *timeout    );
+  nfds : 要监控的文件描述符的范围，
+         从0开始。（最大的文件描述符的值＋1）
+  readfds：读取的文件描述符集合；
+  wrtefds: 写入文件描述符集合；
+  exceptfds：异常文件描述符号监控的集合；
+  timeout：监控的时间。
+
+  返回:准备好的事件，如果一个文件的读取和写入都在
+  监控范围，而且都可操作，返回2；
+  
+  出错返回－1；
+  
+  返回0只有在超时的情况下发生。
+
+ 2 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+  fds : 结构体数组的首地址
+  nfds : 数组的单于数；
+  timeout : 监控时间（ms）
+
+             struct pollfd {
+               int   fd;         /* file descriptor */
+               short events;     /* requested events */
+               short revents;    /* returned events */
+           };
+
+  fd ：描述符
+	events : POLLOUT POLLIN POLLERR;
+  revents : 存放准备好的事件；
+
+
+
+
+
+
+
+
+
+
+
+
+

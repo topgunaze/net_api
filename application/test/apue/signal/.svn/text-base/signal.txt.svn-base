@@ -1,0 +1,89 @@
+一 信号
+ 1 ctrl + c 发送信号给当前窗口的程序；
+ 2 kill -l 
+
+   kill 进程pid ： 发送信号给一个指定进程。
+   
+   kill -()/信号 pid
+
+   2) SIGINT   (ctrl+c)
+   3) SIGQUIT  (ctrl+\)
+   11) SIGSEGV
+   14) SIGALRM (闹钟信号）
+
+ 3 信号的处理
+
+   信号是软中断
+   a) 默认处理
+   b) 忽略
+   c) 捕捉
+
+  sighandler_t  signal(int signum, sighandler_t handler);
+  返回捕捉前的信号函数；
+
+ 4 unsigned int alarm(unsigned int seconds);
+   实现slowcat
+
+
+  int pause(void);
+  使进程进入休眠直到收到一个信号。
+  
+二 信号屏蔽字
+
+  每个进程都有一个默认的信号屏蔽字；
+  int sigprocmask(int how, const  sigset_t
+       *set, sigset_t *oldset);
+
+  how 
+	SIG_BLOCK   -> | 增加某个信号的屏蔽 （1）	
+  SIG_UNBLOCK -> & 解除某个信号的屏蔽 （0）
+  SIG_SETMASK -> = 可能修改所有的屏蔽  
+  
+
+  注意：被屏蔽的信号不执行信号处理函数直到
+  信号屏蔽解除，而且只执行一次（收到多次，
+  记录一次）
+
+
+三 sigsuspend(const sigset_t *mask);
+ 
+ 1 pause
+ 2 sigsuspend 使进调用程进入休眠，
+   休眠前修改进程的信号屏蔽字为mask;
+
+四 sigaction
+
+ int sigaction(int signum,  const  struct
+       sigaction    *act,    struct   sigaction
+       *oldact);
+
+  struct sigaction {
+                  void (*sa_handler)(int);
+                  void (*sa_sigaction)(int, siginfo_t *, void *);
+                  sigset_t sa_mask;
+                  int sa_flags;
+                  void (*sa_restorer)(void);
+              }
+
+  *sa_handler   : 信号的处理函数
+  sa_sigaction  : 不属于标准规定范围
+  *sa_mask      : 信号处理函数别执行时，
+                  进程的信号屏蔽字会修改为sa_mask
+
+  *sa_flags     : 附加选项
+  SA_NOCLDWAIT  ：系统负责回收僵尸进程
+  SA_RESETHAND  ：被信号关联的函数只执行一次，
+                  然后恢复为以前状态
+
+ 
+五 练习 实现mkill,输入进程名字代替进程的pid
+   ./mkill 2 运行进程的名字
+
+ 1 9:30 - 13:00     14:30 - 5:00
+ 2 int kill(pid_t pid, int sig);
+ 3 ifconfig eth0
+ 4 vim /etc/sysconfig/network-scripts/ifcfg-eth0  
+
+
+
+

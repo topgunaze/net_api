@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <pthread.h>
+#define TNUM 100
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+void * thr_fun(void * arg)
+{
+      FILE * fp;
+      char buf[256];
+      pthread_mutex_lock(&mutex);
+      fp = fopen("t.txt", "r+");
+      if(fp == NULL){
+	    perror("open()");
+	    exit(-1);
+      }
+      fgets(buf, sizeof(buf), fp);
+      fseek(fp, 0, SEEK_SET);
+      fprintf(fp, "%d", atoi(buf)+1);
+      fclose(fp);
+      pthread_mutex_unlock(&mutex);
+      pthread_exit(NULL);
+}
+int
+main(int argc, char * argv[])
+{
+      int i, ret;
+      pthread_t tid[TNUM];
+      for(i=0; i<TNUM; i++){
+	    ret = pthread_create(tid+i, NULL, thr_fun, NULL);
+	    if(ret != 0){
+		  fprintf(stderr, "pthread_create():%s\n", strerror(ret));
+		  exit(-1);
+	    }
+      }
+      for(i=0; i<TNUM; i++){	
+	    pthread_join(tid[i], NULL);
+      }	
+      return 0;
+}

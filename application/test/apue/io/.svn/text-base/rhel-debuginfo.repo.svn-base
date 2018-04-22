@@ -1,0 +1,5 @@
+[uplooking]
+name=xian
+baseurl=file:///root/iso/Server
+enabled=1
+gpgcheck=0

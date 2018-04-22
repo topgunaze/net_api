@@ -1,0 +1,64 @@
+’°ì ‘Ïß’Äø
+
+1 int  pthread_create(pthread_t  *restrict
+       thread, const  pthread_attr_t  *restrict
+       attr, void  *(*start_routine)(void*),
+       void *restrict arg);
+
+
+  thread : ‘´´’·ú’¿·‘Ïß’Äøid;
+  attr   : ‘Ïß’Äø’Åª’Â°’À­, NULL’Âå’É½’àÔ‘ÈÏ‘Ïß’Äø’Â°’À­’¡¨
+  start_routine : ‘Ïß’Äø’È¡’¿ô’¡¨
+  arg    : ‘´«’Æş’Åş‘Ïß’Äø’Åª‘Êµ’»²’¡¨
+
+2 int pthread_join(pthread_t thread,  void
+       **value_ptr);
+  thread    : ’Í×’Åù’ÂÔ’Åª‘Ïß’Äøid’¡¨
+  value_ptr : ‘Ïß’Äø’Åª’Âà’½Ğ’»Ø‘Õë’¡¨
+
+  ’ÊÖ’²ó0‘Ö´’¹Ô’À®’¸ù’¡¨
+       ‘´í‘Îó‘±à’¹æ’¡¨
+
+
+  char *strerror(int errnum);
+
+  ‘´í‘Îó‘Âë‘×ª‘»»‘Îª’»ú’Éä’¶ú
+
+3 pthread_t pthread_self(void);
+  ‘»ñ’¼è‘µ÷’ÍÑ‘Ïß’Äø’Åªid;
+
+
+4 void pthread_cleanup_pop(int execute);
+  ‘µ¯’½Ğ’Ãí’ÑÆ’È¡’¿ô’¡¤’Ç¡’²Ìexecute == 0 ’ÉÔ‘Ö´’¹Ô’È¡’¿ô
+  ‘µ¯’½Ğ’Ãí’ÑÆ’È¡’¿ô’¡¤’Ç¡’²Ìexecute != 0 ‘Ö´’¹Ô’È¡’¿ô
+
+  void   pthread_cleanup_push(void  (*rou-
+       tine)(void*), void *arg);
+
+  void pthread_exit(void *value_ptr);
+  ‘Ö´’¹Ô’Èïpush’Ãí’ÑÆ‘¹ı’Åª’È¡’¿ô’¡¨
+	’»È‘Ïß’Äø’Âà’½Ğ’¡¨
+  
+  ’Èïpush’Ãí’ÑÆ’Åª’È¡’¿ô’¡¤’°ì’ÈÌ’À§‘Êµ‘ÏÖ’Äø’½ø’Åª’ÚÀ’Èø’¹©’ºî’¡¨
+
+’Æó ‘Ïß’Äø’Æ±‘²½
+  
+ 1 ’Æ±’°ì’Ğ¤‘×Ê’¸»’¡¤’Â¿’Ğ¤‘Ïß’Äø‘·Ã‘ÎÊ’¡¤’Æ±’°ì‘Ê±’¹ï’¡¤
+   ’Âş’Í­’°ì’Ğ¤‘Ïß’Äø’²Ä’°Ê‘·Ã‘ÎÊ’¡¤’Â¶’Õà’Åª‘Ïß’Äø’É¬‘Ğë’Åù’ÂÔ’¡¨
+
+ 2 ’¸ß’ÀÍ’ÎÌ
+
+   int  pthread_mutex_lock(pthread_mutex_t
+       *mutex);
+
+   int  pthread_mutex_unlock(pthread_mutex_t
+       *mutex);
+
+ 3 ‘¿Î’Æ²‘Á·‘Ï°’¡§’½¤’²ş’Ê¸’·ï’¡Êt.txt’¡Ë’Åª’¿ô‘Öµ’¡¤’½é‘Öµ0, 
+   ‘´´’·ú100’Ğ¤’»Ò‘Ïß’Äø’¡¤‘Ã¿’Ğ¤’»Ò‘Ïß’Äø’½¤’²ş‘ÏÖ’Í­’¿ô‘Öµ’¡¤
+   ’»È’Â¶‘Ôö’²Ã1’¡¤100’Ğ¤’»Ò‘Ïß’Äø’¡¤‘×Ü’¶¦’½¤’²ş100’º¡’¡¤
+   ‘½á’²Ì‘Îª100’¡¤’ÍÑ’¸ß’ÀÍ’ÎÌ’´°’À®’¡¤’¼ç‘Ïß’Äø’Âş‘´´’·ú’Öõ’Åù
+   ’ÂÔ’»Ò‘Ïß’Äø’¡£
+
+
+

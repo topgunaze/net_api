@@ -1,0 +1,200 @@
+一 管道
+
+ 1 无名管道通讯，父子或兄弟进程间的通讯。
+ 2 通讯单向的。
+ 3 int pipe(int filedes[2]);
+   filedes 传出管道文件描述符；
+
+ 4 管道的定向
+   pfd[2];
+	 pfd[0] 读端
+   pfd[1] 写端
+   读（收）数据的进程，关闭写端；
+   写（发）数据的进程，关闭读端；
+
+ ＊5 管道的写段不存在的（关闭），
+   读取度端，不发生异常，而是返回0；
+
+ ＊6 关闭读端，写如写端会使程序终止（收到信号）；
+
+ 7 课堂练习 兄弟进程间管道通讯，
+   child00 发送"uplooking", child01
+   接收并打印；
+
+ 8 实例：pipecat
+  parent : 读取标准输入，发送到管道；
+  child  : 读取管道发送到屏幕
+
+ 9 有名管道
+  
+  a 前台进程和后台进程
+
+  创建后台进程 ： 命令/可执行文件 &
+  
+  后台进程－>前台进程 ： fg 作业号
+  jobs查看当前bash的所有作业
+  
+  前台进程－>后台进程 ： ctrl + z
+
+  b tee 复制流到一个文件
+  cat | tee file05 | cat
+
+
+  c 创建管道文件命令：mkfifo filename
+
+  cat t.txt > filename &
+  cat < filename
+
+  d 使一个文件的内容在屏幕上输出两次；
+  
+  cat < myfifo & 
+  cat < t.txt | tee myfifo | cat
+
+
+
+
+二 xsi
+ 
+ 1 xsi进程通讯接口定义的规范；
+
+ 2 消息队列msg
+   ipc实体，存在在内核。
+
+ 3 创建ipc实体
+   int msgget(key_t key, int msgflg);
+   msgflg : 
+   IPC_CREAT 创建，
+      没有为IPC_CREAT则为获取现有实体，
+
+   0---
+   0777入队出队权限
+ 
+   获取或者创建实体；
+
+4 key_t  ftok(const  char  *pathname,  int
+       proj_id);
+
+  获得键值，pathname必须是一个存在可读文件；
+  proj_id 是一个整数(0-255)；
+
+
+5 int  msgsnd(int msqid, const void *msgp,
+       size_t msgsz, int msgflg);
+  msqid  描述符
+  msgp   要发送的数据首地址，
+                                          msgsz  要发送消息的大小，
+  msgflg 附加选项；
+    
+
+6 ssize_t msgrcv(int  msqid,  void  *msgp,
+       size_t msgsz, long msgtyp, int msgflg);
+  msqid  描述符,
+  msgp   接收缓存首地址，
+  msgsz  接收的大小，
+  msgtyp :
+  0  : 接收先发送的消息,
+  >0 : 接收指定的一个消息类型为msgtyp,
+  <0 : 最类型的消息，而且小于等于msgtyp;
+  msgflg 附加选项；
+    MSG_NOERROR :
+    在消息内如大于缓存区大小的时候，
+    设置MSG_NOERROR，截断消息
+    没设置MSG_NOERROR ，出错返回－1
+    errno == E2BIG 
+    
+    IPC_NOWAIT 无消息出错返回；
+
+7 ipc查看命令
+  ipc
+  删除消息队列实体
+  int  msgctl(int  msqid,  int cmd, struct
+       msqid_ds *buf);
+  msqid:
+  cmd  : IPC_RMID
+  buf  : NULL
+
+8 0长度消息
+  主要用在发送特殊信息
+
+
+9 消息队列传输文件
+
+三 信号量数组
+
+ 1 创建信号量数组
+    int  semget(key_t  key,  int  nsems, int
+       semflg);
+   key   IPC_PRIVATE 特殊的键值，
+   只用在父子（／兄弟）进程间的同步；
+
+   nsems 信号量的个数
+
+
+ 2 信号量初值设置
+   int semctl(int semid, int semnum, int cmd, ...);
+   
+   semnum 信号量在数组中的下标；
+   cmd:
+   IPC_RMID : 删除信号量，如果有多个信号量
+      在一个数组里，删除一次；
+   GETVAL   ：取得信号两数值，到返回值；
+   SETVAL   : 设置信号量数值，数据存放在第四个参数；
+  
+
+ 3 占用资源或释放资源
+  
+  int  semop(int  semid,   struct   sembuf
+       *sops, unsigned nsops);
+
+  nsops : 要操作的信号量个数，结构体数组单元数；
+		struct sembuf{
+unsigned short sem_num;  /* semaphore number */
+           short          sem_op;   /* semaphore operation */
+           short          sem_flg;  /* operation flags */
+
+    };
+   sem_num 信号量在数组中的下标；
+   sem_op  占用或释放资源的数量；
+
+   sem_flg 附加选项；
+   IPC_NOWAIT 不挂起；
+   资源可占用，返回0；
+   资源不可占用，返回－1， errno == EAGAIN;
+	 SEM_UNDO : 在程序退出后，
+    恢复程序之前的操作；
+
+
+
+
+
+ 4 实例：打印20000到20200间的素数，
+   多进程（201子进程）打印，同时间子内进程
+	 数量为4；
+ 
+ 5 实例：父子进程交替打印A，B；
+
+
+四 共享内存 
+ 1  int shmget(key_t key, size_t size, int
+       shmflg);
+  size 共享内存的大小， 取整页面大小,5 － 4*1024;
+
+ 2 课后练习：实现进程间文件发送，
+   使用消息队列和状态机；
+
+   发送方小发送文件名字(filename_copy)，
+   和文件内容，两类消息；
+
+   接收方接收到文件名字后创建打开文件，写入
+   收到的文件内容，接收到所有内容后，关闭文件；
+
+五  FILE  *popen(const  char *command, const
+       char *type);
+  type : 
+  "r" 返回的文件要读取数据
+  "w" 返回的文件是要写入数据，
+      写入到执行命令的标准输入；
+
+
+
+ 
