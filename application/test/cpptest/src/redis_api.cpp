@@ -5,7 +5,7 @@
 #include <string.h>  
 #include <assert.h>  
 
-#if 0
+#if 1
 
 #include <hiredis/hiredis.h>  
 

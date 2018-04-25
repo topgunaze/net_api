@@ -1,0 +1,112 @@
+在main或_tmain的return语句之后还可以执行函数么？你一般用这些函数来做什么事情呢？本篇博文将围绕这个话题展开，希望大家能有所收获。
+
+
+
+在介绍atexit函数之前先介绍一下exit函数
+
+exit()函数
+
+函数声明：void exit(intstate);
+
+         exit()函数用于在程序运行的过程中随时结束程序，exit的参数state是返回给操作系统,返回0表示程序正常结束，非0表示程序非正常结束。main函数结束时也会隐式地调用exit函数。exit函数运行时首先会执行由atexit()函数登记的函数，然后会做一些自身的清理工作，同时刷新所有输出流、关闭所有打开的流并且关闭通过标准I/O函数tmpfile()创建的临时文件，最后调用_exit系统函数。
+
+
+
+现在正式进入本篇主题atexit
+
+atexit()函数
+
+函数声明：int atexit(void (*func)(void)); 
+       很多时候我们需要在程序退出的时候做一些诸如释放资源的操作，但程序退出的方式有很多种，比如main()函数运行结束、在程序的某个地方用exit()结束程序、用户通过Ctrl+C或Ctrl+break操作来终止程序等等，因此需要有一种与程序退出方式无关的方法来进行程序退出时的必要处理。方法就是用atexit()函数来注册程序正常终止（也就是通过exit(0)、_exit(0)或return结束的程序）时要被调用的函数。
+
+       atexit()函数的参数是一个函数指针，函数指针指向一个没有参数也没有返回值的函数。
+
+       Windows下，在一个程序中最多可以用atexit()注册32个处理函数（Linux系统规定这个上限不少于32），这些处理函数的调用顺序与其注册的顺序相反(其实这些函数的入口地址被压栈保存)，也即最先注册的最后调用，最后注册的最先被调用。
+
+
+
+代码示例：
+#include <stdlib.h>       // 使用atexit()函数必须包含的头文件stdlib.h
+#include <iostream.h>
+
+void terminateTest1()
+{
+    cout<<"程序terminateTest1正在结束..."<<endl;
+}
+
+
+
+void terminateTest2()
+{
+    cout<<"程序terminateTest2正在结束..."<<endl;
+}
+
+int main(void)
+{
+     // 注册退出处理函数
+     atexit(terminateTest1);
+
+     atexit(terminateTest2);
+
+
+
+    cout<<"the end ofmain()"<<endl;
+
+    return 0;
+}
+
+程序的运行结果为：
+the end of main()
+程序terminateTest2正在结束...
+
+程序terminateTest2正在结束...
+
+ 
+
+       这些函数都是在main结束以后才被调用的。atexit只是注册他们，使得他们在main结束以后被调用，看名字就可以看出来。
+
+        还记得atexit函数是在哪个阶段被调用的么？如果不知道就滑动一下鼠标，上面刚刚有介绍哦。有的小伙伴可能在想：“光你一个人在说，对不对呢？”。没关系，我们写个程序测试一下呗。还是以上面的程序为例吧
+
+
+代码示例：
+#include <stdlib.h>       // 使用atexit()函数必须包含的头文件stdlib.h
+#include <iostream.h>
+
+void terminateTest1()
+{
+    cout<<"程序terminateTest1正在结束..."<<endl;
+}
+
+
+
+void terminateTest2()
+{
+    cout<<"程序terminateTest2正在结束..."<<endl;
+}
+
+int main(void)
+{
+     // 注册退出处理函数
+     atexit(terminateTest1);
+
+     atexit(terminateTest2);
+
+
+
+    cout<<"the end ofmain()"<<endl;
+
+    _exit(0);
+}
+
+程序的运行结果为：
+the end of main()
+
+
+
+        注意到了么，怎么atexit没有起作用呢？其实atexit已经起作用了（上一个程序实例可以证明哦），只是你没有给他调用的机会而已。前面说过，main函数结束时会隐式地调用exit函数。exit函数运行时首先会执行由atexit()函数登记的函数，然后会做一些自身的清理工作，同时刷新所有输出流、关闭所有打开的流并且关闭通过标准I/O函数tmpfile()创建的临时文件，最后调用_exit系统函数。也就是return -> exit -> 执行由atexit()函数登记的函数 -> …… -> _exit这么个流程。你看，我们直接执行了_exit函数,根本就没有给由atexit()函数登记的函数执行的机会，所有当然就看不到由atexit()函数登记的函数执行的结果咯。
+
+
+
+       atexit这个玩意超有用，可以按照你预设的顺序摧毁全局变量（包括类对象），例如有个MyLog类，你在其它的全局类里也有可能调用到MyLog类写日志。所以MyLog类必须最后被析构。假如没有规定析构顺序，那么程序在退出时将有可能首先析构MyLog类，那么其它的全局类在此时将无法正确写日志。
+
+       其实，把数据写回文件,删除临时文件,这才是设计atexit最开始的初衷。

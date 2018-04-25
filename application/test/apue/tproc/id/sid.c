@@ -8,8 +8,10 @@ int
 main(int argc, char * argv[])
 {
 	pid_t pid;
+	
 	pid = fork();
-	if(pid == 0){
+	if(pid == 0)
+	{
 		//setpgid(getpid(), getpid()); 
 		pid = setsid();
 		if(pid < 0){

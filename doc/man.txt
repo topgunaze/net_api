@@ -1,0 +1,554 @@
+
+可以使用man man 查看man的使用方法
+
+1.man共有以下几个章节
+
+代码	功能
+1		标准用户命令（Executable programs or shell commands）
+2		系统调用（System calls）functions provided by the kernel
+3		库调用（Library call）functions within program libraries
+4		特殊文件（设备文件）的访问入口（/dev）Special files (usually found in /dev)
+5		文件格式（配置文件的语法），指定程序的运行特性 File formats and conventions 
+6		游戏（Games）
+7		杂项（Miscellaneous）including macro packages and conventions
+8		管理命令 System administration commands
+9		跟kernel有关的文件 Kernel routines
+
+2.man手册的格式
+
+    NAME         命令名称及功能简要说明
+
+    SYNOPSIS     用法说明，包括可用的选项
+
+    DESCRIPTION  命令功能的详细说明，可能包括每一个选项的意义
+
+    OPTIONS      说明每一项的意义
+
+    FILES        此命令相关的配置文件       
+
+    BUGS        
+
+    EXAMPLES    使用示例
+
+    SEE ALSO    另外参照   
+
+3.man手册的使用方法
+
+    翻屏
+
+        向后翻一屏：space(空格键)    向前翻一屏：b
+
+        向后翻一行：Enter(回车键)    向前翻一行：k
+
+   查找：
+
+    /KEYWORD  向后查找    n：下一个
+
+    ?KEYWORD  向前查找    N：前一个
+
+    退出：q
+
+4.常用实例
+
+分章节查看man的帮助手册：
+
+4.1 标准用户命令
+
+可以使用whatis命令是用于查询一个命令执行什么功能，并将查询结果打印到终端上。
+
+例如：
+
+[root@nfs-server ~]#whatis cd
+
+cd                   (1p)  - change the working directory
+
+cd [builtins]        (1)  - bash built-in commands, see bash(1)
+
+#从上文的输出结果我们看到cd命令是bash的内建命令，它的功能是改变当前目录，可以在1和1p的章节中查看它的帮助。
+
+ 
+
+[root@nfs-server ~]#man 1 cd
+
+使用上面的命令可以直接查看cd的帮助信息。
+
+[root@nfs-server ~]#man 1p cd
+
+因为1p章节是bash的帮助信息，所以在使用"man 1p cd"后，通过在man中输入"/cd"查找相关的信息才能看到cd的帮助信息。
+
+4.2 系统调用
+
+[root@nfs-server]# whatis read
+
+read                 (1p)  - read a line from standard input
+
+read                 (2)  - read from a file descriptor
+
+read                 (3p)  - read from a file
+
+read [builtins]      (1)  - bash built-in commands, see bash(1)
+
+#从上面可看到，read在1,1p,2,3p中都有内容，下面查看系统调用
+
+[root@nfs-server ~]#man 2 read
+
+[root@nfs-server ~]#man 2 mount
+
+4.3 库调用
+
+[root@nfs-server ~]# man 3 sleep
+
+4.4 特殊文件（设备文件）
+
+[root@nfs-server ~]#man 4 tty
+
+4.5 文件格式（配置文件的语法）
+
+[root@nfs-server ~]# man 5 passwd
+
+4.8 管理命令
+
+[root@nfs-server ~]# man 8 fdisk
+
+1. stat
+2. fork
+3. embed
+
+pendings 中判断w是否有效
+
+child_reap
+
+subport api
+
+1. libev
+2. sem 
+3. 文件锁， mmap
+
+链表操作
+最后一个元素的地址，也是最后一个元素的next指针变量的地址，**
+
+TAILQ_LAST TAILQ_PREV 
+
+system v 消息队列改造
+
+慢系统调用：
+是否是信号可中断函数 使用man 查看返回errno 是否包含ENITR
+锁不会被中断
+
+cdt_pon_net_blk_pool_calloc 内存容量0 
+
+信号量初始0  cdt_pon_net_zc_mq_create
+
+线程id和lwp关系
+在linux下每一个进程都一个进程id，类型pid_t，可以由getpid（）获取。
+POSIX线程也有线程id，类型pthread_t，可以由pthread_self（）获取，线程id由线程库维护。但是各个进程独立，所以会有不同进程中线程号相同节的情况。
+那么这样就会存在一个问题，进程p1中的线程pt1要与进程p2中的线程pt2通信怎么办，进程id不可以，线程id又可能重复，所以这里会有一个真实的线程id唯一标识，tid。
+glibc没有实现gettid的函数，所以我们可以通过linux下的系统调用syscall(SYS_gettid)来获得。
+
+互斥锁的属性在创建锁的时候指定，在LinuxThreads实现中仅有一个锁类型属性，不同的锁类型在试图对一个已经被锁定的互斥锁加锁时表现不同。
+当前（glibc2.2.3,linuxthreads0.9）有四个值可供选择：
+　　*PTHREAD_MUTEX_TIMED_NP，这是缺省值，也就是普通锁。当一个线程加锁以后，其余请求锁的线程将形成一个等待队列，并在解锁后按优先级获得锁。这种锁策略保证了资源分配的公平性。
+　　* PTHREAD_MUTEX_RECURSIVE_NP ，嵌套锁，允许同一个线程对同一个锁成功获得多次，并通过多次unlock解锁。如果是不同线程请求，则在加锁线程解锁时重新竞争。
+　　*PTHREAD_MUTEX_ERRORCHECK_NP，检错锁，如果同一个线程请求同一个锁，则返回EDEADLK，否则与PTHREAD_MUTEX_TIMED_NP类型动作相同。这样就保证当不允许多次加锁时不会出现最简单情况下的死锁。
+　　*PTHREAD_MUTEX_ADAPTIVE_NP，适应锁，动作最简单的锁类型，仅等待解锁后重新竞争。
+锁操作主要包括加锁 pthread_mutex_lock()、解锁pthread_mutex_unlock()和测试加锁 pthread_mutex_trylock()三个，不论哪种类型的锁，都不可能被两个不同的线程同时得到，而必须等待解锁。对于普通锁和适应锁类型，解锁者可以是同进程内任何线程；而检错锁则必须由加锁者解锁才有效，否则返回EPERM；对于嵌套锁，文档和实现要求必须由加锁者解锁，但实验结果表明并没有这种限制，这个不同目前还没有得到解释。在同一进程中的线程，如果加锁后没有解锁，则任何其他线程都无法再获得锁。
+	不同锁属性对应的差异
+
+两种内存映射方式：
+shm_open shmget
+mmap
+
+对于mmap函数而言，从外表上看不出open()和shm_open()两种方式打开的共享文件的区别，除了后者打开的文件直接是放在/dev/shm目录下,
+而且会校验该目录下是不是挂载了tmpfs文件系统，如果不是也不能正常打开的。
+而且对文件进行读写以后，文件真的就存在了，和普通文件没有什么区别的样子，cat一下还能cat出东西。
+后来再研究一下，好象/dev/shm这个目录是sticky directory，/dev/shm 目录下的tmpfs文件系统是基于内存的文件系统,估计重新启动之后就会删除掉下面的东西。
+因为这个文件存在tmpfs文件系统下，在不用的情况系统会自动删除掉。
+所以一般还是用shm_open函数更规范一些
+
+第二，好象在使用mmap()得到的内存之前，必须保证文件的长度和指定的内存区域长度一样，否则直接memcpy到返回的内存去的时候会产生Bus error。
+
+1. 
+apue 
+http://blog.csdn.net/Chuxin126/article/details/77726553
+
+servicePortCfgInfoCardIndex
+
+recv EINTR
+
+sendmsg 
+send
+
+recv是socket编程中最常用的函数之一，在阻塞状态的recv有时候会返回不同的值，而对于错误值也有相应的错误码，分别对应不同的状态，
+下面是我针对常见的几种网络状态的简单总结。
+首先阻塞接收的recv有时候会返回0，这仅在socket被正常关闭时才会发生。
+而当拔掉设备网线的时候，recv并不会发生变化，仍然阻塞，如果在这个拔网线阶段，socket被关掉了，后果可能就是recv永久的阻塞了。
+所以一般对于阻塞的socket都会用setsockopt来设置socket的超时。
+当超时时间到达后，recv会返回错误，也就是-1，而此时的错误码是EAGAIN或者EWOULDBLOCK，POSIX.1-2001上允许两个任意一个出现都行，所以建议在判断错误码上两个都写上。
+如果socket是被对方用linger为0的形式关掉，也就是直接发RST的方式关闭的时候，recv也会返回错误，错误码是ENOENT
+还有一种经常在代码中常见的错误码，那就是EINTER，意思是系统在接收的时候因为收到其他中断信号而被迫返回，不算socket故障，应该继续接收。
+但是这种情况非常难再现，我尝试过一边一直在不停的发信号，一边用recv接收数据，也没有出现过。这种异常错误我附近只有一个朋友在用write的时候见到过一次，但是总是会有概率出现的，所以作为完善的程序必须对此错误进行特殊处理。
+一般设置超时的阻塞recv常用的方法都如下：
+
+1. 大题
+
+cat /proc/sys/kernel/msgmax 最大消息长度 限制,一般 64k
+cat /proc/sys/kernel/msgmnb 消息队列总的字节数,一般 64k
+cat /proc/sys/kernel/msgmni 消息队列条目数
+
+msgsnd size 不包含 long int
+
+ipcrm msg msqid
+
+system v 信号量 共享内存 
+ctrl node makeifle
+
+Ipcs 和 ipcs -l
+
+ipcrm shm shmid
+
+解除引用 unmap (shmdt) -> 删除 shmctl
+
+验证消息队列 消息结构
+
+      #include <sys/ipc.h>
+       #include <sys/shm.h>
+	   
+分配与初始化信号量是两个相互独立的操作。以 0 为第二参数，以 SETALL 为第三个参数调用 semctl 可以对一个信号量组进行初始化。第四个参数是一个 semun 对象，且它的 array 字段指向一个 unsigned short数组。数组中的每个值均用于初始化该组中的一个信号量。
+代码 5.3 展示了初始化一个二元信号量的函数。
+代码 5.3 （sem_init.c） 初始化一个二元信号量
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+/* 我们必须自己定义 union semun。*/
+union semun
+{
+int val;
+struct semid_ds *buf;
+unsigned short int *array;
+struct seminfo *__buf;
+};
+/* 将一个二元信号量初始化为 1。*/
+int binary_semaphore_initialize (int semid)
+{
+union semun argument;
+unsigned short values[1];
+values[0] = 1;
+argument.array = values;
+return semctl (semid, 0, SETALL, argument);
+}
+
+makefile : 
+
+
+5. 链队列
+3. 共享内存映射，zk 和fk 同时访问 -》 文件锁 -》 
+
+1. 数据库表项设计 -> 数据库命令调试 -> 数据库接口调试
+
+客户端 fd 阻塞式
+
+cdt_pon_net_setblock
+
+1. 线程池 -> 线程池满 -> 创建线程 
+
+2. 本地socket
+makeifle
+client ctrl
+client node 
+
+review 
+1. IPC_IF_MODULE_INFO 接收发送缓冲区 gIfCtl 初始化 IPC_MSG_MAX_LENGTH  AckRecDataBuf  CmdRecDataBuf
+2. 线程间同步 使用的全局变量 modInit
+
+ipc api
+vtysh makefile
+
+gIfCtl
+
+malloc 与 free 
+
+mips_reg 功能
+ucontext_t
+
+sendto 
+AckSockFd - gIfCtl.IpcSoAddr -> 
+
+ipc_if_send_synmsg  同步消息锁 效率低
+
+ipc_if_send_synmsg -> gIfCtl.ucSrcMo -> gIfCtl.IpcSoAddr -> gIfCtl.AckSockFd (wr)
+ipc_if_send_asynmsg -> gIfCtl.CmdSockFd -> gIfCtl.IpcSoAddr
+
+ipc_ker_insert_event_node 尾部插入
+ipc_ker_del_event_node
+
+
+
+gIpcKerCtl.KerSoPath 与  gIfCtl.IpcSoAddr 对应
+
+多任务并发逻辑：
+
+
+pRecData pSendData 逻辑优化
+
+
+转发逻辑：
+模块1 -> gIpcKerCtl.KerSockFd (wr)
+gIpcKerMoCtl[ucDstMo].sndsockfd -> gIpcKerMoCtl[ucMo].CmdSoAddr -> 模块2
+
+
+1. ctrl accept fd 非阻塞 send & rec fd 阻塞
+2. drv conncet fd 阻塞
+
+连标改造
+
+gIpcKerMoCtl[ucMo].sndsockfd 模块注册时初始化
+注册回应的 源模块
+
+ipc_ker_disregmod_proc 名称修改 或者封装适配
+
+测试 engage disengagen
+
+notify 失败或者阻塞需要同步ack 正常不需要ack
+
+IPC_EVENT_INITED
+IPC_EVENT_ALARM_NOTIFY
+
+IPC_KER_MSG_MAX_LENGTH
+
+udp丢包超时：
+防止这样的永久阻塞的一般方法是给客户的recvfrom调用设置一个超时，大概有这么两种方法：
+1）使用信号SIGALRM为recvfrom设置超时。首先为SIGALARM建立一个信号处理函数，并在每次调用前通过alarm设置一个5秒的超时。
+如果recvfrom被信号处理函数中断了，那就超时重发信息；若正常读到数据了，就关闭报警时钟并继续进行下去。
+2）使用select为recvfrom设置超时
+设置select函数的第五个参数即可。
+udp缓冲区覆盖
+udp没有窗口进行控制，解决方法一般采用增大UDP缓冲区，使得接收方的接收能力大于发送方的发送能力。
+int n = 220 * 1024; //220kB
+setsocketopt(sockfd, SOL_SOCKET, SO_RCVBUF, &n, sizeof(n));
+
+server 
+
+prctl
+
+
+
+. vtysh 移植 -> vtysh makefile -> 命令行调试
+. vtysh 代理 Vty.c
+
+ctrl node 信号量 打印 -》 操作共享内存
+mstr
+
+extract.pl 过滤器 规则
+1.客户端给服务端发报文
+2.服务端把接收的服务次数，写共享内存
+共享内存中读数据和写数据
+3. 服务器初始化时创建共享内存和信号量，服务器的各个子进程通过进程互斥的方式去操作共享内存。
+
+man 7 ip
+man signal
+man 手册
+whatis xxx
+/xxx
+
+1. 板间通信 库适配 注册
+2. 考虑 非阻塞io + epoll et 模式
+3. makedile
+
+1. ipc 改进点
+增加异步处理：
+发送线程池
+接收线程池
+同步连接队列
+
+客户端发送同步消息，锁优化，增加同步消息的并发
+板间接口封装，线程池
+
+vtysh vtysh_cmd_init
+
+epoll_create
+
+epoll_ctl -> add fd -> EPOLLET -> 
+接收线程
+发送线程
+
+epoll_modify -> epoll_ctl
+
+epoll_poll -> epoll_ctl
+
+实际发送字节数
+
+阻塞式发送
+非阻塞是
+
+send 字节数判断
+
+et 模式
+读事件 到 -》 peek 读头 peek 读数据
+数据完整 ? 消息队列
+no -》 返回 等待下一次数据
+
+流式数据丢弃
+
+sendmsg 消息返回
+
+工作线程池
+ptr 数据结构
+读事件
+写事件
+建链事件 ？
+
+2. vtysh 移植
+3. tcpip
+4. 线程池
+
+5. et 模式 非阻塞 
+
+离线添加了onu，然后手动分配了虚端口，再删除onu时需要卡顿1分钟左右，如果不分配虚端口，删除onu就很快
+
+cdt_onura_auth_proc_onu_delete -> cdt_pon_ctrl_serviceport_onu_is_delete -> IPC_SW_SP_AUTO_FLOW_ONU_DELETE_MSG
+
+离线添加的onu，实际不存在
+
+OLT(config-interface-gpon-0/0)# 
+  --More ( Press 'Q' to quit )-- 2000-01-17 01:16:13 [SERVICEPORT ]  port 1 have other service-port use svlan 400, count 1 not del
+
+关联流量模板
+
+编译1616 编译 1608
+flash 重新编译
+
+板间通信接口 ？ 
+
+epoll ET 模式 * 
+read noblock  *
+阻塞io
+
+3. 链表排序
+容器-算法-迭代器
+顺序容器：
+vector
+deque
+list
+
+关联容器
+set
+multiset
+map
+multimap
+
+迭代器
+前向迭代器
+双向迭代器
+随机访问迭代器
+
+find 算法
+transform 
+man 中查重
+
+3. 信号与信号量
+sqlite 启动运行
+单例
+二叉树   4 17 18 22 24 38 39 57 58 59 60 61
+mysql api
+
+sqlite
+mysql 文档理论
+信号处理函数中加锁
+xml解析开源工具
+系统进程，线程最大数量
+
+monitor 实现原理
+join 关系
+explain
+
+
+
+test:
+消息队列 
+c-s 两种模型
+信号
+信号捕获ctrl+c
+子进程-> 父进程
+子进程 -> 同组进程
+
+stl 算法 api
+search & find_end 使用二元谓词， 偶奇偶
+
+find_first_of 使用逆向迭代器模拟 find_last_of
+
+string内置算法 与 普通算法
+find
+rfind
+find
+rfind
+find_first_of
+find_last_of
+
+find
+find + 逆向迭代器
+search
+find_end
+find_first_of
+find_fisrt_of + 逆向迭代器
+
+adjacant_find  使用谓词
+
+已序区间查找算法
+binary_search   只能告诉对于一个数据找没找到，不能告诉位置
+includes 		范围内查找范围内的数据，都找到，可以不连续
+upper_bound		使用前先排序
+lower_bound		主要是用于插入操作，找到一个合适的位置，不破坏以前的排序结果
+equal_range     两个迭代器构成一对迭代器。equal_range相当于lower_bound&upper_bound
+
+关联容器上使用
+
+
+查找总结：
+普通 线性复杂度
+已序 对数复杂度
+
+遍历：
+for_each 该算法的返回值还是函数对象，这一点值得注意。
+增加类型转换操作符
+
+区间比较
+equal
+mismatch
+lexicographical_compare 
+
+数据打印 模板 适配容器 容器适配器
+
+排列组合
+
+1. apue test
+1,1 内存空间分布
+1.2 
+2. del file
+
+协成框架与原理
+我:
+查看文件描述符泄露，strace -p pid
+我:
+定位内存泄露与避免
+我:
+长连接没回应，直接close
+我:
+水平触发边沿触发如何处理
+我:
+strncpy 内存拷贝
+http://www.cnblogs.com/daisin/articles/5512813.html
+我:
+https://blog.csdn.net/blade2001/article/details/6904490
+我:
+https://blog.csdn.net/zhjzhjxzhl/article/details/79743492
+我:
+https://blog.csdn.net/wentianyao/article/details/51445940
+我:
+https://blog.csdn.net/tech_meizu/article/details/51487793
+我:
+https://blog.csdn.net/hellufo2/article/details/53609487
+我:
+https://blog.csdn.net/chenhaifeng2016/article/details/70312649
+
+临终遗言如何实现
+微服务框架

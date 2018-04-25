@@ -1,0 +1,73 @@
+配置samba服务器
+第一步：保证yum工具正常，如果使用报错先解决yum工具问题，例如配置fedora环境yum源
+1.yum 检索路径告警
+[root@localhost yum.repos.d]# yum install samba
+Loaded plugins: langpacks, presto, refresh-packagekit
+Error: Cannot retrieve repository metadata (repomd.xml) for repository: fedora. Please verify its path and try again
+修改yum源
+[root@localhost yum.repos.d]# pwd
+/etc/yum.repos.d
+[root@localhost yum.repos.d]# ls
+fedora-rawhide.repo  fedora.repo  fedora-updates.repo  fedora-updates-testing.repo
+逐一对比文件修改url
+baseurl=http://archives.fedoraproject.org/pub/archive/fedora/linux/releases/$releasever/Everything/$basearch/os/
+#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
+2.不能访问镜像 Couldn't resolve host 'mirrorlis
+配置DNS服务器,打开文件/etc/resolv.conf在其中添加：
+nameserver 8.8.8.8
+重启网卡：
+使用命令: service network restart
+
+第二步：下载samba工具
+root下yum install samba ，安装完毕配置
+1.编辑/etc/samba/smb.conf，需要root权限
+本篇设置为windows访问linux不需要密码，如有需要自行更改
+·需要修改：
+workgroup = WORKGROUP //设置工作组 security = share //安全级别，user需要用户名和密码，share级别则不要
+
+·需要添加：
+[share] //建立一个共享名为share的共享，名字随意，但是后面windows下会用到 
+comment = Samba //描述信息，
+path = /home/aaa/bbb //共享路径，需要有访问权限 
+public = yes //是否允许guest用户访问（相当于guest ok = yes/no） 
+writable = yes //是否可写
+
+2.创建共享目录/home/aaa/bbb
+chmod 777 /home/aaa/bbb
+
+第三部：启动Samba
+# chkconfig smb on　 ← 设置 Fedora Samba 自启动 
+# chkconfig --list smb　 ← 确认 Fedora Samba 启动标签，确认 2-5 为 on 的状态 
+# chkconfig nmb on　 ← 设置 nmb 自启动
+# chkconfig --list nmb　 ← 确认 nmb 启动标签，确认 2-5 为 on 的状态 
+# /etc/rc.d/init.d/smb start(或者service smb start)　 ← 启动 Fedora Samba 服务 
+# /etc/rc.d/init.d/nmb start　 ← 启动 nmb 服务
+
+[root@localhost mypro]# chkconfig smb on
+[root@localhost mypro]# chkconfig --list smb
+
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+smb            	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+[root@localhost mypro]# chkconfig nmb on
+[root@localhost mypro]# chkconfig --list nmb
+
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+nmb            	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+[root@localhost mypro]# /etc/rc.d/init.d/smb start
+Starting smb (via systemctl):                              [  OK  ]
+[root@localhost mypro]# /etc/rc.d/init.d/nmb start
+Starting nmb (via systemctl):                              [  OK  ]
+
+第四步：关闭防火墙，关闭selinux
+打开windows运行 \\(linux的ip地址)\(smb.conf中添加的共享名)
+可能会提示没有权限或者无法访问，这是因为selinux对samba共享做了限制，所以个人采取关闭selinux.(若提示"找不到***，请检查拼写"关闭防火墙才行 #service iptables stop)
+关闭方法：打开/etc/selinux/config
+修改：SELINUX=disable 重启linux生效
+关闭防火墙 
+iptables -F

@@ -27,6 +27,9 @@
 	 env要跳转的位置，
    val跳转数值传递； 
 
+   实现非局部跳转，完成异常处理
+   https://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html
+   
 二 进程的id号
 
  1 pid

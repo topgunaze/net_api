@@ -72,9 +72,9 @@ struct TreeLinkNode
     struct TreeLinkNode *right;
 	struct TreeLinkNode *next;
 	
-    TreeLinkNode(int x, TreeLinkNode *l = NULL, TreeLinkNode *r = NULL, TreeLinkNode *n):
+    TreeLinkNode(int x, TreeLinkNode *l = NULL, TreeLinkNode *r = NULL, TreeLinkNode *n = NULL):
 		val(x), left(l), right(r), next(n){}	
-}
+};
 
 class Solution_bt_traverse_print
 {

@@ -22,7 +22,7 @@ MODULE_DEPS := $(MODULE_OBJS:src%=$(MODULE_OBJ_DIR)%)
 
 #利用warning函数打印消息  
 $(warning "the value of MODULE_OBJS is $(MODULE_OBJS)")
-$(warning "the value of MODULE_DEPS is $(MODULE_DEPS)")
+$(warning "the value of VERSION_TYPE is $(VERSION_TYPE) -D$(VERSION_TYPE)")
 
 INCLUDE_DIRS := $(PRJ_INC_DIR) $(APP_INC_DIR) $(COM_DIR)/include \
 				./include \
@@ -35,13 +35,13 @@ CC_LIBS              := -lm -lrt -lpthread -L$(ZLIB_DIR)/install/lib -lz -L$(LIB
 
 #  Pattern matching rules: 
 $(MODULE_OBJ_DIR)/%.o:     $(MODULE_DIR)/src/%.c
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS)  -o $@ $<
 
 .PHONY: all lib clean 
 all: $(MODULE_OBJ_DIR)/ctrl
 
 $(MODULE_OBJ_DIR)/ctrl : $(APP_DEP_LIBS) $(MODULE_DEPS)
-	$(CC) $(CFLAGS) -DSTT_UNDERLYING_OS=U_LINUX -D$(VERSION_TYPE) -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
+	$(CC) $(CFLAGS) -D$(VERSION_TYPE) -DSTT_UNDERLYING_OS=U_LINUX -o $@ $^ -Wl,--start-group $(CC_LIBS) $(APP_DEP_LIBS) -Wl,--end-group 
 	$(CROSS_COMPILE)objdump -S $@ > ctrl_dump.txt
 	$(STRIP) $@
 

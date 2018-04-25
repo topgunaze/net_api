@@ -22,7 +22,7 @@ void vector_test()
 	vector<int>     ivec3(ivec2);
 	vector<string> 	svec0;
 	
-	svec0.push_back("135");
+	svec0.push_back("135");	
 	svec0.push_back("246");
 
 	cout << "ivec0 size = " << ivec0.size() << " max size = " << ivec0.max_size() << " real size = " << ivec0.capacity() <<endl;

@@ -1,0 +1,401 @@
+如果make执行的命令前面加了@字符，则不显示命令本身而只显示它的结果; Android中会定义某个变量等于@，例如 hide:= @
+通常make执行的命令如果出错（该命令的退出状态非0）就立刻终止，不再执行后续命令，但如果命令前面加了-号，即使这条命令出错，make也会继续执行后
+续命令。
+通常rm命令和mkdir命令前面要加-号，因为rm要删除的文件可能不存在，mkdir要创建的目录可能已存在，这两个命令都有可能出错，但这种错误是应该忽略的。
+$(firstword <text>)
+
+    名称：首单词函数——firstword。
+    功能：取字符串<text>中的第一个单词。
+    返回：返回字符串<text>的第一个单词。
+    示例：$(firstword foo bar)返回值是“foo”。
+    备注：这个函数可以用word函数来实现：$(word 1,<text>)。
+	
+$(sort LIST) 
+函数名称：排序函数—sort。 
+函数功能：给字串“LIST”中的单词以首字母为准进行排序（升序），并取掉重复
+的单词。 
+返回值：空格分割的没有重复单词的字串。 
+函数说明：两个功能，排序和去字串中的重复单词。可以单独使用其中一个功能。 
+示例： 
+$(sort foo bar lose foo) 
+ 
+返回值为：“bar foo lose” 。
+
+$(subst FROM,TO,TEXT) 
+函数名称：字符串替换函数—subst。 
+函数功能：把字串“TEXT”中的“FROM”字符替换为“TO”。 
+返回值：替换后的新字符串。 
+示例： 
+ 
+$(subst ee,EE,feet on the street) 
+ 
+替换“feet on the street”中的“ee”为“EE”，结果得到字符串“fEEt on the strEEt”
+
+$(strip STRINT) 
+函数名称：去空格函数—strip。 
+函数功能：去掉字串（若干单词，使用若干空字符分割） “STRINT”开头和结尾的
+空字符，并将其中多个连续空字符合并为一个空字符。 
+返回值：无前导和结尾空字符、使用单一空格分割的多单词字符串。 
+函数说明：空字符包括空格、[Tab]等不可显示字符。 
+示例： 
+STR =        a    b c      
+LOSTR = $(strip $(STR)) 
+结果是“a b c”。 
+“strip”函数经常用在条件判断语句的表达式中，确保表达式比较的可靠和健壮！
+
+$(findstring FIND,IN) 
+函数名称：查找字符串函数—findstring。 
+函数功能：搜索字串“IN”，查找“FIND”字串。 
+返回值：如果在“IN”之中存在“FIND” ，则返回“FIND”，否则返回空。 
+函数说明：字串“IN”之中可以包含空格、[Tab]。搜索需要是严格的文本匹配。 
+示例： 
+$(findstring a,a b c) 
+$(findstring a,b c) 
+第一个函数结果是字“a”；第二个值为空字符。 
+
+使用函数“wildcard” ，
+它的用法是：$(wildcard PATTERN...) 。在 Makefile 中，它被展开为已经存在的、使用空格
+分开的、匹配此模式的所有文件列表。如果不存在任何符合此模式的文件，函数会忽略
+模式字符并返回空。
+需要注意的是：这种情况下规则中通配符的展开和上一小节匹配通配符的区别。 
+	一般可以使用“$(wildcard *.c)”来获取工作目录下的所有的.c文件列表。复
+杂一些用法；可以使用“$(patsubst %.c,%.o,$(wildcard *.c))” ，首先使用“wildcard”
+函数获取工作目录下的.c文件列表；之后将列表中所有文件名的后缀.c替换为.o。
+这样就可以得到在当前目录可生成的.o 文件列表。因此在一个目录下可以使用如下内
+容的 Makefile 来将工作目录下的所有的.c 文件进行编译并最后连接成为一个可执行文
+件： 
+ 
+#sample Makefile 
+objects := $(patsubst %.c,%.o,$(wildcard *.c)) 
+ 
+foo : $(objects) 
+cc -o foo $(objects) 
+
+
+
+clean: 
+rm *.o temp 
+ 
+规则中“rm”不是创建文件“clean”的命令，而是删除当前目录下的所有.o文件和 temp
+文件。当工作目录下不存在“clean”这个文件时，我们输入“make clean”，“rm *.o 
+temp”总会被执行。这是我们的初衷。 
+但是如果在当前工作目录下存在文件“clean” ，情况就不一样了，同样我们输入
+“make clean”，由于这个规则没有任何依赖文件，所以目标被认为是最新的而不去执
+行规则所定义的命令，因此命令“rm”将不会被执行。这并不是我们的初衷。为了解
+决这个问题，我们需要将目标“clean”声明为伪目标。将一个目标声明为伪目标的方
+ 
+这样目标“clean”就被声明为一个伪目标，无论在当前目录下是否存在“clean”这个
+文件。我们输入“make clean”之后。“rm”命令都会被执行。而且，当一个目标被声
+明为伪目标后，make在执行此规则时不会去试图去查找隐含规则来创建它。这样也提
+高了 make的执行效率，同时也不用担心由于目标和文件名重名而使我们的期望失败。
+在书写伪目标规则时，首先需要声明目标是一个伪目标，之后才是伪目标的规则定义。
+目标“clean”的完整书写格式应该如下： 
+.PHONY: clean 
+clean: 
+rm *.o temp 
+
+法是将它作为特殊目标.PHONY”的依赖。如下： 
+
+.PHONY : clean 
+
+
+$(origin VARIABLE) 
+ 
+函数功能：函数“origin”查询参数“VARIABLE” （一个变量名）的出处。 
+函数说明： “VARIABLE”是一个变量名而不是一个变量的引用。因此通常它不
+包含“$”（当然，计算的变量名例外）。 
+返回值：返回“VARIABLE”的定义方式。用字符串表示。 
+函数的返回情况有以下几种： 
+1. undefined 
+变量“VARIABLE”没有被定义。 
+2. default 
+变量“VARIABLE”是一个默认定义（内嵌变量） 。如“CC”、“MAKE”、“RM”
+等变量（参考  10.3 隐含变量 一节）。如果在Makefile中重新定义这些变量，
+函数返回值将相应发生变化。 
+3. environment 
+变量“VARIABLE” 是一个系统环境变量， 并且make没有使用命令行选项“-e”
+（Makefile中不存在同名的变量定义，此变量没有被替代）。参考  10.7 make
+的命令行选项 一节 
+4. environment override 
+变量“VARIABLE”是一个系统环境变量，并且make使用了命令行选项“-e”。
+Makefile中存在一个同名的变量定义，使用“make -e”时环境变量值替代了
+文件中的变量定义。 参考  9.7 make的命令行选项 一节 
+5. file 
+变量“VARIABLE”在某一个 makefile 文件中定义。 
+6. command line 
+变量“VARIABLE”在命令行中定义。 
+7. override 
+变量“VARIABLE”在 makefile 文件中定义并使用“override”指示符声明。 
+8. automatic 
+变量“VARIABLE”是自动化变量。
+ 
+函数“origin”返回的变量信息对我们书写 Makefile 是相当有用的，可以使我们在
+使用一个变量之前对它值的合法性进行判断。假设在 Makefile 其包了另外一个名为
+bar.mk 的 makefile 文件。我们需要在 bar.mk 中定义变量“bletch”（无论它是否是一
+个环境变量），保证“make –f bar.mk”能够正确执行。另外一种情况，当Makefile 包
+含bar.mk，在Makefile包含bar.mk之前有同样的变量定义，但是我们不希望覆盖bar.mk
+中的“bletch”的定义。一种方式是：我们在bar.mk中使用指示符“override”声明这
+个变量。但是它所存在的问题时，此变量不能被任何方式定义的同名变量覆盖，包括命
+令行定义。另外一种比较灵活的实现就是在bar.mk 中使用“origin”函数，如下： 
+ 
+ifdef bletch 
+ifeq "$(origin bletch)" "environment" 
+bletch = barf, gag, etc. 
+endif 
+endif 
+ 
+这里，如果存在环境变量“bletch”，则对它进行重定义。 
+ 
+ifneq "$(findstring environment,$(origin bletch))" "" 
+bletch = barf, gag, etc. 
+endif 
+ 
+这个例子实现了：即使环境变量中已经存在变量“bletch”，无论是否使用“make -e”
+来执行 Makefile，变量“bletch”的值都是“barf,gag,etc”（在 Makefile 中所定义的） 。
+环境变量不能替代文件中的定义。 
+如果“$(origin bletch)”返回“environment”或“environment override”，都将对
+变量“bletch”重新定义。
+
+# = ?=
+如果我们要定义一个变量，其值是一个空格，那么我们可以这样来：
+
+    nullstring :=
+    space := $(nullstring) # end of the line
+
+nullstring是一个Empty变量，其中什么也没有，而我们的space的值是一个空格。因为在操作符的右边是很难描述一个空格的，这里采用的技术很管用，先用一个Empty变量来标明变量的值开始了，而后面采用“#”注释符来表示变量定义的终止，这样，我们可以定义出其值是一个空格的变量。请注意这里关于“#”的使用，注释符“#”的这种特性值得我们注意，如果我们这样定义一个变量：
+
+    dir := /foo/bar    # directory to put the frobs in
+
+dir这个变量的值是“/foo/bar”，后面还跟了4个空格，如果我们这样使用这样变量来指定别的目录——“$(dir)/file”那么就完蛋了。
+
+还有一个比较有用的操作符是“?=”，先看示例：
+
+    FOO ?= bar
+
+其含义是，如果FOO没有被定义过，那么变量FOO的值就是“bar”，如果FOO先前被定义过，那么这条语将什么也不做，其等价于：
+
+    ifeq ($(origin FOO), undefined)
+      FOO = bar
+    endif
+
+
+
+命令: id | sed -e s/uid=// -e s/\(.*// 
+输出: UID
+ 
+从输出结果知道是把UID后面的都删除了
+ 
+问题:
+命令后部分: s/\(.*// 中间 '\(.*' 
+能分析下为什么 '\(.*' 能把括号后面的都删除吗
+'\' 转义'(' '.*' 是啥意思呢，为什么有个'.'呢?
+
+.
+匹配一个非换行符的字符 如:/s.d/匹配s后接一个任意字符，然后是d。 
+*
+匹配零或多个字符 如:/*sed/匹配所有模板是一个或多个空格后紧跟sed的行。 
+
+”.*”会在第一个匹配后在匹配0个或多个字符。
+
+这是对.*的定义，你可以把.*看做是任意多个字符。
+
+make menuconfig 图形化的内核配置make mrproper -----删除不必要的文件和目录.
+
+1  #make config（基于文本的最为传统的配置界面，不推荐使用）
+
+2  #make menuconfig（基于文本选单的配置界面，字符终端下推荐使用）
+
+注意：使用make menuconfig 需要安装ncurses( sudo apt-get install ncurses-dev)
+
+3  #make xconfig（基于图形窗口模式的配置界面，Xwindow下推荐使用）
+
+注意：如果要用make xconfig，则要先安装libqt3-compat-headers( sudo apt-get install libqt3-compat-headers)
+
+4  #make oldconfig（如果只想在原来内核配置的基础上修改一些小地方，会省去不少麻烦）
+
+目的都是生成一个.config文件,这三个命令中，make
+
+xconfig的界面最为友好，如果你可以使用Xwindow，你就用这个好了，这个比较方便，也好设置。如果你不能使用Xwindow，那么就使用make
+
+menuconfig好了。界面虽然比上面一个差点，总比make config的要好多了。 选择相应的配置时，有三种选择，它们分别代表的含义如下：
+
+Y－-将该功能编译进内核 N－-不将该功能编译进内核 M－-将该功能编译成可以在需要时动态插入到内核中的模块
+
+下面根据解释make menuconfig中出现的菜单的内容。
+
+[1]、Code maturity level options：代码成熟等级。
+
+1.1.prompt for development and/or incomplete code/drivers.
+
+如果要试验现在仍处于实验阶段的功能，比如khttpd、IPv6等，就必须把该项选择为Y了；否则可以把它选择为N。在Linux的世界里，每天都有许多人为它发展支持的driver和加强它的核心。但是有些driver还没进入稳定的阶段。但其作者很欢迎其他人去测试这些driver并提出一些bugs。这个问题是说，有一些drive还在做测试中，问您是否要选择这些drive或支持的程序码。如果键入Y，往后将会出现一些还在测试中的东西给您做选择。（像Java的程序码和PCI
+
+bridge），台则就键入N。
+
+[2]、Loadable module support：对模块的支持
+
+模块就像你特意插入核心中的某些东西，如果办公室有一个小网络并且有时想用一下(但并不经常)，也许你想把网卡编译成一个模块。如果安装启动分区和网络，你需要网络系统文件，和己经编译的网卡。为什么要使用模块?
+
+模块化使核心变的更简捷，它减少核心释放大量的受保护的空间。模块的安装和卸载使用的空间是可重复分配利用的。如果你打开机器有90%以上的时间用到一个模块，编译它。运用这类模块是浪费内存的，原因是一旦你编译了模块它们同样将占用大量的内存，核心需要一些代码来挂上模块。记住，核心在保护空间运行，但模块并不是。这么说，并不经常使用我的设备，把它编译成只支持ext2,ide和elf。而一直使用的网卡，把其它的编译成模块：如a.out,
+
+java, floppy, iso9960, msdos, minix,
+
+vfat,smb,nfs,smcultra(ethernetcard),serial,printer,sound,ppp,等等。它们许多只是在这或那用上那么几分钟。严格的说,这样做会使核心增大许多而降低它的执行速度。这时我们就可以把这些可能会用的驱动程序编译成一个—个的模块，在需要用的时候才用insmod这个指令加入核心，不用的时候也能rmmod把它从核心移除，或是用lsmod察看目前所载入的模块。
+
+2.1.Enable loadable module support.
+
+除非准备把所有需要的内容都编译到内核里面，否则该项应该是必选的。
+
+2.2.Set version information on all module symbols.
+
+通常，我们更新核心版本之后，模块耍重新的编译。这个选项使您不必更新编译模块而能使用以前的模块。可以不选它。但如果您选y，则按照它的说明，您必须有genksyms这个程序（可用whereis指令查看有无此程序）。
+
+2.3.Kernel module loader.
+
+让内核在启动时有自己装入必需模块的能力，建议选上。注意：在开机就会 mount 上来的 partition 的 FS 、device
+
+driver 记得要 compiler 进 kernel，不能把它弄成 modules。请不要夸张到为了完全模组化而忘了把ext2fs和IDE
+
+dirver compiler 进 kernel 里。
+
+经验谈：
+
+a.可加载模块是指内核代码（kernel
+
+code）的一些片断，比如驱动程序，当编译内核的时候它们也被单独编译。因此，这些代码不是内核的一部分，但是当你需要它的时候，它可以被加载并使用。
+
+通常的建议是如果可能，将内核代码编译成可加载模块，因为这样可以使内核更小，而且更稳定。警告！千万不要将文件系统（File
+
+System）部分的代码编译为可加载模块，如果你犯了这个错误，将文件系统（File
+
+System）部分的代码编译为可加载模块，结果将是内核无法读取它自己的文件系统。
+
+然后内核无法加载它自己的配置文件——一些很明显是在正常启动Linux时所必需的东西。
+
+我很少使用可加载模块：我喜欢我的内核能够直接和硬件对话，但这只是我自己的偏好。
+
+$@--目标文件，$^--所有的依赖文件，$<--第一个依赖文件。
+
+下面这个例子表示了,把所有的[.c]文件都编译成[.o]文件.
+%.o : %.c
+$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+
+$(filter ,)
+
+名称：过滤函数——filter。
+功能：以模式过滤字符串中的单词，保留符合模式的单词。可以有多个模式。
+返回：返回符合模式的字串。
+示例：
+
+sources := foo.c bar.c baz.s ugh.h
+foo: $(sources)
+cc $(filter %.c %.s,$(sources)) -o foo
+
+$(filter %.c %.s,$(sources))返回的值是“foo.c bar.c baz.s”。
+
+source命令用法:
+source FileName
+作用:在当前bash环境下读取并执行FileName中的命令。
+注:该命令通常用命令“.”来替代。
+如:source .bash_rc 与 . .bash_rc 是等效的。
+注意:source命令与shell scripts的区别是，
+source在当前bash环境下执行命令，而scripts是启动一个子shell来执行命令。这样如果把设置环境变量(或alias等等)的命令写进scripts中，
+就只会影响子shell,无法改变当前的BASH,所以通过文件(命令列)设置环境变量时，要用source 命令。
+
+Makefile里的subst
+用法是$(subst FROM,TO,TEXT),即将TEXT中的东西从FROM变为TO
+
+Makefile中的字符串处理函数
+格式：
+    $(subst ;,;,;)
+名称：字符串替换函数——subst。
+功能：把字串;中的;字符串替换成;。
+返回：函数返回被替换过后的字符串。
+
+示例：
+$(subst a,the,There is a big tree)，
+把“There is a big tree”中的“a”替换成“the”，返回结果是“There is the big tree”。
+
+
+如果突然停电或者编辑的时候出现问题会产生一个fileName.swp的文件
+
+如果我们想用这个swp来恢复文件 则在swp所在目录输入下面的命令
+
+vi -r fileName
+
+最后保存文件即可
+
+函数名称：加前缀函数—addprefix。
+
+函数功能：为“NAMES…”中的每一个文件名添加前缀“PREFIX”。参数“NAMES…”是空格分割的文件名序列，将“PREFIX”添加到此序列的每一个文件名之前。
+
+返回值：以单空格分割的添加了前缀“PREFIX”的文件名序列。
+
+函数说明：
+
+示例：
+
+$(addprefix src/,foo bar)
+
+返回值为“src/foo src/bar”。
+
+变量替换
+foo := a.o b.o c.o 
+bar := $(foo:.o=.c) 
+ 
+在这个定义中，变量“bar”的值就为“a.c b.c c.c”。使用变量的替换引用将变量“foo”
+以空格分开的值中的所有的字的尾字符“o”替换为“c” ，其他部分不变。如果在变量
+“foo”中如果存在“o.o”时，那么变量“bar”的值为“a.c b.c c.c o.c”而不是“a.c b.c c.c c.c”。
+foo := a.o b.o c.o 
+bar := $(foo:%.o=%.c) 
+ 
+这个例子同样使变量“bar”的值为“a.c b.c c.c” 。这种格式的替换引用方式比第一种
+方式更通用。
+
+$(patsubst %.c,%.o,x.c.c bar.c) 
+ 
+把字串“x.c.c bar.c”中以.c结尾的单词替换成以.o结尾的字符。函数的返回结果
+是“x.c.o bar.o”
+
+include
+在一个 Makefile 中包含其它的 makefile 文件。Makefile 中包含其它文件的关键字是“include”,和 C 语言对头文件的包含方式一致。
+    “include”指示符告诉 make 暂停读取当前的 Makefile,而转去读取“include”指定的一
+个或者多个文件,完成以后再继续当前 Makefile 的读取。Makefile 中指示符“include”书写在
+独立的一行,其形式如下:
+
+      include FILENAMES...
+
+   FILENAMES 是 shell 所支持的文件名(可以使用通配符)。
+
+   指示符“include”所在的行可以一个或者多个空格(make程序在处理时将忽略这些空格)开始,切忌不能以 [Tab] 字符开始(如果一行以 [Tab] 字符开始 make 程序将此行作为一个命令行来处
+理)。指示符“include”和文件名之间、多个文件之间使用空格或者 [Tab] 键隔开。行尾的空白字
+符在处理时被忽略。使用指示符包含进来的 Makefile 中,如果存在变量或者函数的引用。它们将会
+在包含它们的 Makefile 中被展开(详细可参考第五章 Makefile 中的变量)。
+
+   来看一个例子,存在三个.mk 文件,“$(bar)”被扩展为“bish bash”。则
+      include foo *.mk $(bar)
+   等价于
+      include foo a.mk b.mk c.mk bish bash
+   make 程序在处理指示符 include 时,将暂停对当前使用指示符“include”的 makefile 文件
+的读取,而转去依此读取由“include”指示符指定的文件列表。直到完成所有这些文件以后再回
+过头继续读取指示符“include”所在的 makefile 文件。
+   通常指示符“include”用在以下场合:
+  1.  有多个不同的程序,由不同目录下的几个独立的Makefile来描述其创建或者更新规则。它
+      们需要使用一组通用的变量定义(可参考 5.5 如何设置变量 一节)或者模式规则(可参
+      考 9.5 模式规则 一节)     。通用的做法是将这些共同使用的变量或者模式规则定义在一个文
+      件中(没有具体的文件命名限制)             ,在需要使用的Makefile中使用指示符“include”来包
+      含此文件。
+  2.  当根据源文件自动产生依赖文件时;我们可以将自动产生的依赖关系保存在另外一个文件
+      中,主Makefile使用指示符“include”包含这些文件。这样的做法比直接在主Makefile
+      中追加依赖文件的方法要明智的多。其它版本的make已经使用这种方式来处理。                    (参考
+      3.14 自动产生依赖 一节)
+   如果指示符“include”指定的文件不是以斜线开始(绝对路径,如/usr/src/Makefile...)        ,
+而且当前目录下也不存在此文件;make将根据文件名试图在以下几个目录下查找:首先,查找使
+                                  (参考 8.7make的命令行选项 一节)指定的目录,如
+用命令行选项“-I”或者“--include-dir”
+果找到指定的文件,则使用这个文件;否则依此搜索以下几个目录(如果其存在)                             :
+“/usr/gnu/include”“/usr/local/include”和“/usr/include”
+                  、                                  。   当在这些目录下都没有找到“include”指定的文件时,make将会提示一个包含文件未找到的
+告警提示,   但是不会立刻退出。        而是继续处理Makefile的内容。           当完成读取所有的makefile文件后,
+make将试图使用规则来创建通过指示符“include”指定的但未找到的文件(参考 2.7 makefile
+文件的重建 一节)      ,当不能创建它时(没有创建这个文件的规则)                     ,make将提示致命错误并退出。

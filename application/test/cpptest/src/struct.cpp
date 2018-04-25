@@ -1114,27 +1114,27 @@ void binary_tree_is_symmetrical_test()
 		cout<<" not is_symmetrical"<<endl;
 }
 
-class Solution {
+class Solution_nextnode {
 public:
 	TreeLinkNode* GetNext(TreeLinkNode* pNode)
 	{
-		if(pNode == nullptr)
-			return nullptr;
+		if(pNode == NULL)
+			return NULL;
 
-		TreeLinkNode* pNext = nullptr;
-		if(pNode->right != nullptr)
+		TreeLinkNode* pNext = NULL;
+		if(pNode->right != NULL)
 		{
 			TreeLinkNode* pRight = pNode->right;
-			while(pRight->left != nullptr)
+			while(pRight->left != NULL)
 				pRight = pRight->left;
 
 			pNext = pRight;
 		}
-		else if(pNode->next != nullptr)
+		else if(pNode->next != NULL)
 		{
 			TreeLinkNode* pCurrent = pNode;
 			TreeLinkNode* pParent = pNode->next;
-			while(pParent != nullptr && pCurrent == pParent->right)
+			while(pParent != NULL && pCurrent == pParent->right)
 			{
 				pCurrent = pParent;
 				pParent = pParent->next;
@@ -1398,7 +1398,7 @@ void binary_tree_mirror_test()
 	}
 }
 
-class Solution {
+class Solution_VerifySquenceOfBST {
 public:
     bool VerifySquenceOfBST(vector<int> sequence) {
         if(sequence.size()<=0)

@@ -10,6 +10,7 @@
 
 #include "ctrl_net.h"
 #include "ipc_if.h"
+#include "tproc.h"
 
 #define GCONFIG_FILENAME    "test.conf"
 #define GCONFIG_DIR         "/mnt"
@@ -302,7 +303,6 @@ main(void)
     {
         exit(1);
     }
-
 #if 0
     treenode t7 = {7, NULL, NULL};
     treenode t6 = {6, NULL, NULL};
@@ -322,7 +322,15 @@ main(void)
       printf("t is balanse deep %d\r\n", deep);  
     }
 #endif
-	shm_test();
+	//shm_test();
+
+	//env_print();
+	//address_print();
+	//jmp_test();
+	//exit_test();
+	//atexit_test();
+	//getuid_euid_test();
+	
 #if 0
     int a[10] = {2, 13, 4, 8, 9, 32, 3, 5, 9, 21};
     int b[10] = {0};
@@ -359,10 +367,6 @@ main(void)
     /* ºóÐò±éÀú×ó×ÓÊ÷ */
     postVisitBiTree(&t1);
 
-    while(1)
-    {
-        sleep(1);
-    }
 #endif
 
 #if 0
@@ -480,6 +484,11 @@ main(void)
     /* Not reached. */
     exit(1);
 #endif
+
+    while(1)
+    {
+        sleep(1);
+    }
 
 	return 0; 
 }

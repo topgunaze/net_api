@@ -137,6 +137,11 @@ int main()
  
 	//doTest();
 
+	while(1)
+		sleep(1);
+
+	
+
 #if 1
 	//simple_factory_test();
 	//simple_delegate_test();

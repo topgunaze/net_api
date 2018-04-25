@@ -1,86 +1,0 @@
-10
-
-dir
-165
-svn://192.168.11.254:/svn/codexa01/apue
-svn://192.168.11.254:/svn
-
-
-
-2013-09-26T07:27:25.900780Z
-165
-uplooking
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-82de371c-ac37-4cf7-95ee-b58b0a8f2531
-
-gpl
-dir
-
-project
-dir
-
-io
-dir
-
-tproc
-dir
-
-pthread
-dir
-
-apue.txt
-file
-
-
-
-
-2013-08-28T04:06:20.000000Z
-98dc63245745555fef983fc351c7cf64
-2013-08-21T02:36:50.131386Z
-32
-uplooking
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-245
-
-ipc
-dir
-
-signal
-dir
-
-dev
-dir
-

@@ -16,14 +16,12 @@ void application::run()
 	applicationlanch();
 }
 
-#if 1
 bool appdelegate::applicationlanch()
 {
 	cout<<"this is a appdelegate "<<this<<endl;
 	
 	return true;
 }
-#endif
 
 void simple_factory_test()
 {

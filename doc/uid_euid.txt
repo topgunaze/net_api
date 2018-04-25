@@ -1,0 +1,101 @@
+对可执行文件设置 setuid 权限时，将对运行该文件的进程授予基于文件属主的访问权限。该访问权限不是基于正在运行可执行文件的用户。使用此特殊权限，用户可以访问通常只有属主才可访问的文件和目录。 
+
+可以使用chmod u+s 或chmod g+s来设置二进制的可执行文件的euid。setuid只能对二进制的可执行设置。
+
+ 
+
+一 进程的uid和euid 
+
+转自：http://bbs.linuxpk.com/thread-39597-1-1.html 
+
+ 
+
+linux系统中每个进程都有2个ID，分别为用户ID（uid）和有效用户ID（euid），UID一般表示进程的创建者（属于哪个用户创建），而EUID表示进程对于文件和资源的访问权限（具备等同于哪个用户的权限）。C语言中，可以通过函数getuid()和geteuid（）来获得进程的两个ID值。
+
+当一个用户登陆系统时，系统会将UID和EUID都赋值为/etc/passwd文件中的UID，一般情况下2个ID是相同的，但是某些情况下会出现2个ID不同的情况。
+gid和egid同理。
+
+下面一段C代码将解释区别："printid.c"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main(void)
+{
+    printf(" UID\t= %d\n", getuid());
+    printf(" EUID\t= %d\n", geteuid());
+    printf(" GID\t= %d\n", getgid());
+    printf(" EGID\t= %d\n", getegid());
+
+    return EXIT_SUCCESS;
+}
+
+编译之：
+aguo@linux-x9rc:~> gcc -o printid printid.c 
+
+执行：
+aguo@linux-x9rc:~> ./printid 
+Real UID        = 1000
+Effective UID        = 1000
+Real GID        = 100
+Effective GID        = 100
+
+看看/etc/passwd里uid和gid：
+aguo@linux-x9rc:~> cat /etc/passwd | grep aguo | awk -F":" '{print "uid:"$3 "\tgid:"$4}'
+uid:1000        gid:100
+
+以上是相同的例子。
+
+下面演示uid和euid不同的例子。
+首先，修改一下文件属性，setuid或setgid
+aguo@linux-x9rc:~> chmod u+s printid #这样一来，文件在执行阶段具有文件所有者的权限。
+还可以再补充一个：
+aguo@linux-x9rc:~> chmod g+s printid #这样一来，文件在执行阶段具有文件所属组的权限。
+
+其次，变成其他用户，再来试验一下，比如变成root；
+linux-x9rc:/home/aguo # ./printid 
+Real UID        = 0
+Effective UID        = 1000
+Real GID        = 0
+Effective GID        = 100
+
+看到了吧？uid和euid是有区别的！
+以上演示环境：
+OS：SuSE Desktop Linux 11
+gcc：4.3.2
+
+顺便补充一下：
+perl里面的特殊变量$<、$>表示uid euid; $(、$)表示gid egid。
+只是，$(和$)会存储一个列表，第一位表示的才是gid和egid，这个是perl的设置，不在本文讨论范围中。 
+ 
+
+二 passwd 实例
+转自：http://keren.blog.51cto.com/720558/144908  
+
+ 
+
+【关于linux的passwd命令】
+ passwd命令是用来修改用户登陆密码的，用来记录用户登陆密码的文件为/etc/shadow，该文件只有root用户具有访问权限，如下所示：
+gaolu@gaolu-desktop:~$
+gaolu@gaolu-desktop:~$ cd /etc
+gaolu@gaolu-desktop:/etc$ ls -l shadow
+-rw-r----- 1 root shadow 978 2009-02-22 21:25 shadow
+gaolu@gaolu-desktop:/etc$
+ 
+
+这是出现了矛盾：出于安全考虑，不允许普通用户查看并修改shadow文件；但是如果这样普通用户就无法为自己修改密码。
+ 
+
+Linux系统就是使用setuid来解决这个矛盾的问题：如果一个程序被设置了setuid位，那么它无论被哪个用户启用，都会具备程序所有者的权限。而passwd程序的所有者是root用户，passwd的权限如下所示，那么任何用户执行该程序，程序的EUID就会变成root用户的EUID,而不是执行该程序的UID。
+ 
+
+gaolu@gaolu-desktop:/etc$ cd /usr/bin
+gaolu@gaolu-desktop:/usr/bin$ ls -l passwd
+-rwsr-xr-x 1 root root 32988 2008-06-10 02:10 passwd
+gaolu@gaolu-desktop:/usr/bin$
+gaolu@gaolu-desktop:/usr/bin$
+ 
+
+因此，普通用户可以通过passwd程序修改shadow文件内容，完成密码修改。
